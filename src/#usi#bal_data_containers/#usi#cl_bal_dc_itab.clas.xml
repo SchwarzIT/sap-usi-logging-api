@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Internal table</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+    <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
+   </VSEOCLASS>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>B01</KEY>
+     <ENTRY>External fieldcatalog</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B02</KEY>
+     <ENTRY>Regular fieldcatalog</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>B03</KEY>
+     <ENTRY>Technical fieldnames</ENTRY>
+     <LENGTH>40</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DES</KEY>
+     <ENTRY>Internal table</ENTRY>
+     <LENGTH>18</LENGTH>
+    </item>
+   </TPOOL>
+   <I18N_TPOOL>
+    <item>
+     <LANGUAGE>D</LANGUAGE>
+     <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>B01</KEY>
+       <ENTRY>Externer Feldkatalog</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>B02</KEY>
+       <ENTRY>Regulärer Feldkatalog</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>B03</KEY>
+       <ENTRY>Technischer Feldkatalog</ENTRY>
+       <LENGTH>40</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DES</KEY>
+       <ENTRY>Interne Tabelle</ENTRY>
+       <LENGTH>18</LENGTH>
+      </item>
+     </TEXTPOOL>
+    </item>
+   </I18N_TPOOL>
+   <I18N_LINES>
+    <item>
+     <LANGUAGE>D</LANGUAGE>
+    </item>
+   </I18N_LINES>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>FIELDCATALOG_NAMES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Fieldcatalog-names</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>FIELDCATALOG_TABLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Fieldcatalog table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>GET_EXCLUDED_GRID_FUNCTIONS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get excluded ui functions for alv grid</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>GET_LAYOUT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get layout for alv grid</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>GET_TABLE_NAME_BY_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>INTERNAL_TABLE_REF</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Internal table (Data reference)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>MERGE_INTERNAL_FIELDCATALOG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Merge internal fieldcatalog</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>MERGE_TECHNICAL_FIELDCATALOG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Merge technical fieldcatalog</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>ON_ALV_TOOLBAR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Handle event toolbar of ALV grid</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>ON_ALV_USER_COMMAND</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Handle event user_command of alv grid</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>SELECTED_FIELDCATALOG_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Selected field catalog</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>TABLE_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Table Name</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>TITLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Title for internal table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>TY_FIELDCATALOG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Single fieldcatalog</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>TY_FIELDCATALOG_NAME</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Name of a fieldcatalog</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>TY_FIELDCATALOG_TABLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Fieldcatalog table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>
+     <CMPNAME>USER_COMMANDS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>User commands</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

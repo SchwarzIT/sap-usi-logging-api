@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>/USI/BAL</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Messages for logging API</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>000</MSGNR>
+     <TEXT>&amp;1&amp;2&amp;3&amp;4</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>The buffer already contains data for log &amp;1, message &amp;2!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Error during database operation (Return code &amp;1)!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Type mismatch!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>No database entries were found for the specified key.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Invalid input</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Line type must be a DDIC-structure!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>The message has not been logged!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>Log could not be created!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>Log could not be saved!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Log must be saved first!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>017</MSGNR>
+     <TEXT>Unexpected error, during external API call!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>018</MSGNR>
+     <TEXT>The requested action is not permitted for the logger&apos;s current state!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>020</MSGNR>
+     <TEXT>No textpool found for program &amp;1 and language &amp;2.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>021</MSGNR>
+     <TEXT>Text [&amp;1,&amp;2] was not found in textpool of program &amp;3 for language &amp;4.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>022</MSGNR>
+     <TEXT>Maximum &amp;1 days allowed! The end date was corrected automatically.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>023</MSGNR>
+     <TEXT>&amp;1 entries have been deleted.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>024</MSGNR>
+     <TEXT>End date should not be in the past. Entry was corrected automatically.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>025</MSGNR>
+     <TEXT>A productive run would delete &amp;1 entries.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>030</MSGNR>
+     <TEXT>Only the owner of this log may perform this action!</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

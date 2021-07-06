@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>RTTI-Helper to describe classes &amp; interfaces</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>IS_IMPLEMENTING</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Implements interface?</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>IS_INHERITING_FROM</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Is inheriting from superclass=</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>IS_INSTANTIATABLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>In instance creation allowed?</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>IS_INTERFACE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Is Interface?</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_OBJECT_DESCR</CLSNAME>
+     <CMPNAME>OBJECT_DESCRIPTION</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Runtime Type Services</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

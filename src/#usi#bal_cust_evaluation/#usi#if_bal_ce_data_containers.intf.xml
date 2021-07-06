@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_INTF" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOINTERF>
+    <CLSNAME>/USI/IF_BAL_CE_DATA_CONTAINERS</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Cust-Evaluator: Message context data containers</DESCRIPT>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <UNICODE>X</UNICODE>
+   </VSEOINTERF>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/IF_BAL_CE_DATA_CONTAINERS</CLSNAME>
+     <CMPNAME>GET_RELEVANT_PLUGIN_CLASSNAMES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get relevant message context data containers</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

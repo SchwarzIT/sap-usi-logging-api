@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>Deletion of data containers</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>/USI/LBAL_DELETETOP</SOBJ_NAME>
+    <SOBJ_NAME>/USI/SAPLBAL_DELETE</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>/USI/BAL_DELETE_CUSTOM_DATA</FUNCNAME>
+     <UPDATE_TASK>1</UPDATE_TASK>
+     <SHORT_TEXT>Delete custom data during log deletion</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_LOG_HEADERS</PARAMETER>
+       <TYP>BALHDR_T</TYP>
+      </RSIMP>
+     </IMPORT>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_LOG_HEADERS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Application Log: Log header data table</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

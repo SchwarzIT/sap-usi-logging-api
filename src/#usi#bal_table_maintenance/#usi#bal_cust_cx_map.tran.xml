@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TRAN" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TSTC>
+    <TCODE>/USI/BAL_CUST_CX_MAP</TCODE>
+    <CINFO>Ag==</CINFO>
+   </TSTC>
+   <TSTCC>
+    <TCODE>/USI/BAL_CUST_CX_MAP</TCODE>
+    <S_WIN32>X</S_WIN32>
+   </TSTCC>
+   <TSTCT>
+    <SPRSL>E</SPRSL>
+    <TCODE>/USI/BAL_CUST_CX_MAP</TCODE>
+    <TTEXT>Maintain exception mapper classes</TTEXT>
+   </TSTCT>
+   <TSTCP>
+    <TCODE>/USI/BAL_CUST_CX_MAP</TCODE>
+    <PARAM>/*SM30 VIEWNAME=/USI/BAL_CX_MAP;UPDATE=X;</PARAM>
+   </TSTCP>
+  </asx:values>
+ </asx:abap>
+</abapGit>

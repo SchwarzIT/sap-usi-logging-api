@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DOMA" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD01V>
+    <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DATATYPE>NUMC</DATATYPE>
+    <LENG>000001</LENG>
+    <OUTPUTLEN>000001</OUTPUTLEN>
+    <VALEXI>X</VALEXI>
+    <DDTEXT>Logging API: Log level</DDTEXT>
+   </DD01V>
+   <DD07V_TAB>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0001</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>0</DOMVALUE_L>
+     <DDTEXT>Nothing (Log completely deactivated)</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0002</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>1</DOMVALUE_L>
+     <DDTEXT>Problem class at least &apos;Very important&apos;</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0003</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>2</DOMVALUE_L>
+     <DDTEXT>Problem class at least &apos;Important&apos;</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0004</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>3</DOMVALUE_L>
+     <DDTEXT>Problem class at least &apos;Medium&apos;</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0005</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>4</DOMVALUE_L>
+     <DDTEXT>Problem class at least &apos;Additional Information&apos;</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0006</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>5</DOMVALUE_L>
+     <DDTEXT>Problem class at least &apos;Other&apos; (All problem classes)</DDTEXT>
+    </DD07V>
+    <DD07V>
+     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
+     <VALPOS>0007</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>6</DOMVALUE_L>
+     <DDTEXT>Everything (All problem classes &amp; data containers)</DDTEXT>
+    </DD07V>
+   </DD07V_TAB>
+  </asx:values>
+ </asx:abap>
+</abapGit>

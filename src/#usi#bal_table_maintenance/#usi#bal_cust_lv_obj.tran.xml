@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TRAN" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TSTC>
+    <TCODE>/USI/BAL_CUST_LV_OBJ</TCODE>
+    <CINFO>Ag==</CINFO>
+   </TSTC>
+   <TSTCC>
+    <TCODE>/USI/BAL_CUST_LV_OBJ</TCODE>
+    <S_WIN32>X</S_WIN32>
+   </TSTCC>
+   <TSTCT>
+    <SPRSL>E</SPRSL>
+    <TCODE>/USI/BAL_CUST_LV_OBJ</TCODE>
+    <TTEXT>Maintain log level by log object</TTEXT>
+   </TSTCT>
+   <TSTCP>
+    <TCODE>/USI/BAL_CUST_LV_OBJ</TCODE>
+    <PARAM>/*SM30 VIEWNAME=/USI/BAL_LV_LOBJ;UPDATE=X;</PARAM>
+   </TSTCP>
+  </asx:values>
+ </asx:abap>
+</abapGit>

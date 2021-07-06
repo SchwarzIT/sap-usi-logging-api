@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Cust-Evaluator: Exception mapper classname</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+    <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>CLASS_TYPE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Class type vector</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>CUSTOMIZING_DAO</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Cust-DAO: Exception mapper classes</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>CUSTOMIZING_ENTRIES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Validated customizing entries</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>GET_MAPPER_CLASS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get mapper class</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>GET_VALIDATED_CUSTOMIZING</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get validated customizing</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>TY_CUSTOMIZING_ENTRIES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Validated customizing entries</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_CE_CX_MAPPER</CLSNAME>
+     <CMPNAME>TY_CUSTOMIZING_ENTRY</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Validated customizing entries</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

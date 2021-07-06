@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_NSPC" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <NSPC>
+    <NAMESPACE>/USI/</NAMESPACE>
+    <REPLICENSE>07181429931319159598</REPLICENSE>
+   </NSPC>
+   <I18N_LANGS>
+    <LANGU>D</LANGU>
+   </I18N_LANGS>
+   <NSPC_TEXTS>
+    <item>
+     <SPRAS>D</SPRAS>
+     <DESCRIPTN>Unternehmensgruppe Schwarz - IT</DESCRIPTN>
+     <OWNER>SITIOS</OWNER>
+    </item>
+   </NSPC_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

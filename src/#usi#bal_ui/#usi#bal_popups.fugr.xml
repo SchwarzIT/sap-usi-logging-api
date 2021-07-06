@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>Popups sent by the API</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>/USI/LBAL_POPUPSD01</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSD02</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSD03</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSI01</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSO01</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSP02</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSP03</SOBJ_NAME>
+    <SOBJ_NAME>/USI/LBAL_POPUPSTOP</SOBJ_NAME>
+    <SOBJ_NAME>/USI/SAPLBAL_POPUPS</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>/USI/BAL_POPUP_MESSAGE_DETAILS</FUNCNAME>
+     <SHORT_TEXT>Displays the details (Data containers) of a log message</SHORT_TEXT>
+     <TABLES>
+      <RSTBL>
+       <PARAMETER>I_T_PARAMS</PARAMETER>
+       <DBSTRUCT>BAL_S_PAR</DBSTRUCT>
+      </RSTBL>
+     </TABLES>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_T_PARAMS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Application Log: Parameter Name and Value</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+   <I18N_TPOOL>
+    <item>
+     <LANGUAGE>D</LANGUAGE>
+     <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>NNV</KEY>
+       <ENTRY>Datencontainer mit Navigation</ENTRY>
+       <LENGTH>72</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NRD</KEY>
+       <ENTRY>Datencontainer mit Detailanzeige</ENTRY>
+       <LENGTH>72</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NRT</KEY>
+       <ENTRY>Datencontainer</ENTRY>
+       <LENGTH>72</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>NUK</KEY>
+       <ENTRY>Defekte Datencontainer (Programmierfehler!)</ENTRY>
+       <LENGTH>72</LENGTH>
+      </item>
+     </TEXTPOOL>
+    </item>
+   </I18N_TPOOL>
+   <DYNPROS>
+    <item>
+     <HEADER>
+      <PROGRAM>/USI/SAPLBAL_POPUPS</PROGRAM>
+      <SCREEN>2000</SCREEN>
+      <LANGUAGE>E</LANGUAGE>
+      <DESCRIPT>Popup window: Custom container</DESCRIPT>
+      <TYPE>M</TYPE>
+      <NEXTSCREEN>2000</NEXTSCREEN>
+      <LINES>025</LINES>
+      <COLUMNS>160</COLUMNS>
+     </HEADER>
+     <CONTAINERS>
+      <RPY_DYCATT>
+       <TYPE>SCREEN</TYPE>
+       <NAME>SCREEN</NAME>
+      </RPY_DYCATT>
+      <RPY_DYCATT>
+       <TYPE>CUST_CTRL</TYPE>
+       <NAME>CUSTOM_CONTROL_2000</NAME>
+       <ELEMENT_OF>SCREEN</ELEMENT_OF>
+       <LINE>001</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>160</LENGTH>
+       <HEIGHT>025</HEIGHT>
+      </RPY_DYCATT>
+     </CONTAINERS>
+     <FIELDS>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>OKCODE</TYPE>
+       <NAME>USER_COMMAND</NAME>
+       <TEXT>____________________</TEXT>
+       <LENGTH>020</LENGTH>
+       <VISLENGTH>020</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <INPUT_FLD>X</INPUT_FLD>
+      </RPY_DYFATC>
+     </FIELDS>
+     <FLOW_LOGIC>
+      <RPY_DYFLOW>
+       <LINE>PROCESS BEFORE OUTPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>  MODULE status_2000.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>  MODULE display_data_2000.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW/>
+      <RPY_DYFLOW>
+       <LINE>PROCESS AFTER INPUT.</LINE>
+      </RPY_DYFLOW>
+      <RPY_DYFLOW>
+       <LINE>  MODULE exit_command_2000 AT EXIT-COMMAND.</LINE>
+      </RPY_DYFLOW>
+     </FLOW_LOGIC>
+    </item>
+   </DYNPROS>
+   <CUA>
+    <ADM>
+     <PFKCODE>000002</PFKCODE>
+    </ADM>
+    <STA>
+     <RSMPE_STAT>
+      <CODE>POPUP_CLOSE</CODE>
+      <MODAL>P</MODAL>
+      <PFKCODE>000002</PFKCODE>
+      <BUTCODE>0001</BUTCODE>
+      <INT_NOTE>Popup status with button &quot;Close&quot;</INT_NOTE>
+     </RSMPE_STAT>
+    </STA>
+    <FUN>
+     <RSMPE_FUNT>
+      <CODE>CLOSE</CODE>
+      <TEXTNO>001</TEXTNO>
+      <TYPE>E</TYPE>
+      <TEXT_TYPE>S</TEXT_TYPE>
+      <TEXT_NAME>ICON_CLOSE</TEXT_NAME>
+      <ICON_ID>@3X@</ICON_ID>
+      <FUN_TEXT>Close window</FUN_TEXT>
+      <ICON_TEXT>Close window</ICON_TEXT>
+     </RSMPE_FUNT>
+    </FUN>
+    <BUT>
+     <RSMPE_BUT>
+      <PFK_CODE>000002</PFK_CODE>
+      <CODE>0001</CODE>
+      <NO>01</NO>
+      <PFNO>12</PFNO>
+     </RSMPE_BUT>
+    </BUT>
+    <PFK>
+     <RSMPE_PFK>
+      <CODE>000002</CODE>
+      <PFNO>12</PFNO>
+      <FUNCODE>CLOSE</FUNCODE>
+      <FUNNO>001</FUNNO>
+     </RSMPE_PFK>
+    </PFK>
+    <SET>
+     <RSMPE_STAF>
+      <STATUS>POPUP_CLOSE</STATUS>
+      <FUNCTION>CLOSE</FUNCTION>
+     </RSMPE_STAF>
+    </SET>
+    <DOC>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>P</OBJ_TYPE>
+      <OBJ_CODE>000001</OBJ_CODE>
+      <MODAL>P</MODAL>
+      <INT_NOTE>Popup status with button &quot;Cancel&quot;</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>B</OBJ_TYPE>
+      <OBJ_CODE>000001</OBJ_CODE>
+      <SUB_CODE>0001</SUB_CODE>
+      <MODAL>P</MODAL>
+      <INT_NOTE>Popup status with button &quot;Cancel&quot;</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>P</OBJ_TYPE>
+      <OBJ_CODE>000002</OBJ_CODE>
+      <MODAL>P</MODAL>
+      <INT_NOTE>Popup status with button &quot;Close&quot;</INT_NOTE>
+     </RSMPE_ATRT>
+     <RSMPE_ATRT>
+      <OBJ_TYPE>B</OBJ_TYPE>
+      <OBJ_CODE>000002</OBJ_CODE>
+      <SUB_CODE>0001</SUB_CODE>
+      <MODAL>P</MODAL>
+      <INT_NOTE>Popup status with button &quot;Close&quot;</INT_NOTE>
+     </RSMPE_ATRT>
+    </DOC>
+    <TIT>
+     <RSMPE_TITT>
+      <CODE>TITLE_MESSAGE_DETAIL</CODE>
+      <TEXT>Details for log &amp;1, message &amp;2</TEXT>
+     </RSMPE_TITT>
+    </TIT>
+   </CUA>
+  </asx:values>
+ </asx:abap>
+</abapGit>

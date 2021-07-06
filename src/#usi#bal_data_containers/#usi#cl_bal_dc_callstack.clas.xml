@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Callstack</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+    <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
+   </VSEOCLASS>
+   <TPOOL>
+    <item>
+     <ID>I</ID>
+     <KEY>C01</KEY>
+     <ENTRY>Line</ENTRY>
+     <LENGTH>55</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C02</KEY>
+     <ENTRY>Block type</ENTRY>
+     <LENGTH>55</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>C03</KEY>
+     <ENTRY>Block name</ENTRY>
+     <LENGTH>55</LENGTH>
+    </item>
+    <item>
+     <ID>I</ID>
+     <KEY>DES</KEY>
+     <ENTRY>Callstack</ENTRY>
+     <LENGTH>60</LENGTH>
+    </item>
+   </TPOOL>
+   <I18N_TPOOL>
+    <item>
+     <LANGUAGE>D</LANGUAGE>
+     <TEXTPOOL>
+      <item>
+       <ID>I</ID>
+       <KEY>C01</KEY>
+       <ENTRY>Zeile</ENTRY>
+       <LENGTH>55</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>C02</KEY>
+       <ENTRY>Block-Typ</ENTRY>
+       <LENGTH>55</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>C03</KEY>
+       <ENTRY>Block-Name</ENTRY>
+       <LENGTH>55</LENGTH>
+      </item>
+      <item>
+       <ID>I</ID>
+       <KEY>DES</KEY>
+       <ENTRY>Callstack</ENTRY>
+       <LENGTH>60</LENGTH>
+      </item>
+     </TEXTPOOL>
+    </item>
+   </I18N_TPOOL>
+   <I18N_LINES>
+    <item>
+     <LANGUAGE>D</LANGUAGE>
+    </item>
+   </I18N_LINES>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>CALLSTACK</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>ABAP Call Stack</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>CONSTRUCTOR</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>FIELDCATALOG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Field Catalog for List Viewer Control</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>GET_EXCLUDED_GRID_FUNCTIONS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get excluded ui functions for alv grid</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>GET_FIELDCATALOG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get fieldcatalog for ALV</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>/USI/CL_BAL_DC_CALLSTACK</CLSNAME>
+     <CMPNAME>GET_LAYOUT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get layout for alv grid</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
