@@ -186,6 +186,7 @@ CLASS lcl_unit_test_delegation IMPLEMENTATION.
         i_factory                  = logger_bl_factory
         i_relevant_data_containers = relevant_data_containers
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = dao_mock
         i_data_cont_coll_dao       = dc_coll_dao_mock.
 
@@ -300,6 +301,7 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
         i_factory                  = logger_bl_factory
         i_relevant_data_containers = relevant_data_containers
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = dao_mock
         i_data_cont_coll_dao       = dc_coll_dao_mock.
     SET HANDLER on_free FOR cut.
@@ -390,6 +392,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
         i_factory                  = logger_bl_factory
         i_relevant_data_containers = relevant_data_containers
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = dao_mock
         i_data_cont_coll_dao       = dc_coll_dao_mock.
   ENDMETHOD.
@@ -594,6 +597,7 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
         i_factory                  = logger_bl_factory
         i_relevant_data_containers = relevant_data_containers
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = dao_mock
         i_data_cont_coll_dao       = dc_coll_dao_mock.
 

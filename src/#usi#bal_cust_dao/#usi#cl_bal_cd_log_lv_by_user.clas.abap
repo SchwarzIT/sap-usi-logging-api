@@ -13,14 +13,13 @@ ENDCLASS.
 
 
 CLASS /USI/CL_BAL_CD_LOG_LV_BY_USER IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_cd_log_lv_by_user~get_records.
     SELECT  uname
             endda
             log_object
             sub_object
             log_level
+            auto_save
       FROM  /usi/bal_lv_user
       INTO  TABLE r_result
       WHERE uname      EQ i_user_name

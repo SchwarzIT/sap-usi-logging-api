@@ -12,12 +12,15 @@ CLASS /usi/cl_bal_lstate_active DEFINITION
       IMPORTING
         !i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
         !i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
+        !i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
         !i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
         !i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao
         !i_token                    TYPE REF TO /usi/if_bal_token
         !i_relevant_data_containers TYPE /usi/bal_data_cont_classnames .
   PROTECTED SECTION.
   PRIVATE SECTION.
+
+    ALIASES save FOR /usi/if_bal_logger_state~save.
 
     TYPES:
       BEGIN OF ty_message,
@@ -30,14 +33,24 @@ CLASS /usi/cl_bal_lstate_active DEFINITION
     TYPES:
       ty_exceptions TYPE STANDARD TABLE OF REF TO cx_root WITH NON-UNIQUE DEFAULT KEY .
 
-    DATA data_container_collection_dao TYPE REF TO /usi/if_bal_data_cont_coll_dao .
-    DATA factory TYPE REF TO /usi/if_bal_logger_bl_factory .
-    DATA highest_message_number TYPE /usi/bal_message_number.
-    DATA log_dao TYPE REF TO /usi/if_bal_log_dao .
-    DATA log_level TYPE REF TO /usi/cl_bal_enum_log_level .
-    DATA messages TYPE ty_messages .
-    DATA relevant_data_containers TYPE /usi/bal_data_cont_classnames .
-    DATA token TYPE REF TO /usi/if_bal_token .
+    DATA: factory TYPE REF TO /usi/if_bal_logger_bl_factory,
+          token   TYPE REF TO /usi/if_bal_token,
+
+          BEGIN OF settings,
+            log_level                TYPE REF TO /usi/cl_bal_enum_log_level,
+            auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size,
+            relevant_data_containers TYPE /usi/bal_data_cont_classnames,
+          END   OF settings,
+
+          BEGIN OF messages,
+            message_buffer         TYPE ty_messages,
+            highest_message_number TYPE /usi/bal_message_number,
+          END   OF messages,
+
+          BEGIN OF dao_objects,
+            log                       TYPE REF TO /usi/if_bal_log_dao,
+            data_container_collection TYPE REF TO /usi/if_bal_data_cont_coll_dao,
+          END   OF dao_objects.
 
     METHODS get_exceptions_inverted_order
       IMPORTING
@@ -98,7 +111,7 @@ ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
+CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_logger_state~add_exception.
@@ -109,7 +122,7 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
           unfiltered_cx_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col,
           the_message                  TYPE symsg.
 
-    IF log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
+    IF settings-log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
       RETURN.
     ENDIF.
 
@@ -169,7 +182,7 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
   METHOD /usi/if_bal_logger_state~add_free_text.
     DATA: target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
-    IF log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
+    IF settings-log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
       RETURN.
     ENDIF.
 
@@ -201,7 +214,7 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
   METHOD /usi/if_bal_logger_state~add_message.
     DATA: target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
-    IF log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
+    IF settings-log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
       RETURN.
     ENDIF.
 
@@ -239,7 +252,7 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
 
   METHOD /usi/if_bal_logger_state~free.
     IF token->is_equal( i_token ) EQ abap_true.
-      log_dao->free( ).
+      dao_objects-log->free( ).
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_allowed
         EXPORTING
@@ -374,12 +387,15 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
 
 
   METHOD constructor.
-    data_container_collection_dao   = i_data_cont_coll_dao.
-    factory                   = i_factory.
-    log_level                 = i_log_level.
-    log_dao                   = i_log_dao.
-    relevant_data_containers  = i_relevant_data_containers.
-    token                     = i_token.
+    factory                               = i_factory.
+    token                                 = i_token.
+
+    settings-log_level                    = i_log_level.
+    settings-auto_save_pckg_size          = i_auto_save_pckg_size.
+    settings-relevant_data_containers     = i_relevant_data_containers.
+
+    dao_objects-data_container_collection = i_data_cont_coll_dao.
+    dao_objects-log                       = i_log_dao.
   ENDMETHOD.
 
 
@@ -426,8 +442,8 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
     DATA: callback_parameter TYPE bal_s_par,
           message            TYPE ty_message.
 
-    ADD 1 TO highest_message_number.
-    message-number               = highest_message_number.
+    ADD 1 TO messages-highest_message_number.
+    message-number               = messages-highest_message_number.
 
     message-message-detlevel     = i_detail_level->value.
     message-message-probclass    = i_problem_class->value.
@@ -450,12 +466,22 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
       INSERT callback_parameter INTO TABLE message-message-params-t_par.
     ENDIF.
 
-    INSERT message INTO TABLE messages.
+    INSERT message INTO TABLE messages-message_buffer.
+
+    IF settings-auto_save_pckg_size GT 0 AND
+       settings-auto_save_pckg_size LE lines( messages-message_buffer ).
+      TRY.
+          save( token ).
+        CATCH /usi/cx_bal_root.
+          " Can never happen, as we are definitely passing the right token
+          RETURN.
+      ENDTRY.
+    ENDIF.
   ENDMETHOD.
 
 
   METHOD is_data_container_relevant.
-    READ TABLE relevant_data_containers
+    READ TABLE settings-relevant_data_containers
       TRANSPORTING NO FIELDS
       WITH KEY table_line = i_data_container_classname.
     IF sy-subrc EQ 0.
@@ -472,11 +498,11 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
 
     FIELD-SYMBOLS: <message> TYPE ty_message.
 
-    LOOP AT messages ASSIGNING <message> WHERE data_container_collection IS BOUND.
+    LOOP AT messages-message_buffer ASSIGNING <message> WHERE data_container_collection IS BOUND.
       CHECK <message>-data_container_collection->has_data_containers( ) EQ abap_true.
       serialized_data_cont_coll = <message>-data_container_collection->serialize( ).
       TRY.
-          data_container_collection_dao->insert_collection_into_buffer(
+          dao_objects-data_container_collection->insert_collection_into_buffer(
             i_log_number                = i_log_number
             i_message_number            = <message>-number
             i_serialized_data_cont_coll = serialized_data_cont_coll
@@ -492,7 +518,7 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
       ENDTRY.
     ENDLOOP.
     IF unsaved_data_exists EQ abap_true.
-      data_container_collection_dao->save_buffer_to_db( ).
+      dao_objects-data_container_collection->save_buffer_to_db( ).
     ENDIF.
   ENDMETHOD.
 
@@ -504,9 +530,9 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
 
     FIELD-SYMBOLS: <message> TYPE ty_message.
 
-    LOOP AT messages ASSIGNING <message>.
+    LOOP AT messages-message_buffer ASSIGNING <message>.
       TRY.
-          log_dao->add_message( <message>-message ).
+          dao_objects-log->add_message( <message>-message ).
           unsaved_data_exists = abap_true.
         CATCH /usi/cx_bal_root INTO unexpected_exception.
           unexpected_exception_text = unexpected_exception->get_text( ).
@@ -519,9 +545,9 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
       ENDTRY.
     ENDLOOP.
     IF unsaved_data_exists EQ abap_true.
-      log_dao->save( ).
+      dao_objects-log->save( ).
     ENDIF.
 
-    r_result = log_dao->get_log_number( ).
+    r_result = dao_objects-log->get_log_number( ).
   ENDMETHOD.
 ENDCLASS.

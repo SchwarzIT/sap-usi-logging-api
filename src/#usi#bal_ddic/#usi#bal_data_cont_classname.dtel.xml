@@ -20,6 +20,19 @@
     <SHLPFIELD>CLASSNAME</SHLPFIELD>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>D</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>D</DDLANGUAGE>
+     <DDTEXT>Datencontainer-Klassenname</DDTEXT>
+     <REPTEXT>Datencontainer-Klassenname</REPTEXT>
+     <SCRTEXT_S>Klasse</SCRTEXT_S>
+     <SCRTEXT_M>Klassenname</SCRTEXT_M>
+     <SCRTEXT_L>Datencontainer-Klassenname</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

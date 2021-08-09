@@ -3,9 +3,10 @@ INTERFACE /usi/if_bal_cd_log_lv_by_obj
 
   TYPES:
     BEGIN OF ty_record,
-      log_object TYPE balobj_d,
-      sub_object TYPE balsubobj,
-      log_level  TYPE /usi/bal_log_level,
+      log_object             TYPE balobj_d,
+      sub_object             TYPE balsubobj,
+      log_level              TYPE /usi/bal_log_level,
+      auto_save_package_size TYPE /usi/bal_auto_save_pckg_size,
     END   OF ty_record.
 
   TYPES:

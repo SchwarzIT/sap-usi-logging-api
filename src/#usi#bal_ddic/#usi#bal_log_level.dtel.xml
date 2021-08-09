@@ -18,6 +18,19 @@
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>D</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>D</DDLANGUAGE>
+     <DDTEXT>Logging API: Log level</DDTEXT>
+     <REPTEXT>Log level</REPTEXT>
+     <SCRTEXT_S>Log level</SCRTEXT_S>
+     <SCRTEXT_M>Log level</SCRTEXT_M>
+     <SCRTEXT_L>Log level</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

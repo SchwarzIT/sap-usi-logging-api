@@ -11,9 +11,10 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
 
     METHODS insert_mock_data_line
       IMPORTING
-        i_log_object TYPE balobj_d
-        i_sub_object TYPE balsubobj
-        i_log_level  TYPE /usi/bal_log_level.
+        i_log_object             TYPE balobj_d
+        i_sub_object             TYPE balsubobj
+        i_log_level              TYPE /usi/bal_log_level
+        i_auto_save_package_size TYPE /usi/bal_auto_save_pckg_size DEFAULT 0.
 
   PRIVATE SECTION.
     ALIASES: ty_records FOR /usi/if_bal_cd_log_lv_by_obj~ty_records,
@@ -45,9 +46,10 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
 
   METHOD insert_mock_data_line.
     DATA mock_data_line TYPE ty_record.
-    mock_data_line-log_object = i_log_object.
-    mock_data_line-sub_object = i_sub_object.
-    mock_data_line-log_level  = i_log_level.
+    mock_data_line-log_object             = i_log_object.
+    mock_data_line-sub_object             = i_sub_object.
+    mock_data_line-log_level              = i_log_level.
+    mock_data_line-auto_save_package_size = i_auto_save_package_size.
     INSERT mock_data_line INTO TABLE mock_data.
   ENDMETHOD.
 ENDCLASS.
@@ -63,9 +65,10 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
                                               WITH NON-UNIQUE DEFAULT KEY.
 
     METHODS setup.
-    METHODS test_fallback_for_no_cust  FOR TESTING.
-    METHODS test_prio_log_object       FOR TESTING.
-    METHODS test_prio_sub_object       FOR TESTING.
+    METHODS test_fallback_auto_save FOR TESTING.
+    METHODS test_fallback_log_level FOR TESTING.
+    METHODS test_prio_log_object    FOR TESTING.
+    METHODS test_prio_sub_object    FOR TESTING.
 
     METHODS get_non_fallback_log_levels
       IMPORTING
@@ -93,11 +96,27 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_fallback_for_no_cust.
+  METHOD test_fallback_auto_save.
+    DATA: acutal_result   TYPE /usi/bal_auto_save_pckg_size,
+          expected_result TYPE /usi/bal_auto_save_pckg_size.
+
+    expected_result = cut->get_fallback_auto_save( ).
+    acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_auto_save_package_size(
+                        i_log_object = 'NOT'
+                        i_sub_object = 'IN_CUST'
+                      ).
+
+    cl_aunit_assert=>assert_equals(
+      exp = expected_result
+      act = acutal_result
+    ).
+  ENDMETHOD.
+
+  METHOD test_fallback_log_level.
     DATA: acutal_result   TYPE REF TO /usi/cl_bal_enum_log_level,
           expected_result TYPE REF TO /usi/cl_bal_enum_log_level.
 
-    expected_result = cut->get_fallback( ).
+    expected_result = cut->get_fallback_log_level( ).
     acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level(
                         i_log_object = 'NOT'
                         i_sub_object = 'IN_CUST'
@@ -182,7 +201,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     WHILE lines( r_result ) LT i_amount.
       TRY.
           log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level NE cut->get_fallback( ).
+          IF log_level NE cut->get_fallback_log_level( ).
             INSERT log_level INTO TABLE r_result.
           ENDIF.
           ADD 1 TO log_level_value.

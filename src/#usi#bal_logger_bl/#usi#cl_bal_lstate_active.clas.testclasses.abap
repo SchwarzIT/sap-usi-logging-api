@@ -152,13 +152,13 @@ CLASS lcl_private_data IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_message_counter.
-    r_result = lines( cut->messages ).
+    r_result = lines( cut->messages-message_buffer ).
   ENDMETHOD.
 
   METHOD get_message.
     FIELD-SYMBOLS: <message> TYPE cut->ty_message.
 
-    READ TABLE  cut->messages
+    READ TABLE  cut->messages-message_buffer
       ASSIGNING <message>
       INDEX     i_index.
     IF sy-subrc NE 0.
@@ -171,7 +171,7 @@ CLASS lcl_private_data IMPLEMENTATION.
   METHOD get_data_container_collection.
     FIELD-SYMBOLS: <message> TYPE cut->ty_message.
 
-    READ TABLE  cut->messages
+    READ TABLE  cut->messages-message_buffer
       ASSIGNING <message>
       INDEX     i_index.
     IF sy-subrc NE 0.
@@ -406,6 +406,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao_spy
         i_data_cont_coll_dao       = dc_coll_dao_spy
         i_token                    = token
@@ -563,6 +564,7 @@ CLASS lcl_unit_test_unbound_dc_coll IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = data_container_coll_dao
         i_token                    = token
@@ -671,6 +673,7 @@ CLASS lcl_unit_test_auto_data_cont IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao_spy
         i_data_cont_coll_dao       = dc_coll_dao_spy
         i_token                    = token
@@ -857,6 +860,7 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao_spy
         i_data_cont_coll_dao       = dc_coll_dao_spy
         i_token                    = token
@@ -989,6 +993,7 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = dc_coll_dao
         i_token                    = token
@@ -1099,6 +1104,7 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>very_important
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = dc_coll_dao
         i_token                    = token
@@ -1308,6 +1314,7 @@ CLASS lcl_unit_test_log_previous IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = dc_coll_dao
         i_token                    = token
@@ -1562,6 +1569,7 @@ CLASS lcl_unit_test_data_cont_prio IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = dc_coll_dao
         i_token                    = token
@@ -1740,6 +1748,7 @@ CLASS lcl_unit_test_callback IMPLEMENTATION.
       EXPORTING
         i_factory                  = logger_bl_factory
         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = dc_coll_dao
         i_token                    = token
@@ -1810,6 +1819,154 @@ CLASS lcl_unit_test_callback IMPLEMENTATION.
           act = logged_message-params-callback-userexitf
           msg = `Callback function is set!`
         ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+  ENDMETHOD.
+ENDCLASS.
+
+*--------------------------------------------------------------------*
+* Unit test: Auto-Save
+*--------------------------------------------------------------------*
+CLASS lcl_unit_test_auto_save DEFINITION FINAL FOR TESTING.
+  "#AU Risk_Level Harmless
+  "#AU Duration   Short
+  PRIVATE SECTION.
+    TYPES: BEGIN OF ty_test_objects,
+             cut     TYPE REF TO /usi/if_bal_logger_state,
+             log_dao TYPE REF TO lcl_dao_spy,
+           END   OF ty_test_objects.
+
+    METHODS prepare_test
+      IMPORTING
+        i_auto_save_pckg_size TYPE /usi/bal_auto_save_pckg_size
+      RETURNING
+        VALUE(r_result)       TYPE ty_test_objects.
+
+    METHODS test_auto_save_exception FOR TESTING.
+    METHODS test_auto_save_free_text FOR TESTING.
+    METHODS test_auto_save_message   FOR TESTING.
+    METHODS test_no_early_auto_save  FOR TESTING.
+ENDCLASS.
+
+CLASS lcl_unit_test_auto_save IMPLEMENTATION.
+  METHOD prepare_test.
+    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
+          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
+          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
+          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
+          relevant_data_container  TYPE /usi/bal_data_cont_classname,
+          token                    TYPE REF TO /usi/if_bal_token.
+
+    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
+    token             = logger_bl_factory->get_token( ).
+    CREATE OBJECT r_result-log_dao.
+    CREATE OBJECT dc_coll_dao.
+
+    CREATE OBJECT r_result-cut TYPE /usi/cl_bal_lstate_active
+      EXPORTING
+        i_factory                  = logger_bl_factory
+        i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = i_auto_save_pckg_size
+        i_log_dao                  = r_result-log_dao
+        i_data_cont_coll_dao       = dc_coll_dao
+        i_token                    = token
+        i_relevant_data_containers = relevant_data_containers.
+  ENDMETHOD.
+
+  METHOD test_auto_save_exception.
+    DATA: test_objects         TYPE ty_test_objects,
+          given_exception      TYPE REF TO /usi/cx_bal_root,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+
+    test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
+
+    TRY.
+        given_exception = lcl_exception_factory=>get_exception( i_text     = 'Inner exception' ).
+        given_exception = lcl_exception_factory=>get_exception( i_text     = 'Outer exception'
+                                                                i_previous = given_exception ).
+
+        test_objects-cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                                         i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                         i_message_type  = /usi/cl_bal_enum_message_type=>information
+                                         i_exception     = given_exception
+                                         i_log_previous  = abap_true ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+    test_objects-log_dao->method_calls->assert_method_called_n_times(
+      i_method_name              = test_objects-log_dao->method_names-save
+      i_expected_number_of_calls = 2 ).
+  ENDMETHOD.
+
+  METHOD test_auto_save_free_text.
+    DATA: test_objects         TYPE ty_test_objects,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+
+    test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
+
+    TRY.
+        test_objects-cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                                         i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                         i_message_type  = /usi/cl_bal_enum_message_type=>information
+                                         i_free_text     = 'Should be saved immediately...' ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+    test_objects-log_dao->method_calls->assert_method_was_called( test_objects-log_dao->method_names-save ).
+  ENDMETHOD.
+
+  METHOD test_auto_save_message.
+    DATA: test_objects         TYPE ty_test_objects,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+
+    test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
+
+    TRY.
+        test_objects-cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
+                                       i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                       i_message_type       = /usi/cl_bal_enum_message_type=>information
+                                       i_message_class      = '38'
+                                       i_message_number     = '000'
+                                       i_message_variable_1 = 'Should be saved immediately...' ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+    test_objects-log_dao->method_calls->assert_method_was_called( test_objects-log_dao->method_names-save ).
+  ENDMETHOD.
+
+  METHOD test_no_early_auto_save.
+    DATA: test_objects         TYPE ty_test_objects,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    test_objects = prepare_test( i_auto_save_pckg_size = 2 ).
+
+    TRY.
+        test_objects-cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                                         i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                         i_message_type  = /usi/cl_bal_enum_message_type=>information
+                                         i_free_text     = 'Should not save (1st Message; Package Size = 2)' ).
+        test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+    TRY.
+        test_objects-cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                                         i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                         i_message_type  = /usi/cl_bal_enum_message_type=>information
+                                         i_free_text     = 'Should save (2nd Message; Package Size = 2)' ).
+        test_objects-log_dao->method_calls->assert_method_was_called( test_objects-log_dao->method_names-save ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.

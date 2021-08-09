@@ -1,0 +1,292 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>/USI/BAL_AUTO_SAVE_PCKG_SIZE</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>/USI/BAL_MESSAGE_NUMBER</DOMNAME>
+    <HEADLEN>55</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Auto-Save: Package Size (Save after n Messages)</DDTEXT>
+    <REPTEXT>Auto-Save Package Size</REPTEXT>
+    <SCRTEXT_S>Auto-Save</SCRTEXT_S>
+    <SCRTEXT_M>Auto-Save Pckg-Size</SCRTEXT_M>
+    <SCRTEXT_L>Auto-Save Package Size</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>D</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>D</DDLANGUAGE>
+     <DDTEXT>Auto-Save: Paketgröße (Sichern nach n Meldungen)</DDTEXT>
+     <REPTEXT>Auto-Save: Paketgröße</REPTEXT>
+     <SCRTEXT_S>Auto-Save</SCRTEXT_S>
+     <SCRTEXT_M>Auto-Save: Paket-Gr.</SCRTEXT_M>
+     <SCRTEXT_L>Auto-Save: Paketgröße</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+   <LONGTEXTS>
+    <item>
+     <DOKIL>
+      <ID>DE</ID>
+      <OBJECT>/USI/BAL_AUTO_SAVE_PCKG_SIZE</OBJECT>
+      <LANGU>D</LANGU>
+      <TYP>E</TYP>
+      <VERSION>0008</VERSION>
+      <TXTLINES>00024</TXTLINES>
+      <DOKSTATE>A</DOKSTATE>
+     </DOKIL>
+     <HEAD>
+      <TDOBJECT>DOKU</TDOBJECT>
+      <TDNAME>/USI/BAL_AUTO_SAVE_PCKG_SIZE</TDNAME>
+      <TDID>DE</TDID>
+      <TDSPRAS>D</TDSPRAS>
+      <TDFORM>S_DOCU_SHOW</TDFORM>
+      <TDSTYLE>S_DOCUS1</TDSTYLE>
+      <TDVERSION>00008</TDVERSION>
+      <TDLINESIZE>072</TDLINESIZE>
+     </HEAD>
+     <LINES>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;DEFINITION&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Auto-Save: Paketgröße</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;USE&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Bei Verwendung der add*-Methoden des Log-Schreibers werden neue</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>Meldungen an einen internen Puffer angehängt. Die Meldungen werden in</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>die Datenbank geschrieben, wenn die Methode SAVE aufgerufen wird.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Man kann (optional) eine Paketgröße für das automatische Speichern</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>festlegen. Der Log-Schreiber prüft nach dem Anhängen einer neuen Meldung</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>die Anzahl der Meldungen im Puffer. Wenn diese Anzahl der festgelegten</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>Paketgröße entspricht, wird eine automatische Speicherung durchgeführt.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>Der Puffer wird nach dem Speichern der Meldungen geleert.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Diese Funktion behebt zwei mögliche Probleme:</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>N1</TDFORMAT>
+       <TDLINE>Wenn man viele Nachrichten mit vielen Datencontainern zum Protokoll</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>hinzufügt, ohne explizit zu speichern, kann die automatische Speicherung</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>verwendet werden, um einen hohen Speicherverbrauch zu vermeiden.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>N1</TDFORMAT>
+       <TDLINE>Bei der Integration der API in eine Legacy-Entwicklung kann</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>möglicherweise nicht sichergestellt werden, dass der Kontrollfluss wirkl</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE>ich zu der Routine zurückkehrt, die den Aufruf der Save-Methode enthält</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>(eine Message-Anweisung in einer aufgerufenen Subroutine könnte das</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>verhindern). Das Setzen der Paketgröße auf 1 würde sicherstellen, dass</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>auch in diesem Fall keine Logmeldungen verloren gehen.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Das Feature kann deaktiviert werden, indem man die Paketgröße auf 0</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>setzt.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;DEPENDENCIES&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Kann zur Laufzeit durch /USI/BAL_LV_USER-AUTO_SAVE überschrieben werden.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>Wenn es einen entsprechenden /USI/BAL_LV_USER-Eintrag gibt und dessen</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDLINE>Flag AUTO_SAVE gesetzt ist, wird die Paketgröße auf 1 gesetzt.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;EXAMPLE&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+      </TLINE>
+     </LINES>
+    </item>
+    <item>
+     <DOKIL>
+      <ID>DE</ID>
+      <OBJECT>/USI/BAL_AUTO_SAVE_PCKG_SIZE</OBJECT>
+      <LANGU>E</LANGU>
+      <TYP>E</TYP>
+      <VERSION>0008</VERSION>
+      <MASTERLANG>X</MASTERLANG>
+      <TXTLINES>00022</TXTLINES>
+      <DOKSTATE>A</DOKSTATE>
+     </DOKIL>
+     <HEAD>
+      <TDOBJECT>DOKU</TDOBJECT>
+      <TDNAME>/USI/BAL_AUTO_SAVE_PCKG_SIZE</TDNAME>
+      <TDID>DE</TDID>
+      <TDSPRAS>E</TDSPRAS>
+      <TDFORM>S_DOCU_SHOW</TDFORM>
+      <TDSTYLE>S_DOCUS1</TDSTYLE>
+      <TDVERSION>00008</TDVERSION>
+      <TDLINESIZE>072</TDLINESIZE>
+     </HEAD>
+     <LINES>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;DEFINITION&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Auto-Save: Package Size</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;USE&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Using the add*-methods of the log-writer will append new messages to an</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> internal buffer. The messages will be written to the database when</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> method SAVE is called.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>You can (optionally) set a package size for automatic saving. The log</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> writer will check the number of messages in the buffer after appending</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> a new message. If that number is equal to your specified package size,</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> an auto-save will be performed. The buffer will be cleared after saving</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> the messages.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>This feature can be used to fix two potential issues:</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>N1</TDFORMAT>
+       <TDLINE>If you are adding lots of messages with a lot of data containers to the</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> log without saving explicitly, you can use the auto-save to avoid high</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> memory consumption.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>N1</TDFORMAT>
+       <TDLINE>When integrating the API into a legacy development you might not be able</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> to ensure, that the control flow really returns to the routine, that</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> contains the call of the save-method (A message statement in a called</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> subroutine might avoid that). Setting the package size to 1 would</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> ensure, that log messages are not lost even if that happens.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Setting package size to 0 will deactivate the auto-save-feature.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;DEPENDENCIES&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Can be overwritten by /USI/BAL_LV_USER-AUTO_SAVE at runtime. If there is</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> a relevant /USI/BAL_LV_USER-entry and if its flag AUTO_SAVE is set, the</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>=</TDFORMAT>
+       <TDLINE> package size will be set to 1.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>U1</TDFORMAT>
+       <TDLINE>&amp;EXAMPLE&amp;</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+      </TLINE>
+     </LINES>
+    </item>
+   </LONGTEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

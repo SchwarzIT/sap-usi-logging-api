@@ -42,6 +42,7 @@ CLASS /usi/cl_bal_factory DEFINITION
         !i_log_level    TYPE REF TO /usi/cl_bal_enum_log_level
       RETURNING
         VALUE(r_result) TYPE /usi/bal_data_cont_classnames .
+
     METHODS get_retention_parameters
       IMPORTING
         !i_log_object   TYPE balobj_d
@@ -49,6 +50,7 @@ CLASS /usi/cl_bal_factory DEFINITION
         !i_log_level    TYPE REF TO /usi/cl_bal_enum_log_level
       RETURNING
         VALUE(r_result) TYPE /usi/bal_retention_parameters .
+
     METHODS create_logger_internal
       IMPORTING
         !i_log_object   TYPE balobj_d
@@ -58,19 +60,30 @@ CLASS /usi/cl_bal_factory DEFINITION
         VALUE(r_result) TYPE REF TO /usi/if_bal_logger
       RAISING
         /usi/cx_bal_root .
+
     METHODS get_log_level
       IMPORTING
         !i_log_object   TYPE balobj_d
         !i_sub_object   TYPE balsubobj OPTIONAL
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level .
+
+    METHODS get_auto_save_package_size
+      IMPORTING
+        !i_log_object   TYPE balobj_d
+        !i_sub_object   TYPE balsubobj OPTIONAL
+      RETURNING
+        VALUE(r_result) TYPE /usi/bal_auto_save_pckg_size .
+
     METHODS on_log_writer_invalidation
         FOR EVENT instance_invalidated OF /usi/if_bal_logger .
 ENDCLASS.
 
 
 
-CLASS /usi/cl_bal_factory IMPLEMENTATION.
+CLASS /USI/CL_BAL_FACTORY IMPLEMENTATION.
+
+
   METHOD /usi/if_bal_factory~create_new_logger.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
           exception_text TYPE string.
@@ -131,13 +144,18 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
 
 
   METHOD create_logger_internal.
-    DATA: log_level                 TYPE REF TO /usi/cl_bal_enum_log_level,
-          log_dao                   TYPE REF TO /usi/if_bal_log_dao,
-          data_container_coll_dao   TYPE REF TO /usi/if_bal_data_cont_coll_dao,
+    DATA: auto_save_package_size    TYPE /usi/bal_auto_save_pckg_size,
           data_container_classnames TYPE /usi/bal_data_cont_classnames,
+          data_container_coll_dao   TYPE REF TO /usi/if_bal_data_cont_coll_dao,
+          log_dao                   TYPE REF TO /usi/if_bal_log_dao,
+          log_level                 TYPE REF TO /usi/cl_bal_enum_log_level,
           retention_parameters      TYPE /usi/bal_retention_parameters.
 
     log_level                 = get_log_level(
+                                  i_log_object = i_log_object
+                                  i_sub_object = i_sub_object
+                                ).
+    auto_save_package_size    = get_auto_save_package_size(
                                   i_log_object = i_log_object
                                   i_sub_object = i_sub_object
                                 ).
@@ -165,10 +183,39 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
         i_factory                  = logger_bl_factory
         i_relevant_data_containers = data_container_classnames
         i_log_level                = log_level
+        i_auto_save_pckg_size      = auto_save_package_size
         i_log_dao                  = log_dao
         i_data_cont_coll_dao       = data_container_coll_dao.
 
     SET HANDLER on_log_writer_invalidation FOR r_result.
+  ENDMETHOD.
+
+
+  METHOD get_auto_save_package_size.
+    DATA: cust_evaluator_by_log_object TYPE REF TO /usi/if_bal_ce_log_lv_by_obj,
+          cust_evaluator_by_user       TYPE REF TO /usi/if_bal_ce_log_lv_by_user,
+          package_size_by_log_object   TYPE /usi/bal_auto_save_pckg_size,
+          package_size_by_user         TYPE /usi/bal_auto_save_pckg_size.
+
+    cust_evaluator_by_log_object  = cust_eval_factory->get_log_level_by_log_object( ).
+    package_size_by_log_object    = cust_evaluator_by_log_object->get_auto_save_package_size(
+                                      i_log_object = i_log_object
+                                      i_sub_object = i_sub_object
+                                    ).
+
+    cust_evaluator_by_user  = cust_eval_factory->get_log_level_by_user( ).
+    package_size_by_user    = cust_evaluator_by_user->get_auto_save_package_size(
+                                i_log_object = i_log_object
+                                i_sub_object = i_sub_object
+                              ).
+
+    IF package_size_by_user       NE 0 AND (
+       package_size_by_log_object EQ 0 OR
+       package_size_by_log_object GT package_size_by_user ).
+      r_result = package_size_by_user.
+    ELSE.
+      r_result = package_size_by_log_object.
+    ENDIF.
   ENDMETHOD.
 
 

@@ -12,6 +12,7 @@ CLASS /usi/cl_bal_logger DEFINITION
         !i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
         !i_relevant_data_containers TYPE /usi/bal_data_cont_classnames
         !i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
+        !i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
         !i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
         !i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao.
 
@@ -23,8 +24,8 @@ CLASS /usi/cl_bal_logger DEFINITION
           log_dao                       TYPE REF TO /usi/if_bal_log_dao,
           data_container_collection_dao TYPE REF TO /usi/if_bal_data_cont_coll_dao,
           relevant_data_containers      TYPE        /usi/bal_data_cont_classnames,
-          state                         TYPE REF TO /usi/if_bal_logger_state.
-
+          state                         TYPE REF TO /usi/if_bal_logger_state,
+          auto_save_pckg_size           TYPE /usi/bal_auto_save_pckg_size.
 ENDCLASS.
 
 
@@ -36,6 +37,7 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
     log_dao                       = i_log_dao.
     data_container_collection_dao = i_data_cont_coll_dao.
     relevant_data_containers      = i_relevant_data_containers.
+    auto_save_pckg_size           = i_auto_save_pckg_size.
 
     " Set initial state: 'Not claimed'
     CREATE OBJECT state TYPE /usi/cl_bal_lstate_not_claimed
@@ -136,6 +138,7 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
           EXPORTING
             i_factory                  = factory
             i_log_level                = log_level
+            i_auto_save_pckg_size      = auto_save_pckg_size
             i_log_dao                  = log_dao
             i_data_cont_coll_dao       = data_container_collection_dao
             i_token                    = r_result

@@ -9,6 +9,7 @@ INTERFACE /usi/if_bal_cd_log_lv_by_user
       log_object TYPE balobj_d,
       sub_object TYPE balsubobj,
       log_level  TYPE /usi/bal_log_level,
+      auto_save  TYPE /usi/bal_auto_save_immediately,
     END   OF ty_record .
   TYPES:
     ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
