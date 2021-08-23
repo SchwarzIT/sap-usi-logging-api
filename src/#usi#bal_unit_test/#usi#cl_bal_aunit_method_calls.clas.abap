@@ -17,29 +17,35 @@ public section.
 
   data METHOD_CALLS type TY_METHOD_CALLS read-only .
 
+  methods ASSERT_METHOD_CALLED_N_TIMES
+    importing
+      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME
+      !I_EXPECTED_NUMBER_OF_CALLS type INT4 .
+  methods ASSERT_METHOD_WAS_CALLED
+    importing
+      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME .
+  methods ASSERT_METHOD_WAS_NOT_CALLED
+    importing
+      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME .
+  methods GET_METHOD_CALLS
+    importing
+      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME
+    returning
+      value(R_RESULT) type TY_METHOD_CALLS .
   methods INSERT_METHOD_CALL
     importing
       !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME
     returning
       value(R_RESULT) type ref to /USI/CL_BAL_AUNIT_METHOD_CALL .
-  methods ASSERT_METHOD_WAS_CALLED
-    importing
-      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME .
-  methods ASSERT_METHOD_CALLED_N_TIMES
+  methods RESET_METHOD_CALLS .
+  PROTECTED SECTION.
+private section.
+
+  methods WAS_METHOD_CALLED
     importing
       !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME
-      !I_EXPECTED_NUMBER_OF_CALLS type INT4 .
-  methods ASSERT_METHOD_WAS_NOT_CALLED
-    importing
-      !I_METHOD_NAME type /USI/CL_BAL_AUNIT_METHOD_CALL=>TY_METHOD_NAME .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
-    METHODS was_method_called
-      IMPORTING
-        i_method_name   TYPE /usi/cl_bal_aunit_method_call=>ty_method_name
-      RETURNING
-        VALUE(r_result) TYPE abap_bool.
-
+    returning
+      value(R_RESULT) type ABAP_BOOL .
 ENDCLASS.
 
 
@@ -82,6 +88,15 @@ CLASS /USI/CL_BAL_AUNIT_METHOD_CALLS IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_method_calls.
+    FIELD-SYMBOLS <method_call> TYPE ty_method_call.
+
+    LOOP AT method_calls ASSIGNING <method_call> WHERE method_name EQ i_method_name.
+      INSERT <method_call> INTO TABLE r_result.
+    ENDLOOP.
+  ENDMETHOD.
+
+
   METHOD insert_method_call.
     DATA method_call TYPE ty_method_call.
 
@@ -92,6 +107,11 @@ CLASS /USI/CL_BAL_AUNIT_METHOD_CALLS IMPLEMENTATION.
     method_call-method_name = r_result->method_name.
     method_call-method_call = r_result.
     INSERT method_call INTO TABLE method_calls.
+  ENDMETHOD.
+
+
+  METHOD reset_method_calls.
+    CLEAR method_calls.
   ENDMETHOD.
 
 

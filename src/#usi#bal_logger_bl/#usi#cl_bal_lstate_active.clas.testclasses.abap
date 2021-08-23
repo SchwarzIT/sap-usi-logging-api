@@ -62,7 +62,13 @@ CLASS lcl_data_cont_coll_dao_spy DEFINITION FINAL FOR TESTING.
         get_collection                TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'GET_COLLECTION',
         insert_collection_into_buffer TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'INSERT_COLLECTION_INTO_BUFFER',
         save_buffer_to_db             TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'SAVE_BUFFER_TO_DB',
-      END   OF method_names.
+      END   OF method_names,
+
+      BEGIN OF parameter_names,
+        log_number            TYPE /usi/cl_bal_aunit_method_call=>ty_parameter_name VALUE 'I_LOG_NUMBER',
+        message_number        TYPE /usi/cl_bal_aunit_method_call=>ty_parameter_name VALUE 'I_MESSAGE_NUMBER',
+        serialized_collection TYPE /usi/cl_bal_aunit_method_call=>ty_parameter_name VALUE 'I_SERIALIZED_COLLECTION',
+      END   OF parameter_names.
 
     DATA: method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
 
@@ -1970,5 +1976,109 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
+  ENDMETHOD.
+ENDCLASS.
+
+*--------------------------------------------------------------------*
+* Unit test: Auto-Save
+*--------------------------------------------------------------------*
+CLASS lcl_unit_test_multiple_saves DEFINITION FINAL FOR TESTING.
+  "#AU Risk_Level Harmless
+  "#AU Duration   Short
+  PRIVATE SECTION.
+    DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
+          dc_coll_dao_spy TYPE REF TO lcl_data_cont_coll_dao_spy,
+          log_dao_spy     TYPE REF TO lcl_dao_spy,
+          token           TYPE REF TO /usi/if_bal_token.
+
+    METHODS setup.
+    METHODS append_and_save_message.
+    METHODS get_last_message_number
+      RETURNING
+        VALUE(r_result) TYPE /usi/bal_message_number.
+
+    METHODS test_message_number_is_kept FOR TESTING.
+ENDCLASS.
+
+CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
+  METHOD setup.
+    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
+          data_container_classnames TYPE /usi/bal_data_cont_classnames,
+          data_container_classname  TYPE /usi/bal_data_cont_classname,
+          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory.
+
+    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
+    token             = logger_bl_factory->get_token( ).
+    CREATE OBJECT log_dao_spy.
+    CREATE OBJECT dc_coll_dao_spy.
+
+    data_container_classname = /usi/cl_bal_dc_src_pos_caller=>get_classname( ).
+    INSERT data_container_classname INTO TABLE data_container_classnames.
+
+    CREATE OBJECT cut TYPE /usi/cl_bal_lstate_active
+      EXPORTING
+        i_factory                  = logger_bl_factory
+        i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
+        i_log_dao                  = log_dao_spy
+        i_data_cont_coll_dao       = dc_coll_dao_spy
+        i_token                    = token
+        i_relevant_data_containers = data_container_classnames.
+  ENDMETHOD.
+
+  METHOD test_message_number_is_kept.
+    DATA: expected_message_number TYPE /usi/bal_message_number,
+          actual_message_number   TYPE /usi/bal_message_number.
+
+    DO 2 TIMES.
+      expected_message_number = sy-index.
+
+      append_and_save_message( ).
+      actual_message_number = get_last_message_number( ).
+
+      cl_aunit_assert=>assert_equals( exp = expected_message_number
+                                      act = actual_message_number
+                                      msg = 'Unexpected message number!' ).
+    ENDDO.
+  ENDMETHOD.
+
+  METHOD append_and_save_message.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    TRY.
+        cut->add_free_text( i_problem_class   = /usi/cl_bal_enum_problem_class=>very_important
+                            i_detail_level    = /usi/cl_bal_enum_detail_level=>detail_level_1
+                            i_message_type    = /usi/cl_bal_enum_message_type=>error
+                            i_free_text       = `Just a test` ).
+        cut->save( token ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD get_last_message_number.
+    DATA: method_calls   TYPE /usi/cl_bal_aunit_method_calls=>ty_method_calls,
+          message_number TYPE /usi/bal_message_number.
+    FIELD-SYMBOLS: <method_call> TYPE /usi/cl_bal_aunit_method_calls=>ty_method_call.
+
+    method_calls = dc_coll_dao_spy->method_calls->get_method_calls(
+                     i_method_name = dc_coll_dao_spy->method_names-insert_collection_into_buffer
+                   ).
+    cl_aunit_assert=>assert_not_initial( act = method_calls
+                                         msg = 'Method was not called!' ).
+
+    LOOP AT method_calls ASSIGNING <method_call>.
+      <method_call>-method_call->get_parameter(
+        EXPORTING
+          i_parameter_name  = dc_coll_dao_spy->parameter_names-message_number
+        IMPORTING
+          e_parameter_value = message_number
+      ).
+
+      IF message_number GT r_result.
+        r_result = message_number.
+      ENDIF.
+    ENDLOOP.
   ENDMETHOD.
 ENDCLASS.

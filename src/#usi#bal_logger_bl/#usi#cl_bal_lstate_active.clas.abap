@@ -111,7 +111,7 @@ ENDCLASS.
 
 
 
-CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
+CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_logger_state~add_exception.
@@ -273,9 +273,9 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
     TRY.
         log_number = save_log( ).
         save_data_container_colls( log_number ).
-        CLEAR messages.
+        CLEAR messages-message_buffer.
       CLEANUP.
-        CLEAR messages.
+        CLEAR messages-message_buffer.
     ENDTRY.
   ENDMETHOD.
 
