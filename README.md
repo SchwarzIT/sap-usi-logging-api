@@ -22,5 +22,5 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ![alt text](https://github.com/SchwarzIT/sap-usi-logging-api/blob/media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers")
 
 # Dependencies
-https://github.com/SchwarzIT/sap-usi-authority-check
+https://github.com/SchwarzIT/sap-usi-authority-check  
 https://github.com/SchwarzIT/sap-usi-exception
