@@ -1,3 +1,5 @@
+[![SIT](https://img.shields.io/badge/SIT-awesome-blueviolet.svg)](https://it.schwarz)
+
 # UNDER CONSTRUCTION
 A wiki will soon be created. Until then this document will only cover the most vital topics.
 
