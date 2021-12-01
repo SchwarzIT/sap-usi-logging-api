@@ -1,10 +1,11 @@
 [![SIT](https://img.shields.io/badge/SIT-About%20us-%236e1e6e)](https://it.schwarz)
 [![USI](https://img.shields.io/badge/USI-More%20Software-blue)](https://github.com/SchwarzIT/sap-usi)
 
-# UNDER CONSTRUCTION
+# USI Logging API
+
+## UNDER CONSTRUCTION
 A wiki will soon be created. Until then this document will only cover the most vital topics.
 
-# USI Logging API
 ## Purpose
 This reusable component allows the creation of complete, comprehensive logs with almost no effort and extends SAP's standard logging API by powerful features.
 
