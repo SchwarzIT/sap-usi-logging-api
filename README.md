@@ -4,7 +4,7 @@
 # UNDER CONSTRUCTION
 A wiki will soon be created. Until then this document will only cover the most vital topics.
 
-# sap-usi-logging
+# USI Logging API
 This reusable component allows the creation of complete, comprehensive logs with almost no effort and extends SAP's standard logging API by powerful features.
 
 Logging error situations instead of debugging them can:
