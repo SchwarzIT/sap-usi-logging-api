@@ -27,71 +27,7 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ![alt text](https://github.com/SchwarzIT/sap-usi-logging-api/blob/media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers")
 
 ## Installation Guide
-### Dependencies
-The logging API is using the following components. Make sure, these components are installed in your system before importing the logging API.  
-https://github.com/SchwarzIT/sap-usi-authority-check  
-https://github.com/SchwarzIT/sap-usi-exception
-
-### Integrate the deletion logic
-The API can store so-called "data containers" for each logged message. Data containers can store virtually any kind of data, you might need to analyze an issue (e.g. the callstack, internal tables, etc.). Their data will be saved in the database table /USI/BAL_DATA. This data becomes obsolete when a log is deleted, so it must be deleted as well.
-
-The API comes with a function module, that will get the job done, but you need to integrate this function into the SAP standard deletion logic for application logs.
-
-The custom delete function must be called from the form DB_DELETE_CALLBACK of function group SBAL_DB. There are two possible ways to do this.
-
-#### Option #1: Enhancement(s)
-You could create an implicit enhancement at the very beginning of the form and copy and paste the coding into that implicit enhancement. Depending on your release, the system might or might nor ask you, which master program should be enhanced. If it does, you need to create one enhancement for each master program.
-```ABAP
-*----------------------------------------------------------------------*
-***INCLUDE LSBAL_DBF07 .
-*----------------------------------------------------------------------*
-*&---------------------------------------------------------------------*
-*&      Form  DB_DELETE_CALLBACK
-*&---------------------------------------------------------------------*
-FORM db_delete_callback
-       USING
-        i_t_logs_to_delete       TYPE balhdr_t
-        i_in_update_task         TYPE boolean.
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""$"$\SE:(1) Form DB_DELETE_CALLBACK, Start
-*$*$-Start: (1)---------------------------------------------------------------------------------$*$*
-ENHANCEMENT 1  ZBAL_DELETE_OBSOLETE_DATA_01.    "active version
-  IF i_in_update_task EQ abap_true.
-    CALL FUNCTION '/USI/BAL_DELETE_CUSTOM_DATA' IN UPDATE TASK
-      EXPORTING
-        i_log_headers = i_t_logs_to_delete.
-  ELSE.
-    CALL FUNCTION '/USI/BAL_DELETE_CUSTOM_DATA'
-      EXPORTING
-        i_log_headers = i_t_logs_to_delete.
-  ENDIF.
-ENDENHANCEMENT.
-*$*$-End:   (1)---------------------------------------------------------------------------------$*$*
- 
-  TYPES:
-    BEGIN OF bal_s_object_lognumber,
-```
-The advantage of this method is, that you do not need a modification.
-
-The disadvantage ist, that implicit enhancements are bound to exaclty one master program and the include might be used in more than one master program (Depends on your release). Failing to create one enhancement for every master program might result in obsolete additional data not being deleted.
-
-#### Option #2: Modification
-You can add the same code at the same position using a small modification.
-
-The advantage of this method is, that modifications are bound to the include itself and will therefore become effective in every master program that calls this form routine. This eliminates the risk of missing a master program but comes for the price of a modification.
-
-#### Desaster recovery
-Forgetting to implement one of the two options before using the logging API might result in ridiculous amounts of obsolete data laying around in table /USI/BAL_DATA. As we are talking about binary data, that might as well contain data of internal tables, we might be talking about hundrets of gigabytes of data.
-
-You can get rid of this obyolete data using the deletion report **/USI/BAL_DELETE_ORPHAN_LOG_DAT**. However, this is not the recommended solution, as deleting data containers using the enhancements or the modification is far more efficient.
-
-Using the report is more like a last resort strategy to handle situations, that should never have occured in the first place.
-
-### Schedule periodic jobs
-
-| Report                        | Priority | Description |
-| ----------------------------- | -------- | ----------- |
-| SBAL_DELETE                   | **HIGH** | SAP standard deletion report for outdated logs. If you do not have a custom implementation in place, you will have to schedule this report on a regular basis. Failing to do so will result in ridiculous amounts of obsolete data piling up in your system. Issues like e.g. full table spaces will occur over time. Chances are very likely, that this job has already been scheduled. |
-| /USI/BAL_DELETE_OUTDATED_CUST | Low      | The report deletes outdated customizing from table /usi/bal_lv_user (User specific log levels). As the customizing entries are created manually during an error analysis, the amount of data should be fairly small. Failing to schedule this report should have no negative impacts on the system. This is more of a convenience report, that will help you to keep your customizing clean and tidy by automatically removing entries, that are no longer needed anyway. |
+[Please refer to the wiki.](https://github.com/SchwarzIT/sap-usi-logging-api/wiki/Installation-Guide)
 
 ## How to use it
 ### Customizing
