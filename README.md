@@ -27,7 +27,7 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ![alt text](https://github.com/SchwarzIT/sap-usi-logging-api/blob/media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers")
 
 ## Installation Guide
-[Please refer to the wiki.](https://github.com/SchwarzIT/sap-usi-logging-api/wiki/Installation-Guide)
+[Please refer to the wiki.](https://github.com/SchwarzIT/sap-usi-logging-api/wiki)
 
 ## How to use it
 ### Customizing
