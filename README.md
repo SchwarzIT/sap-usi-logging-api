@@ -2,6 +2,7 @@
 [WIKI]:           ../../wiki
 [INSTALLATION]:   ../../wiki/Installation-Guide
 [CONTRIBUTING]:   ./docs/CONTRIBUTING.md
+[SYSTEM_SETUP]:   https://github.com/SchwarzIT/sap-usi#getting-started
 
 <!-- Images used on this page (Declaration) -->
 [SLG1]: ../media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
@@ -34,7 +35,8 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ![alt text][SLG1]
 
 ## Installation Guide
-Please refer to the [installation guide][INSTALLATION] in our wiki.
+Before starting, the system must be [set up for USI][SYSTEM_SETUP].   
+After that please refer to the [installation guide][INSTALLATION] in our wiki.
 
 ## How to contribute
 Please check our [contribution guidelines][CONTRIBUTING] to learn more about this topic.
