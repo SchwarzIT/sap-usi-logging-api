@@ -1,5 +1,6 @@
 <!-- Links used on this page (Declaration) -->
 [USI_CONTRIBUTING]: https://github.com/SchwarzIT/sap-usi/blob/main/docs/CONTRIBUTING.md
+[README]:           ../README.md
 
 # How to contribute
 ## Inherited rules
@@ -7,3 +8,6 @@ The rules listed in the [CONTRIBUTING.md of our main repository][USI_CONTRIBUTIN
 This file adds some project specific rules to that baseline.
 
 ## Please use "Oldschool ABAP"
+As mentionned in the [README.md][README] this project is intended to be compatible with 7.00 and should run on "virtually any SAP system".
+
+This means that new functions introduced with ABAP 7.4 are off limits for this project.
