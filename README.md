@@ -4,7 +4,7 @@
 [CONTRIBUTING]:   ./docs/CONTRIBUTING.md
 
 <!-- Images used on this page (Declaration) -->
-[SLG1]: https://github.com/SchwarzIT/sap-usi-logging-api/blob/media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
+[SLG1]: ../media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
 
 
 
