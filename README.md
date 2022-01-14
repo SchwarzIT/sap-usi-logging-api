@@ -1,8 +1,14 @@
-[![SIT](https://img.shields.io/badge/SIT-About%20us-%236e1e6e)](https://it.schwarz)
-[![USI](https://img.shields.io/badge/USI-More%20Software-blue)](https://github.com/SchwarzIT/sap-usi)
+<!-- Links used on this page (Declaration) -->
+[WIKI]: ../../wiki
 
 <!-- Images used on this page (Declaration) -->
 [SLG1]: https://github.com/SchwarzIT/sap-usi-logging-api/blob/media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
+
+
+
+
+[![SIT](https://img.shields.io/badge/SIT-About%20us-%236e1e6e)](https://it.schwarz)
+[![USI](https://img.shields.io/badge/USI-More%20Software-blue)](https://github.com/SchwarzIT/sap-usi)
 
 # USI Logging API
 ## Purpose
@@ -26,4 +32,4 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ![alt text][SLG1]
 
 ## Further information
-[Please refer to the wiki.](https://github.com/SchwarzIT/sap-usi-logging-api/wiki)
+[Please refer to the wiki.][WIKI]
