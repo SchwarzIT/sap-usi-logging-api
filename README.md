@@ -32,8 +32,8 @@ The solution is:
 The solution enhances the capabilities of the SAP standard by so-called data containers, that can be used to attach virtually any type of data to log messages making them even more valuable. A variety of data containers for common use cases already exists, but new containers can easily be added whenever needed. The screenshot below shows how seamlessly they are integrated into the SAP standard. Messages with data containers have a detail button that opens a popup and the data can be accessed directly from SLG1.
 ![alt text][SLG1]
 
-## How to contribute
-Please check our [contribution guidelines][CONTRIBUTING] to learn more about this topic.
-
 ## Further information
 [Please refer to the wiki.][WIKI]
+
+## How to contribute
+Please check our [contribution guidelines][CONTRIBUTING] to learn more about this topic.
