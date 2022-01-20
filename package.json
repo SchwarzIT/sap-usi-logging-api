@@ -1,4 +1,8 @@
 {
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SchwarzIT/sap-usi-logging-api.git"
+  },
   "devDependencies": {
     "@SchwarzIT/sap-usi-authority-check": "^1.0.0",
     "SchwarzIT/sap-usi-authority-check": "^1.0.0",
