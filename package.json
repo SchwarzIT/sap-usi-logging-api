@@ -1,14 +1,15 @@
 {
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SchwarzIT/sap-usi-logging-api.git"
-  },
   "dependencies": {
+    "@/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    "/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+
     "@SchwarzIT/sap-usi-authority-check": "^1.0.0",
     "SchwarzIT/sap-usi-authority-check": "^1.0.0",
-    "/SchwarzIT/sap-usi-authority-check": "^1.0.0",
-    "sap-usi-authority-check": "^1.0.0",
-    "@SchwarzIT/sap-usi-exception": "^1.0.0",
-    "sap-usi-authority-check/releases/tag/v1.0.0": "^1.0.0"
+
+    "@/sap-usi-authority-check": "^1.0.0",
+    "/sap-usi-authority-check": "^1.0.0",
+
+    "@sap-usi-authority-check": "^1.0.0",
+    "sap-usi-authority-check": "^1.0.0"
   }
 }
