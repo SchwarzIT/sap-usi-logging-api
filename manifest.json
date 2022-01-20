@@ -1,6 +1,0 @@
-{
-  "required": [
-    "github.com/SchwarzIT/sap-usi-authority-check",
-    "github.com/SchwarzIT/sap-usi-exception",
-  ]
-}
