@@ -1,6 +1,6 @@
 {
-  "required": [
-    "github.com/SchwarzIT/sap-usi-authority-check",
-    "github.com/SchwarzIT/sap-usi-exception",
-  ]
+  "dependencies": {
+    "sap-usi-authority-check": "https://github.com/SchwarzIT/sap-usi-authority-check.git",
+    "sap-usi-exception": "https://github.com/SchwarzIT/sap-usi-exception.git"
+  }
 }
