@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@sap-usi-authority-check": "https://github.com/SchwarzIT/sap-usi-authority-check.git",
+    "sap-usi-authority-check": "https://github.com/SchwarzIT/sap-usi-authority-check",
     "sap-usi-exception": "https://github.com/SchwarzIT/sap-usi-exception.git"
   }
 }
