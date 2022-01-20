@@ -1,7 +1,9 @@
 {
   "devDependencies": {
     "@SchwarzIT/sap-usi-authority-check": "^1.0.0",
-    "@SchwarzIT/sap-usi-exception": "^1.0.0",
-    "SchwarzIT/sap-usi-authority-check": "^1.0.0"
+    "SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    "/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    "sap-usi-authority-check": "^1.0.0",
+    "@SchwarzIT/sap-usi-exception": "^1.0.0"
   }
 }
