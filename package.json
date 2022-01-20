@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "@https://github.com/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    "https://github.com/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+
+    "@github.com/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    "github.com/SchwarzIT/sap-usi-authority-check": "^1.0.0",
+    
     "@/SchwarzIT/sap-usi-authority-check": "^1.0.0",
     "/SchwarzIT/sap-usi-authority-check": "^1.0.0",
 
