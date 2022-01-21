@@ -6,6 +6,11 @@
     <NAMESPACE>/USI/</NAMESPACE>
     <REPLICENSE>07181429931319159598</REPLICENSE>
    </NSPC>
+   <NSPC_TEXT>
+    <SPRAS>E</SPRAS>
+    <DESCRIPTN>Unternehmensgruppe Schwarz - IT</DESCRIPTN>
+    <OWNER>Schwarz IT</OWNER>
+   </NSPC_TEXT>
    <I18N_LANGS>
     <LANGU>D</LANGU>
    </I18N_LANGS>
@@ -13,7 +18,7 @@
     <item>
      <SPRAS>D</SPRAS>
      <DESCRIPTN>Unternehmensgruppe Schwarz - IT</DESCRIPTN>
-     <OWNER>SITIOS</OWNER>
+     <OWNER>Schwarz IT</OWNER>
     </item>
    </NSPC_TEXTS>
   </asx:values>
