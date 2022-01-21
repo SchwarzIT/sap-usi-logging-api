@@ -1,7 +1,5 @@
 *---------------------------------------------------------------------*
 *    view related data declarations
-*   generation date: 25.11.2020 at 10:57:46
-*   view maintenance generator version: #001407#
 *---------------------------------------------------------------------*
 *...processing: /USI/BAL_CX_MAP.................................*
 DATA:  BEGIN OF STATUS_/USI/BAL_CX_MAP               .   "state vector

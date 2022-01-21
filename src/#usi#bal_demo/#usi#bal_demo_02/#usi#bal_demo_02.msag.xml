@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Messages for DEMO 02</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>No data has been found for this selection.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>&amp;1 tasks were found.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Task &quot;&amp;1&quot; was added with ID &amp;2.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Task &quot;&amp;1&quot; would be redundant.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>010</MSGNR>
+     <TEXT>Task &amp;1 already exists.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>Task &amp;1 has been created.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>No Tasks found for Text &quot;&amp;1&quot;.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>To Do List has no tasks.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>014</MSGNR>
+     <TEXT>Task &amp;1 does not exist.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>Task &amp;1 has been deleted.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Task &amp;1 has been updated.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>017</MSGNR>
+     <TEXT>Task &amp;1 has been found.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>020</MSGNR>
+     <TEXT>Exactly one line must be selected for this action.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL_DEMO_02</ARBGB>
+     <MSGNR>030</MSGNR>
+     <TEXT>Trace-Message: Log started by main report</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

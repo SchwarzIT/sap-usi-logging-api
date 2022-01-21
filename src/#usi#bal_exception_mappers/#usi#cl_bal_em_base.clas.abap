@@ -1,19 +1,16 @@
-CLASS /usi/cl_bal_em_base DEFINITION
-  PUBLIC
-  ABSTRACT
-  CREATE PUBLIC .
+class /USI/CL_BAL_EM_BASE definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES /usi/if_bal_exception_mapper
-      ABSTRACT METHODS get_t100_message .
+  interfaces /USI/IF_BAL_EXCEPTION_MAPPER .
 
-    METHODS constructor
-      IMPORTING
-        !i_exception TYPE REF TO cx_root
-      RAISING
-        /usi/cx_bal_root .
-
+  methods CONSTRUCTOR
+    importing
+      !I_EXCEPTION type ref to CX_ROOT
+    raising
+      /USI/CX_BAL_ROOT .
   PROTECTED SECTION.
 
     TYPES ty_object_references TYPE STANDARD TABLE OF REF TO object
@@ -58,6 +55,17 @@ CLASS /USI/CL_BAL_EM_BASE IMPLEMENTATION.
         i_target_data_cont_coll = i_target_data_cont_coll
       ).
     ENDLOOP.
+  ENDMETHOD.
+
+
+  METHOD /usi/if_bal_exception_mapper~get_t100_message.
+    DATA text_getter TYPE REF TO /usi/cl_exception_text_getter.
+
+    CREATE OBJECT text_getter
+      EXPORTING
+        i_exception = exception.
+
+    r_result = text_getter->get_text_as_symsg( ).
   ENDMETHOD.
 
 

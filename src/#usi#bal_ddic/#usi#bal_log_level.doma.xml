@@ -13,49 +13,42 @@
    </DD01V>
    <DD07V_TAB>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0001</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>0</DOMVALUE_L>
      <DDTEXT>Nothing (Log completely deactivated)</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0002</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>1</DOMVALUE_L>
      <DDTEXT>Problem class at least &apos;Very important&apos;</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0003</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>2</DOMVALUE_L>
      <DDTEXT>Problem class at least &apos;Important&apos;</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0004</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>3</DOMVALUE_L>
      <DDTEXT>Problem class at least &apos;Medium&apos;</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0005</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>4</DOMVALUE_L>
      <DDTEXT>Problem class at least &apos;Additional Information&apos;</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0006</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>5</DOMVALUE_L>
      <DDTEXT>Problem class at least &apos;Other&apos; (All problem classes)</DDTEXT>
     </DD07V>
     <DD07V>
-     <DOMNAME>/USI/BAL_LOG_LEVEL</DOMNAME>
      <VALPOS>0007</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>6</DOMVALUE_L>

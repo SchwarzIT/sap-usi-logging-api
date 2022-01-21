@@ -69,11 +69,6 @@
      </TEXTPOOL>
     </item>
    </I18N_TPOOL>
-   <I18N_LINES>
-    <item>
-     <LANGUAGE>D</LANGUAGE>
-    </item>
-   </I18N_LINES>
    <DESCRIPTIONS>
     <SEOCOMPOTX>
      <CLSNAME>/USI/CL_BAL_DC_ITAB</CLSNAME>

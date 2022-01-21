@@ -638,3 +638,74 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
     ).
   ENDMETHOD.
 ENDCLASS.
+
+*--------------------------------------------------------------------*
+* Unit test: Type conversions
+*--------------------------------------------------------------------*
+CLASS lcl_unit_test_type_conversions DEFINITION FINAL CREATE PUBLIC FOR TESTING.
+  "#AU Risk_Level Harmless
+  "#AU Duration   Short
+  PRIVATE SECTION.
+    DATA: cut   TYPE REF TO /usi/if_bal_logger,
+          token TYPE REF TO /usi/if_bal_token.
+
+    METHODS setup.
+    METHODS teardown.
+
+    METHODS test_add_free_text FOR TESTING.
+    METHODS test_add_message FOR TESTING.
+ENDCLASS.
+
+CLASS lcl_unit_test_type_conversions IMPLEMENTATION.
+  METHOD setup.
+    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
+          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
+          dao_mock                 TYPE REF TO lcl_log_writer_dao_mock,
+          dc_coll_dao_mock         TYPE REF TO lcl_data_cont_coll_dao_mock,
+          relevant_data_containers TYPE /usi/bal_data_cont_classnames.
+
+    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
+    CREATE OBJECT dao_mock.
+    CREATE OBJECT dc_coll_dao_mock.
+
+    CREATE OBJECT cut TYPE /usi/cl_bal_logger
+      EXPORTING
+        i_factory                  = logger_bl_factory
+        i_relevant_data_containers = relevant_data_containers
+        i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
+        i_log_dao                  = dao_mock
+        i_data_cont_coll_dao       = dc_coll_dao_mock.
+
+    token = cut->claim_ownership( ).
+  ENDMETHOD.
+
+  METHOD teardown.
+    cut->free( token ).
+  ENDMETHOD.
+
+  METHOD test_add_free_text.
+    CONSTANTS the_text TYPE c LENGTH 50 VALUE 'TEST'.
+
+    " Logger uses type CSEQUENCE, the state uses CHAR200.
+    "   => Explicit conversion needed!
+    cut->add_free_text( i_free_text = the_text ).
+  ENDMETHOD.
+
+  METHOD test_add_message.
+    CONSTANTS: message_variable_1 TYPE i      VALUE 42,
+               message_variable_2 TYPE char10 VALUE 'Test',
+               message_variable_3 TYPE numc4  VALUE 7,
+               message_variable_4 TYPE string VALUE `Another test`.
+
+    " Logger uses type SIMPLE, the state uses SYMSGV.
+    "   => Explicit conversion needed!
+    cut->add_message( i_message_class      = '/USI/BAL'
+                      i_message_number     = '000'
+                      i_message_variable_1 = message_variable_1
+                      i_message_variable_2 = message_variable_2
+                      i_message_variable_3 = message_variable_3
+                      i_message_variable_4 = message_variable_4 ).
+  ENDMETHOD.
+ENDCLASS.

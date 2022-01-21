@@ -50,7 +50,7 @@ ENDCLASS.
 
 
 
-CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
+CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_ce_cx_mapper~get_exception_mapper_classname.
@@ -61,7 +61,7 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname.
-    CONSTANTS: fallback_mapper_class TYPE /usi/bal_exception_mapper VALUE '/USI/CL_BAL_EM_OTR'.
+    CONSTANTS: fallback_mapper_class TYPE /usi/bal_exception_mapper VALUE '/USI/CL_BAL_EM_BASE'.
     r_result = fallback_mapper_class.
   ENDMETHOD.
 

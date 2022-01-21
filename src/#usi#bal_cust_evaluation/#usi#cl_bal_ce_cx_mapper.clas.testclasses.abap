@@ -127,37 +127,12 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     CLEAR customizing_records.
     customizing_record-exception_class = '/USI/CX_BAL_NOT_FOUND'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_T100'.
+    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
     assert_expected_result(
       i_customizing     = customizing_records
       i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_T100'
-    ).
-
-    CLEAR customizing_records.
-    customizing_record-exception_class = '/USI/CX_BAL_NOT_FOUND'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_OTR'.
-    INSERT customizing_record INTO TABLE customizing_records.
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_OTR'
-    ).
-
-
-    CLEAR customizing_records.
-    customizing_record-exception_class = '/USI/CX_EXCEPTION'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_T100'.
-    INSERT customizing_record INTO TABLE customizing_records.
-    customizing_record-exception_class = 'IF_T100_MESSAGE'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_OTR'.
-    INSERT customizing_record INTO TABLE customizing_records.
-
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_T100'
+      i_expected_result = '/USI/CL_BAL_EM_BASE'
     ).
   ENDMETHOD.
 
@@ -172,16 +147,13 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     ENDTRY.
 
     CLEAR customizing_records.
-    customizing_record-exception_class = 'CX_STATIC_CHECK'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_OTR'.
-    INSERT customizing_record INTO TABLE customizing_records.
     customizing_record-exception_class = 'IF_T100_MESSAGE'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_T100'.
+    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
     assert_expected_result(
       i_customizing     = customizing_records
       i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_T100'
+      i_expected_result = '/USI/CL_BAL_EM_BASE'
     ).
   ENDMETHOD.
 
@@ -197,15 +169,12 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     CLEAR customizing_records.
     customizing_record-exception_class = '/USI/CX_BAL_ROOT'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_T100'.
-    INSERT customizing_record INTO TABLE customizing_records.
-    customizing_record-exception_class = '/USI/CX_EXCEPTION'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_OTR'.
+    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
     assert_expected_result(
       i_customizing     = customizing_records
       i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_T100'
+      i_expected_result = '/USI/CL_BAL_EM_BASE'
     ).
   ENDMETHOD.
 

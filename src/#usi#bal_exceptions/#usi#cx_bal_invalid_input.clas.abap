@@ -32,6 +32,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of DUPLICATE_BUFFER_ENTRY .
+  constants:
+    begin of LOG_IS_EMPTY,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '014',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of LOG_IS_EMPTY .
 
   methods CONSTRUCTOR
     importing

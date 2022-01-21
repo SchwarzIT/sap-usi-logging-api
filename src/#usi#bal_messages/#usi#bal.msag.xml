@@ -77,6 +77,12 @@
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>014</MSGNR>
+     <TEXT>The log is empty and will not be saved. Please check the log level.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
      <MSGNR>017</MSGNR>
      <TEXT>Unexpected error, during external API call!</TEXT>
     </T100>
@@ -194,6 +200,11 @@
      <SPRSL>D</SPRSL>
      <MSGNR>013</MSGNR>
      <TEXT>Das Log muss vorher gespeichert werden!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>014</MSGNR>
+     <TEXT>Das Log ist leer und wird nicht gespeichert. Bitte das Loglevel prüfen.</TEXT>
     </item>
     <item>
      <SPRSL>D</SPRSL>

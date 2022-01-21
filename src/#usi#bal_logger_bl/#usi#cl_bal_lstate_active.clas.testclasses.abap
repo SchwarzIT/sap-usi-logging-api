@@ -468,9 +468,14 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
 
     TRY.
         cut->save( token ).
-        cut->free( token ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+        cl_aunit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
+      CATCH /usi/cx_bal_root.
+        " This was supposed to happen, as the log was empty
+        TRY.
+            cut->free( token ).
+          CATCH /usi/cx_bal_root INTO unexpected_exception.
+            /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+        ENDTRY.
     ENDTRY.
 
     " Log-DAO (Saves the log)
@@ -491,8 +496,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_save_multiple_times.
-    DATA: unexpected_exception   TYPE REF TO /usi/cx_bal_root,
-          actual_number_of_calls TYPE int4.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_free_text(
@@ -501,9 +505,14 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
           i_message_type  = /usi/cl_bal_enum_message_type=>error
           i_free_text     = `Test`
         ).
+        cut->save( token ).
 
-        cut->save( token ).
-        cut->save( token ).
+        TRY.
+            cut->save( token ).
+            cl_aunit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
+          CATCH /usi/cx_bal_root.
+            " This was supposed to happen, as there were no unsaved changes
+        ENDTRY.
 
         log_dao_spy->method_calls->assert_method_called_n_times(
           i_method_name              = log_dao_spy->method_names-add_message
@@ -2080,5 +2089,88 @@ CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
         r_result = message_number.
       ENDIF.
     ENDLOOP.
+  ENDMETHOD.
+ENDCLASS.
+
+*--------------------------------------------------------------------*
+* Unit test: Test consistency checks
+*--------------------------------------------------------------------*
+CLASS lcl_unit_test_consistency DEFINITION FINAL FOR TESTING.
+  "#AU Risk_Level Harmless
+  "#AU Duration   Short
+  PRIVATE SECTION.
+    CONSTANTS: BEGIN OF some_random_message,
+                 msgid TYPE symsgid VALUE '/USI/BAL',
+                 msgno TYPE symsgno VALUE '005',
+               END   OF some_random_message.
+
+    DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
+          dc_coll_dao_spy TYPE REF TO lcl_data_cont_coll_dao_spy,
+          log_dao_spy     TYPE REF TO lcl_dao_spy,
+          token           TYPE REF TO /usi/if_bal_token.
+
+    METHODS setup.
+
+    METHODS test_message_wo_msgid_ignored  FOR TESTING.
+    METHODS test_message_wo_msgno_accepted FOR TESTING.
+ENDCLASS.
+
+CLASS lcl_unit_test_consistency IMPLEMENTATION.
+  METHOD setup.
+    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
+          data_container_classnames TYPE /usi/bal_data_cont_classnames,
+          data_container_classname  TYPE /usi/bal_data_cont_classname,
+          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory.
+
+    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
+    token             = logger_bl_factory->get_token( ).
+    CREATE OBJECT log_dao_spy.
+    CREATE OBJECT dc_coll_dao_spy.
+
+    CREATE OBJECT cut TYPE /usi/cl_bal_lstate_active
+      EXPORTING
+        i_factory                  = logger_bl_factory
+        i_log_level                = /usi/cl_bal_enum_log_level=>everything
+        i_auto_save_pckg_size      = 0
+        i_log_dao                  = log_dao_spy
+        i_data_cont_coll_dao       = dc_coll_dao_spy
+        i_token                    = token
+        i_relevant_data_containers = data_container_classnames.
+  ENDMETHOD.
+
+  METHOD test_message_wo_msgid_ignored.
+    CONSTANTS illegal_message_id TYPE symsgid VALUE space.
+    TRY.
+        cut->add_message( i_problem_class  = /usi/cl_bal_enum_problem_class=>very_important
+                          i_detail_level   = /usi/cl_bal_enum_detail_level=>detail_level_1
+                          i_message_type   = /usi/cl_bal_enum_message_type=>information
+                          i_message_class  = illegal_message_id
+                          i_message_number = some_random_message-msgno ).
+
+        cl_aunit_assert=>fail( msg = 'Empty message-ID should throw an exception' ).
+      CATCH /usi/cx_bal_root.
+        " This is the expected behavior
+        RETURN.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD test_message_wo_msgno_accepted.
+    CONSTANTS message_number_zero TYPE symsgno VALUE 000.
+
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    TRY.
+        cut->add_message( i_problem_class  = /usi/cl_bal_enum_problem_class=>very_important
+                          i_detail_level   = /usi/cl_bal_enum_detail_level=>detail_level_1
+                          i_message_type   = /usi/cl_bal_enum_message_type=>information
+                          i_message_class  = some_random_message-msgid
+                          i_message_number = message_number_zero ).
+
+        " This is the expected behavior
+        RETURN.
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
   ENDMETHOD.
 ENDCLASS.

@@ -18,95 +18,98 @@ CLASS /usi/cl_bal_lstate_active DEFINITION
         !i_token                    TYPE REF TO /usi/if_bal_token
         !i_relevant_data_containers TYPE /usi/bal_data_cont_classnames .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    ALIASES save FOR /usi/if_bal_logger_state~save.
+  aliases SAVE
+    for /USI/IF_BAL_LOGGER_STATE~SAVE .
 
-    TYPES:
-      BEGIN OF ty_message,
+  types:
+    BEGIN OF ty_message,
         number                    TYPE /usi/bal_message_number,
         message                   TYPE bal_s_msg,
         data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
       END   OF ty_message .
-    TYPES:
-      ty_messages   TYPE STANDARD TABLE OF ty_message WITH NON-UNIQUE DEFAULT KEY .
-    TYPES:
-      ty_exceptions TYPE STANDARD TABLE OF REF TO cx_root WITH NON-UNIQUE DEFAULT KEY .
+  types:
+    ty_messages   TYPE STANDARD TABLE OF ty_message WITH NON-UNIQUE DEFAULT KEY .
+  types:
+    ty_exceptions TYPE STANDARD TABLE OF REF TO cx_root WITH NON-UNIQUE DEFAULT KEY .
 
-    DATA: factory TYPE REF TO /usi/if_bal_logger_bl_factory,
-          token   TYPE REF TO /usi/if_bal_token,
-
-          BEGIN OF settings,
+  data FACTORY type ref to /USI/IF_BAL_LOGGER_BL_FACTORY .
+  data TOKEN type ref to /USI/IF_BAL_TOKEN .
+  data:
+    BEGIN OF settings,
             log_level                TYPE REF TO /usi/cl_bal_enum_log_level,
             auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size,
             relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          END   OF settings,
-
-          BEGIN OF messages,
+          END   OF settings .
+  data:
+    BEGIN OF messages,
             message_buffer         TYPE ty_messages,
             highest_message_number TYPE /usi/bal_message_number,
-          END   OF messages,
-
-          BEGIN OF dao_objects,
+          END   OF messages .
+  data:
+    BEGIN OF dao_objects,
             log                       TYPE REF TO /usi/if_bal_log_dao,
             data_container_collection TYPE REF TO /usi/if_bal_data_cont_coll_dao,
-          END   OF dao_objects.
+          END   OF dao_objects .
 
-    METHODS get_exceptions_inverted_order
-      IMPORTING
-        !i_main_exception TYPE REF TO cx_root
-        !i_log_previous   TYPE abap_bool
-      RETURNING
-        VALUE(r_result)   TYPE ty_exceptions .
-    METHODS insert_message
-      IMPORTING
-        !i_problem_class             TYPE REF TO /usi/cl_bal_enum_problem_class
-        !i_detail_level              TYPE REF TO /usi/cl_bal_enum_detail_level
-        !i_message_type              TYPE REF TO /usi/cl_bal_enum_message_type
-        !i_message_class             TYPE symsgid
-        !i_message_number            TYPE symsgno
-        !i_message_variable_1        TYPE symsgv
-        !i_message_variable_2        TYPE symsgv
-        !i_message_variable_3        TYPE symsgv
-        !i_message_variable_4        TYPE symsgv
-        !i_data_container_collection TYPE REF TO /usi/if_bal_data_container_col
-        !i_message_context           TYPE bal_s_cont .
-    METHODS get_new_data_container_coll
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/if_bal_data_container_col .
-    METHODS collect_data_containers
-      IMPORTING
-        !i_source TYPE REF TO /usi/if_bal_message_details
-        !i_target TYPE REF TO /usi/if_bal_data_container_col .
-    METHODS add_cx_src_pos_container
-      IMPORTING
-        !i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col
-        !i_exception             TYPE REF TO cx_root .
-    METHODS add_caller_src_pos_container
-      IMPORTING
-        !i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col .
-    METHODS add_callstack_container
-      IMPORTING
-        !i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col .
-    METHODS insert_container_if_relevant
-      IMPORTING
-        !i_data_containter       TYPE REF TO /usi/if_bal_data_container
-        !i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col .
-    METHODS is_data_container_relevant
-      IMPORTING
-        !i_data_container_classname TYPE /usi/bal_data_cont_classname
-      RETURNING
-        VALUE(r_result)             TYPE abap_bool .
-    METHODS save_log
-      RETURNING
-        VALUE(r_result) TYPE balognr
-      RAISING
-        /usi/cx_bal_root .
-    METHODS save_data_container_colls
-      IMPORTING
-        !i_log_number TYPE balognr
-      RAISING
-        /usi/cx_bal_root .
+  methods GET_EXCEPTIONS_INVERTED_ORDER
+    importing
+      !I_MAIN_EXCEPTION type ref to CX_ROOT
+      !I_LOG_PREVIOUS type ABAP_BOOL
+    returning
+      value(R_RESULT) type TY_EXCEPTIONS .
+  methods INSERT_MESSAGE
+    importing
+      !I_PROBLEM_CLASS type ref to /USI/CL_BAL_ENUM_PROBLEM_CLASS
+      !I_DETAIL_LEVEL type ref to /USI/CL_BAL_ENUM_DETAIL_LEVEL
+      !I_MESSAGE_TYPE type ref to /USI/CL_BAL_ENUM_MESSAGE_TYPE
+      !I_MESSAGE_CLASS type SYMSGID
+      !I_MESSAGE_NUMBER type SYMSGNO
+      !I_MESSAGE_VARIABLE_1 type SYMSGV
+      !I_MESSAGE_VARIABLE_2 type SYMSGV
+      !I_MESSAGE_VARIABLE_3 type SYMSGV
+      !I_MESSAGE_VARIABLE_4 type SYMSGV
+      !I_DATA_CONTAINER_COLLECTION type ref to /USI/IF_BAL_DATA_CONTAINER_COL
+      !I_MESSAGE_CONTEXT type BAL_S_CONT
+    raising
+      /USI/CX_BAL_ROOT .
+  methods GET_NEW_DATA_CONTAINER_COLL
+    returning
+      value(R_RESULT) type ref to /USI/IF_BAL_DATA_CONTAINER_COL .
+  methods COLLECT_DATA_CONTAINERS
+    importing
+      !I_SOURCE type ref to /USI/IF_BAL_MESSAGE_DETAILS
+      !I_TARGET type ref to /USI/IF_BAL_DATA_CONTAINER_COL .
+  methods ADD_CX_SRC_POS_CONTAINER
+    importing
+      !I_TARGET_DATA_CONT_COLL type ref to /USI/IF_BAL_DATA_CONTAINER_COL
+      !I_EXCEPTION type ref to CX_ROOT .
+  methods ADD_CALLER_SRC_POS_CONTAINER
+    importing
+      !I_TARGET_DATA_CONT_COLL type ref to /USI/IF_BAL_DATA_CONTAINER_COL .
+  methods ADD_CALLSTACK_CONTAINER
+    importing
+      !I_TARGET_DATA_CONT_COLL type ref to /USI/IF_BAL_DATA_CONTAINER_COL .
+  methods INSERT_CONTAINER_IF_RELEVANT
+    importing
+      !I_DATA_CONTAINTER type ref to /USI/IF_BAL_DATA_CONTAINER
+      !I_TARGET_DATA_CONT_COLL type ref to /USI/IF_BAL_DATA_CONTAINER_COL .
+  methods IS_DATA_CONTAINER_RELEVANT
+    importing
+      !I_DATA_CONTAINER_CLASSNAME type /USI/BAL_DATA_CONT_CLASSNAME
+    returning
+      value(R_RESULT) type ABAP_BOOL .
+  methods SAVE_LOG
+    returning
+      value(R_RESULT) type BALOGNR
+    raising
+      /USI/CX_BAL_ROOT .
+  methods SAVE_DATA_CONTAINER_COLLS
+    importing
+      !I_LOG_NUMBER type BALOGNR
+    raising
+      /USI/CX_BAL_ROOT .
 ENDCLASS.
 
 
@@ -442,6 +445,13 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
     DATA: callback_parameter TYPE bal_s_par,
           message            TYPE ty_message.
 
+    IF i_message_class IS INITIAL OR
+       i_message_type  IS INITIAL.
+      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+        EXPORTING
+          textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
+    ENDIF.
+
     ADD 1 TO messages-highest_message_number.
     message-number               = messages-highest_message_number.
 
@@ -529,6 +539,12 @@ CLASS /USI/CL_BAL_LSTATE_ACTIVE IMPLEMENTATION.
           unsaved_data_exists       TYPE abap_bool.
 
     FIELD-SYMBOLS: <message> TYPE ty_message.
+
+    IF messages-message_buffer IS INITIAL.
+      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+        EXPORTING
+          textid = /usi/cx_bal_invalid_input=>log_is_empty.
+    ENDIF.
 
     LOOP AT messages-message_buffer ASSIGNING <message>.
       TRY.
