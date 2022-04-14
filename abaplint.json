@@ -13,7 +13,7 @@
     }
   ],
   "syntax": {
-    "version": "v731",
+    "version": "v754",
     "errorNamespace": "^/USI/",
     "globalConstants": [],
     "globalMacros": []
