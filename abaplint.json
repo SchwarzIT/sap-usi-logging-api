@@ -62,9 +62,17 @@
       "exclude": [],
       "reason": ""
     },
+    "begin_single_include": {
+      "exclude": [],
+      "severity": "Error"
+    },
     "chain_mainly_declarations": {
       "exclude": [],
       "reason": ""
+      "definitions": false,
+      "unassign": false,
+      "clear": false,
+      "include": false,
     },
     "check_abstract": {
       "exclude": [],
