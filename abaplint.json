@@ -68,7 +68,7 @@
     },
     "chain_mainly_declarations": {
       "exclude": [],
-      "reason": ""
+      "reason": "",
       "definitions": false,
       "unassign": false,
       "clear": false,
