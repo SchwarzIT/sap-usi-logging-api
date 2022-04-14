@@ -28,6 +28,10 @@
       "reason": "",
       "checkLocal": false
     },
+    "align_parameters": {
+      "exclude": [],
+      "severity": "Error"
+    },
     "allowed_object_naming": {
       "exclude": [],
       "reason": ""
