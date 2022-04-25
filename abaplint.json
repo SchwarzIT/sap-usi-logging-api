@@ -95,10 +95,7 @@
       "exclude": [],
       "reason": ""
     },
-    "check_syntax": {
-      "exclude": [],
-      "reason": ""
-    },
+    "check_syntax": false,
     "check_text_elements": {
       "exclude": [],
       "reason": ""
