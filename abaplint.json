@@ -212,10 +212,7 @@
       "exclude": [],
       "reason": ""
     },
-    "implement_methods": {
-      "exclude": [],
-      "reason": ""
-    },
+    "implement_methods": false,
     "in_statement_indentation": {
       "exclude": [],
       "reason": "",
