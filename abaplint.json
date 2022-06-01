@@ -390,7 +390,6 @@
       "exclude": [],
       "reason": "",
       "badOperators": [
-        "=",
         "><",
         "<>",
         ">=",
