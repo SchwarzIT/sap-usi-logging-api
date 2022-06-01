@@ -354,7 +354,7 @@
       "ttyp": "^/USI/BAL_",
       "dtel": "^/USI/BAL_",
       "doma": "^/USI/BAL_",
-      "msag": "^/USI/BAL_",
+      "msag": "^/USI/BAL",
       "tran": "^/USI/BAL_",
       "enqu": "^/USI/E_BAL_",
       "auth": "^/USI/BAL_",
