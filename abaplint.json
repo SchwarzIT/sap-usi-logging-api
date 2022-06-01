@@ -72,7 +72,8 @@
       "definitions": true,
       "unassign": false,
       "clear": false,
-      "include": false,
+      "include": true,
+      "write": true
     },
     "check_abstract": {
       "exclude": [],
