@@ -360,7 +360,8 @@
       "auth": "^/USI/BAL_",
       "pinf": "^/USI/BAL_",
       "idoc": "^/USI/BAL_",
-      "xslt": "^/USI/BAL_"
+      "xslt": "^/USI/BAL_",
+      "shlp": "^/USI/BAL_"
     },
     "obsolete_statement": {
       "exclude": [],
