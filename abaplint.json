@@ -504,9 +504,6 @@
       "exclude": [],
       "reason": ""
     },
-    "xml_consistency": {
-      "exclude": [],
-      "reason": ""
-    }
+    "xml_consistency": false
   }
 }
