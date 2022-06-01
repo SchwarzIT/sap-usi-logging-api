@@ -336,7 +336,7 @@
     "no_public_attributes": {
       "exclude": [],
       "reason": "",
-      "allowReadOnly": false
+      "allowReadOnly": true
     },
     "object_naming": {
       "exclude": [],
