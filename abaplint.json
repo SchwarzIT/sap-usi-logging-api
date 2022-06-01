@@ -455,10 +455,7 @@
       "exclude": [],
       "reason": ""
     },
-    "superclass_final": {
-      "exclude": [],
-      "reason": ""
-    },
+    "superclass_final": false,
     "tabl_enhancement_category": {
       "exclude": [],
       "reason": ""
