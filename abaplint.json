@@ -97,10 +97,7 @@
       "reason": ""
     },
     "check_syntax": false,
-    "check_text_elements": {
-      "exclude": [],
-      "reason": ""
-    },
+    "check_text_elements": false,
     "check_transformation_exists": {
       "exclude": [],
       "reason": ""
