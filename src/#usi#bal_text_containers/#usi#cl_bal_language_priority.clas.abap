@@ -1,16 +1,22 @@
-CLASS /usi/cl_bal_language_priority DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE .
+CLASS /usi/cl_bal_language_priority DEFINITION PUBLIC FINAL CREATE PRIVATE.
 
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_language_priority.
 
+    "! <h1>Factory method (Singleton pattern)</h1>
+    "!
+    "! <p>Creates the singleton if needed. The language list will be created once during the object creation.</p>
+    "!
+    "! @parameter r_result | Singleton
     CLASS-METHODS get_instance
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/if_bal_language_priority.
 
+    "! <h1>Constructor</h1>
+    METHODS constructor.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     ALIASES: ty_language  FOR /usi/if_bal_language_priority~ty_language,
              ty_languages FOR /usi/if_bal_language_priority~ty_languages.
@@ -20,7 +26,6 @@ CLASS /usi/cl_bal_language_priority DEFINITION
     DATA: languages_by_priority TYPE ty_languages,
           processed_languages   TYPE HASHED TABLE OF sylangu WITH UNIQUE KEY table_line.
 
-    METHODS constructor.
 
     METHODS insert_language
       IMPORTING
@@ -28,6 +33,7 @@ CLASS /usi/cl_bal_language_priority DEFINITION
 
     METHODS get_fallback_languages.
     METHODS get_other_languages.
+
 ENDCLASS.
 
 
@@ -63,11 +69,11 @@ CLASS /usi/cl_bal_language_priority IMPLEMENTATION.
 
     primary_language = sy-langu.
     DO 2 TIMES.
-      SELECT  SINGLE lakett
-        FROM  t002c
-        INTO  fallback_language
+      SELECT SINGLE lakett
+        FROM t002c
+        INTO fallback_language
         WHERE spras  EQ primary_language
-        AND   lakett NE space.
+          AND lakett NE space.
 
       IF sy-subrc NE 0.
         EXIT.

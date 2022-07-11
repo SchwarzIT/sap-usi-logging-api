@@ -49,59 +49,39 @@ ENDCLASS.
 
 CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD verify_static_instances.
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_1
-      i_expected = '1'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_1
+                  i_expected = '1' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_2
-      i_expected = '2'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_2
+                  i_expected = '2' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_3
-      i_expected = '3'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_3
+                  i_expected = '3' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_4
-      i_expected = '4'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_4
+                  i_expected = '4' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_5
-      i_expected = '5'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_5
+                  i_expected = '5' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_6
-      i_expected = '6'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_6
+                  i_expected = '6' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_7
-      i_expected = '7'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_7
+                  i_expected = '7' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_8
-      i_expected = '8'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_8
+                  i_expected = '8' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_detail_level=>detail_level_9
-      i_expected = '9'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_detail_level=>detail_level_9
+                  i_expected = '9' ).
   ENDMETHOD.
 
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals(
-      act = i_instance->value
-      exp = i_expected
-    ).
+    cl_aunit_assert=>assert_equals( act = i_instance->value
+                                    exp = i_expected ).
   ENDMETHOD.
 
   METHOD assert_bound.

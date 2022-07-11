@@ -83,16 +83,15 @@ ENDCLASS.
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
     CREATE OBJECT test_double_cust_dao.
     TRY.
         CREATE OBJECT cut
           EXPORTING
             i_customizing_dao = test_double_cust_dao.
       CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception(
-          i_exception = unexpected_exception
-          i_quit      = if_aunit_constants=>class
-        ).
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( i_exception = unexpected_exception
+                                                                   i_quit      = if_aunit_constants=>class ).
     ENDTRY.
   ENDMETHOD.
 
@@ -101,15 +100,11 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           expected_result TYPE /usi/bal_auto_save_pckg_size.
 
     expected_result = cut->get_fallback_auto_save( ).
-    acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_auto_save_package_size(
-                        i_log_object = 'NOT'
-                        i_sub_object = 'IN_CUST'
-                      ).
+    acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_auto_save_package_size( i_log_object = 'NOT'
+                                                                                    i_sub_object = 'IN_CUST' ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = acutal_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = acutal_result ).
   ENDMETHOD.
 
   METHOD test_fallback_log_level.
@@ -117,16 +112,12 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           expected_result TYPE REF TO /usi/cl_bal_enum_log_level.
 
     expected_result = cut->get_fallback_log_level( ).
-    acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level(
-                        i_log_object = 'NOT'
-                        i_sub_object = 'IN_CUST'
-                      ).
+    acutal_result   = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level( i_log_object = 'NOT'
+                                                                       i_sub_object = 'IN_CUST' ).
 
     cl_aunit_assert=>assert_bound( acutal_result ).
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = acutal_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = acutal_result ).
   ENDMETHOD.
 
   METHOD test_prio_log_object.
@@ -139,26 +130,18 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     READ TABLE non_fallback_log_levels INTO expected_result INDEX 1.
     READ TABLE non_fallback_log_levels INTO wrong_result    INDEX 2.
 
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object = 'CUST_LOG_OBJECT'
-      i_sub_object = space
-      i_log_level  = expected_result->value
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object = space
-      i_sub_object = 'CUST_SUB_OBJECT'
-      i_log_level  = wrong_result->value
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object = 'CUST_LOG_OBJECT'
+                                                 i_sub_object = space
+                                                 i_log_level  = expected_result->value ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object = space
+                                                 i_sub_object = 'CUST_SUB_OBJECT'
+                                                 i_log_level  = wrong_result->value ).
 
-    actual_result = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level(
-                      i_log_object = 'CUST_LOG_OBJECT'
-                      i_sub_object = 'CUST_SUB_OBJECT'
-                    ).
+    actual_result = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level( i_log_object = 'CUST_LOG_OBJECT'
+                                                                     i_sub_object = 'CUST_SUB_OBJECT' ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result ).
   ENDMETHOD.
 
   METHOD test_prio_sub_object.
@@ -171,26 +154,18 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     READ TABLE non_fallback_log_levels INTO expected_result INDEX 1.
     READ TABLE non_fallback_log_levels INTO wrong_result    INDEX 2.
 
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object = 'CUST_LOG_OBJECT'
-      i_sub_object = space
-      i_log_level  = wrong_result->value
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object = space
-      i_sub_object = 'CUST_SUB_OBJECT'
-      i_log_level  = expected_result->value
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object = 'CUST_LOG_OBJECT'
+                                                 i_sub_object = space
+                                                 i_log_level  = wrong_result->value ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object = space
+                                                 i_sub_object = 'CUST_SUB_OBJECT'
+                                                 i_log_level  = expected_result->value ).
 
-    actual_result = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level(
-                      i_log_object = 'NOT_IN_CUST'
-                      i_sub_object = 'CUST_SUB_OBJECT'
-                    ).
+    actual_result = cut->/usi/if_bal_ce_log_lv_by_obj~get_log_level( i_log_object = 'NOT_IN_CUST'
+                                                                     i_sub_object = 'CUST_SUB_OBJECT' ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result ).
   ENDMETHOD.
 
   METHOD get_non_fallback_log_levels.
@@ -204,12 +179,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           IF log_level NE cut->get_fallback_log_level( ).
             INSERT log_level INTO TABLE r_result.
           ENDIF.
-          ADD 1 TO log_level_value.
+          log_level_value = log_level_value + 1.
         CATCH /usi/cx_bal_root.
-          cl_aunit_assert=>abort(
-            msg  = 'Too many values requested'
-            quit = if_aunit_constants=>method
-          ).
+          cl_aunit_assert=>abort( msg  = 'Too many values requested'
+                                  quit = if_aunit_constants=>method ).
       ENDTRY.
     ENDWHILE.
   ENDMETHOD.

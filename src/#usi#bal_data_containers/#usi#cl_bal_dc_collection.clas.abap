@@ -1,11 +1,6 @@
-CLASS /usi/cl_bal_dc_collection DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_collection DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-
-    INTERFACES /usi/if_exception_details .
+    INTERFACES /usi/if_exception_details.
     INTERFACES /usi/if_bal_data_container_col.
 
     ALIASES: deserialize FOR /usi/if_bal_data_container_col~deserialize,
@@ -14,7 +9,6 @@ CLASS /usi/cl_bal_dc_collection DEFINITION
   PROTECTED SECTION.
 
   PRIVATE SECTION.
-
     TYPES: BEGIN OF ty_data_cont_coll_item,
              data_container_classname TYPE /usi/bal_data_cont_classname,
              data_container           TYPE REF TO /usi/if_bal_data_container,
@@ -44,13 +38,12 @@ CLASS /usi/cl_bal_dc_collection DEFINITION
         VALUE(r_result)  TYPE abap_bool
       RAISING
         /usi/cx_bal_root.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_data_container_col~deserialize.
     DATA: data_container             TYPE REF TO /usi/if_bal_data_container,
           exception                  TYPE REF TO cx_root,
@@ -83,8 +76,8 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
         CATCH cx_sy_dyn_call_error
               /usi/cx_bal_root INTO exception.
           exception_text = exception->get_text( ).
-          ASSERT ID   /usi/bal_log_writer
-            FIELDS    exception_text
+          ASSERT ID /usi/bal_log_writer
+            FIELDS exception_text
             CONDITION exception IS NOT BOUND.
 
           CONTINUE.
@@ -144,8 +137,8 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
         CATCH /usi/cx_bal_root INTO exception.
           " Corrupt container data? Drop container!
           exception_text = exception->get_text( ).
-          ASSERT ID   /usi/bal_log_writer
-            FIELDS    exception_text
+          ASSERT ID /usi/bal_log_writer
+            FIELDS exception_text
             CONDITION exception IS NOT BOUND.
           CONTINUE.
       ENDTRY.

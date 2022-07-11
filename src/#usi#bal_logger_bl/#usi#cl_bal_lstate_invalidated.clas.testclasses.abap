@@ -33,13 +33,11 @@ CLASS lcl_unit_test IMPLEMENTATION.
         sy-tabix = 1 + 'A'.
       CATCH cx_sy_conversion_no_number INTO input.
         TRY.
-            cut->add_exception(
-              i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
-              i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
-              i_message_type  = /usi/cl_bal_enum_message_type=>error
-              i_exception     = input
-              i_log_previous  = abap_false
-            ).
+            cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                                i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                                i_message_type  = /usi/cl_bal_enum_message_type=>error
+                                i_exception     = input
+                                i_log_previous  = abap_false ).
             cl_aunit_assert=>fail( `Dead logger accepts call to ADD_EXCEPTION( )!` ).
           CATCH /usi/cx_bal_root.
             RETURN.
@@ -49,12 +47,10 @@ CLASS lcl_unit_test IMPLEMENTATION.
 
   METHOD test_throws_on_add_free_text.
     TRY.
-        cut->add_free_text(
-          i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
-          i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
-          i_message_type  = /usi/cl_bal_enum_message_type=>error
-          i_free_text     = 'Should not work'
-        ).
+        cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                            i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                            i_message_type  = /usi/cl_bal_enum_message_type=>error
+                            i_free_text     = 'Should not work' ).
         cl_aunit_assert=>fail( `Dead logger accepts call to ADD_FREE_TEXT( )!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
@@ -63,13 +59,11 @@ CLASS lcl_unit_test IMPLEMENTATION.
 
   METHOD test_throws_on_add_message.
     TRY.
-        cut->add_message(
-          i_problem_class   = /usi/cl_bal_enum_problem_class=>very_important
-          i_detail_level    = /usi/cl_bal_enum_detail_level=>detail_level_1
-          i_message_type    = /usi/cl_bal_enum_message_type=>error
-          i_message_class   = '38'
-          i_message_number  = '000'
-        ).
+        cut->add_message( i_problem_class  = /usi/cl_bal_enum_problem_class=>very_important
+                          i_detail_level   = /usi/cl_bal_enum_detail_level=>detail_level_1
+                          i_message_type   = /usi/cl_bal_enum_message_type=>error
+                          i_message_class  = '38'
+                          i_message_number = '000' ).
         cl_aunit_assert=>fail( `Dead logger accepts call to ADD_MESSAGE( )!` ).
       CATCH /usi/cx_bal_root.
         RETURN.

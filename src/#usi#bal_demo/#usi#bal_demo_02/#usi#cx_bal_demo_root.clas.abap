@@ -6,6 +6,15 @@ class /USI/CX_BAL_DEMO_ROOT definition
 
 public section.
 
+  "! <h1>Constructor</h1>
+  "!
+  "! @parameter TEXTID | Text-ID (T100-Key)
+  "! @parameter PREVIOUS | Previous exception
+  "! @parameter PARAM1 | 1st message parameter
+  "! @parameter PARAM2 | 2nd message parameter
+  "! @parameter PARAM3 | 3rd message parameter
+  "! @parameter PARAM4 | 4th message parameter
+  "! @parameter DETAILS | Details (Single data-container or data-container-collection)
   methods CONSTRUCTOR
     importing
       !TEXTID like IF_T100_MESSAGE=>T100KEY optional

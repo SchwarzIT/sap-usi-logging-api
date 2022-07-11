@@ -1,13 +1,15 @@
-CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE.
-
+CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_text_container_c40.
 
     TYPES ty_text_key TYPE c LENGTH 3.
 
+    "! <h1>Create instance for any program</h1>
+    "!
+    "! @parameter i_program | Program
+    "! @parameter i_text_key | Text key
+    "! @parameter i_text | Text (Dummy - ignored internally, passing the text will avoid ATC-Messages for unused texts)
+    "! @parameter r_result | Text container instance
     CLASS-METHODS create_for_program
       IMPORTING
         i_program       TYPE programm
@@ -16,6 +18,11 @@ CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_tc_report_text_c40.
 
+    "! <h1>Create instance for current program</h1>
+    "!
+    "! @parameter i_text_key | Text key
+    "! @parameter i_text | Text (Dummy - ignored internally, passing the text will avoid ATC-Messages for unused texts)
+    "! @parameter r_result | Text container instance
     CLASS-METHODS create
       IMPORTING
         i_text_key      TYPE ty_text_key
@@ -23,12 +30,17 @@ CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_tc_report_text_c40.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_program | Program name
+    "! @parameter i_text_key | Text key
     METHODS constructor
       IMPORTING
         i_program  TYPE programm
         i_text_key TYPE ty_text_key.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     DATA: language_priority TYPE REF TO /usi/if_bal_language_priority,
           program           TYPE programm,
@@ -38,13 +50,12 @@ CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION
     CLASS-METHODS get_name_of_calling_program
       RETURNING
         VALUE(r_result) TYPE programm.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_TC_REPORT_TEXT_C40 IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_tc_report_text_c40 IMPLEMENTATION.
   METHOD /usi/if_bal_text_container_c40~deserialize.
     DATA: exception TYPE REF TO cx_transformation_error,
           program   TYPE programm,
@@ -56,10 +67,8 @@ CLASS /USI/CL_BAL_TC_REPORT_TEXT_C40 IMPLEMENTATION.
           RESULT program  = program
                  text_key = text_key.
 
-        r_result  = create_for_program(
-                      i_program  = program
-                      i_text_key = text_key
-                    ).
+        r_result  = create_for_program( i_program  = program
+                                        i_text_key = text_key ).
       CATCH cx_transformation_error INTO exception.
         RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
           EXPORTING
@@ -82,20 +91,18 @@ CLASS /USI/CL_BAL_TC_REPORT_TEXT_C40 IMPLEMENTATION.
     languages = language_priority->get_languages( ).
     LOOP AT languages ASSIGNING <language>.
       TRY.
-          r_result  = textpool_reader->get_text_symbol(
-                        i_program         = program
-                        i_language        = <language>-language
-                        i_text_symbol_key = text_key
-                      ).
+          r_result  = textpool_reader->get_text_symbol( i_program         = program
+                                                        i_language        = <language>-language
+                                                        i_text_symbol_key = text_key ).
           EXIT.
         CATCH /usi/cx_bal_not_found.
           CONTINUE.
       ENDTRY.
     ENDLOOP.
 
-    ASSERT ID   /usi/bal_log_writer
-      FIELDS    program
-                text_key
+    ASSERT ID /usi/bal_log_writer
+      FIELDS program
+             text_key
       CONDITION r_result IS NOT INITIAL.
   ENDMETHOD.
 

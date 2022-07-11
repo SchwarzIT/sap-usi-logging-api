@@ -61,17 +61,13 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     ENDTRY.
 
     " compare
-    cl_aunit_assert=>assert_equals(
-      act = cut->html_document
-      exp = document
-    ).
+    cl_aunit_assert=>assert_equals( act = cut->html_document
+                                    exp = document ).
 
     serialized_title_in  = title->serialize( ).
     serialized_title_out = cut->document_title->serialize( ).
-    cl_aunit_assert=>assert_equals(
-      act = serialized_title_out
-      exp = serialized_title_in
-    ).
+    cl_aunit_assert=>assert_equals( act = serialized_title_out
+                                    exp = serialized_title_in ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -90,10 +86,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_html=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals(
-      act = actual_result
-      exp = abap_true
-    ).
+    cl_aunit_assert=>assert_equals( act = actual_result
+                                    exp = abap_true ).
   ENDMETHOD.
 ENDCLASS.
 

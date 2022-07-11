@@ -56,10 +56,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     ENDTRY.
 
     " compare
-    cl_aunit_assert=>assert_equals(
-      act = cut->callstack
-      exp = input
-    ).
+    cl_aunit_assert=>assert_equals( act = cut->callstack
+                                    exp = input ).
   ENDMETHOD.
 
   METHOD get_callstack.
@@ -86,10 +84,9 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = actual_result
-    ).
+
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = actual_result ).
   ENDMETHOD.
 ENDCLASS.
 

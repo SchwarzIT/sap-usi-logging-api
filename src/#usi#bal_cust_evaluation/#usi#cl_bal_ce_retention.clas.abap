@@ -1,29 +1,31 @@
-CLASS /usi/cl_bal_ce_retention DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_ce_retention DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    INTERFACES /usi/if_bal_ce_retention .
+    INTERFACES /usi/if_bal_ce_retention.
 
+    "! Constructor
+    "!
+    "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
       IMPORTING
-        !i_customizing_dao TYPE REF TO /usi/if_bal_cd_retention.
+        i_customizing_dao TYPE REF TO /usi/if_bal_cd_retention.
 
+    "! Returns fallback retention parameters, if no customizing was maintained (See documentation)
+    "!
+    "! @parameter r_result | Fallback retention parameters
     METHODS get_fallback
       RETURNING
         VALUE(r_result) TYPE /usi/bal_retention_parameters.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     DATA customizing_dao TYPE REF TO /usi/if_bal_cd_retention.
+
 ENDCLASS.
 
-CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
-  METHOD constructor.
-    customizing_dao = i_customizing_dao.
-  ENDMETHOD.
 
+
+CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
   METHOD /usi/if_bal_ce_retention~get_parameters.
     DATA: customizing_entries     TYPE /usi/if_bal_cd_retention=>ty_records,
           log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
@@ -40,11 +42,9 @@ CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
     sub_object_range_helper->insert_line( space ).
 
     TRY.
-        customizing_entries  = customizing_dao->get_records(
-                      i_log_level         = i_log_level->value
-                      i_log_object_range  = log_object_range_helper->range
-                      i_sub_object_range  = sub_object_range_helper->range
-                    ).
+        customizing_entries  = customizing_dao->get_records( i_log_level        = i_log_level->value
+                                                             i_log_object_range = log_object_range_helper->range
+                                                             i_sub_object_range = sub_object_range_helper->range ).
       CATCH /usi/cx_bal_root.
         CLEAR customizing_entries.
     ENDTRY.
@@ -60,6 +60,12 @@ CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
       r_result = get_fallback( ).
     ENDIF.
   ENDMETHOD.
+
+
+  METHOD constructor.
+    customizing_dao = i_customizing_dao.
+  ENDMETHOD.
+
 
   METHOD get_fallback.
     CONSTANTS number_of_days TYPE /usi/bal_retention_time VALUE 14.

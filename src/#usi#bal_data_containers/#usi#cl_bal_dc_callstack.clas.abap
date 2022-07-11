@@ -1,45 +1,47 @@
-CLASS /usi/cl_bal_dc_callstack DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_callstack DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    INTERFACES /usi/if_exception_details .
-    INTERFACES /usi/if_bal_data_container .
-    INTERFACES /usi/if_bal_data_container_rnd .
+    INTERFACES /usi/if_bal_message_details.
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container_rnd.
 
-    ALIASES get_classname
-      FOR /usi/if_bal_data_container~get_classname .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
+    "! Constructor
+    "!
+    "! @parameter i_callstack | The to-be-logged callstack
     METHODS constructor
       IMPORTING
-        !i_callstack TYPE abap_callstack .
+        i_callstack TYPE abap_callstack.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
-    DATA callstack TYPE abap_callstack .
-    DATA fieldcatalog TYPE lvc_t_fcat .
+    DATA: callstack    TYPE abap_callstack,
+          fieldcatalog TYPE lvc_t_fcat.
 
     METHODS get_excluded_grid_functions
       RETURNING
-        VALUE(r_result) TYPE ui_functions .
+        VALUE(r_result) TYPE ui_functions.
+
     METHODS get_fieldcatalog
       RETURNING
-        VALUE(r_result) TYPE lvc_t_fcat .
+        VALUE(r_result) TYPE lvc_t_fcat.
+
     METHODS get_layout
       RETURNING
-        VALUE(r_result) TYPE lvc_s_layo .
+        VALUE(r_result) TYPE lvc_s_layo.
+
     METHODS on_double_click
         FOR EVENT double_click OF cl_gui_alv_grid
       IMPORTING
-        !es_row_no .
+        es_row_no.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_data_container_rnd~render.
     DATA: alv_grid           TYPE REF TO cl_gui_alv_grid,
           excluded_functions TYPE ui_functions,
@@ -61,8 +63,7 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
         it_toolbar_excluding = excluded_functions
       CHANGING
         it_outtab            = callstack
-        it_fieldcatalog      = fieldcatalog
-    ).
+        it_fieldcatalog      = fieldcatalog ).
   ENDMETHOD.
 
 
@@ -88,7 +89,7 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~get_classname.
-    r_result =  '/USI/CL_BAL_DC_CALLSTACK'.
+    r_result = '/USI/CL_BAL_DC_CALLSTACK'.
   ENDMETHOD.
 
 

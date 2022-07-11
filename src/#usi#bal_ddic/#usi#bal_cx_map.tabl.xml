@@ -50,7 +50,7 @@
    <TABL_EXTRAS>
     <TDDAT>
      <TABNAME>/USI/BAL_CX_MAP</TABNAME>
-     <CCLASS>ZNC</CCLASS>
+     <CCLASS>/USI/BAL</CCLASS>
     </TDDAT>
    </TABL_EXTRAS>
   </asx:values>

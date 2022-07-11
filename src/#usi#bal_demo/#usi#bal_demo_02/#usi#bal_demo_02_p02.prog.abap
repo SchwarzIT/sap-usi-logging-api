@@ -112,8 +112,7 @@ CLASS lcl_task_grid IMPLEMENTATION.
         it_outtab            = tasks
         it_fieldcatalog      = field_catalog
       EXCEPTIONS
-        OTHERS               = 0
-    ).
+        OTHERS               = 0 ).
   ENDMETHOD.
 
   METHOD get_selected_task_ids.
@@ -121,10 +120,7 @@ CLASS lcl_task_grid IMPLEMENTATION.
     FIELD-SYMBOLS: <row_number> TYPE lvc_s_roid,
                    <task>       TYPE /usi/bal_demo_to_do_task.
 
-    alv_grid->get_selected_rows(
-      IMPORTING
-        et_row_no = row_numbers
-    ).
+    alv_grid->get_selected_rows( IMPORTING et_row_no = row_numbers ).
 
     LOOP AT row_numbers ASSIGNING <row_number>.
       READ TABLE tasks ASSIGNING <task> INDEX <row_number>-row_id.

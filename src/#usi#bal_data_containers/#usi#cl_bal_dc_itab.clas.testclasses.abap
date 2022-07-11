@@ -71,29 +71,23 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     " compare
     ASSIGN cut->internal_table_ref->* TO <output_table>.
-    cl_aunit_assert=>assert_equals(
-      act = <output_table>
-      exp = input-table
-    ).
+    cl_aunit_assert=>assert_equals( act = <output_table>
+                                    exp = input-table ).
 
-    READ TABLE  cut->fieldcatalog_table
+    READ TABLE cut->fieldcatalog_table
       ASSIGNING <output_fieldcat>
-      WITH KEY  name = cut->fieldcatalog_names-external.
+      WITH KEY name = cut->fieldcatalog_names-external.
     IF sy-subrc EQ 0.
-      cl_aunit_assert=>assert_equals(
-        act = <output_fieldcat>-fieldcatalog
-        exp = input-fieldcat
-      ).
+      cl_aunit_assert=>assert_equals( act = <output_fieldcat>-fieldcatalog
+                                      exp = input-fieldcat ).
     ELSE.
       cl_aunit_assert=>fail( `Field catalog was lost!` ).
     ENDIF.
 
     serialized_title_in  = input-title->serialize( ).
     serialized_title_out = cut->title->serialize( ).
-    cl_aunit_assert=>assert_equals(
-      act = serialized_title_out
-      exp = serialized_title_in
-    ).
+    cl_aunit_assert=>assert_equals( act = serialized_title_out
+                                    exp = serialized_title_in ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -111,10 +105,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_is_multi_use.
     DATA actual_result TYPE abap_bool.
     actual_result = /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = actual_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = actual_result ).
   ENDMETHOD.
 ENDCLASS.
 

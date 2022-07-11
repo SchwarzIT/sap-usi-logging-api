@@ -1,16 +1,11 @@
-CLASS /usi/cl_bal_aunit_method_call DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC
-  FOR TESTING .
-
+CLASS /usi/cl_bal_aunit_method_call DEFINITION PUBLIC FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
+    TYPE-POOLS abap.
 
     TYPES: ty_method_name    TYPE abap_methname,
-           ty_parameter_name TYPE abap_parmname,
+           ty_parameter_name TYPE abap_parmname.
 
-           BEGIN OF ty_parameter,
+    TYPES: BEGIN OF ty_parameter,
              parameter_name  TYPE ty_parameter_name,
              parameter_value TYPE REF TO data,
            END   OF ty_parameter,
@@ -19,22 +14,36 @@ CLASS /usi/cl_bal_aunit_method_call DEFINITION
     DATA: method_name TYPE ty_method_name READ-ONLY,
           parameters  TYPE ty_parameters  READ-ONLY.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_method_name | Method name
     METHODS constructor
       IMPORTING
         i_method_name TYPE ty_method_name.
 
+    "! <h1>Add parameter</h1>
+    "!
+    "! @parameter i_parameter_name | Name
+    "! @parameter i_parameter_value | Value
     METHODS add_parameter
       IMPORTING
         i_parameter_name  TYPE ty_parameter_name
         i_parameter_value TYPE any.
 
+    "! <h1>Get parameter</h1>
+    "!
+    "! @parameter i_parameter_name | Name
+    "! @parameter e_parameter_value | Value
     METHODS get_parameter
       IMPORTING
         i_parameter_name         TYPE ty_parameter_name
       EXPORTING
         VALUE(e_parameter_value) TYPE any.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+
 ENDCLASS.
 
 CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
@@ -59,20 +68,17 @@ CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_parameter.
-    DATA parameter TYPE ty_parameter.
     FIELD-SYMBOLS: <parameter>       TYPE ty_parameter,
                    <parameter_value> TYPE any.
 
     CLEAR e_parameter_value.
 
-    READ TABLE  parameters
+    READ TABLE parameters
       ASSIGNING <parameter>
-      WITH KEY  parameter_name = i_parameter_name.
+      WITH KEY parameter_name = i_parameter_name.
     IF sy-subrc NE 0.
-      cl_aunit_assert=>fail(
-        msg    = `Parameter not found!`
-        detail = i_parameter_name
-      ).
+      cl_aunit_assert=>fail( msg    = `Parameter not found!`
+                             detail = i_parameter_name ).
     ENDIF.
 
     ASSIGN <parameter>-parameter_value->* TO <parameter_value>.

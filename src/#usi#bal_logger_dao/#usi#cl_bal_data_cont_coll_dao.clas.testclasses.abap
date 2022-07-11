@@ -28,18 +28,14 @@ CLASS lcl_unit_tests_db_conversion IMPLEMENTATION.
     expected_result = get_xml_test_string( ).
 
     CREATE OBJECT cut.
-    db_records    = cut->convert_xml_to_db(
-                      i_log_number                = '123456'
-                      i_message_number            = '1'
-                      i_serialized_data_cont_coll = expected_result
-                    ).
+    db_records    = cut->convert_xml_to_db( i_log_number                = '123456'
+                                            i_message_number            = '1'
+                                            i_serialized_data_cont_coll = expected_result ).
     actual_result = cut->convert_db_to_xml( db_records ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-      msg = `XML2DB-Cenversion is broken!`
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result
+                                    msg = `XML2DB-Cenversion is broken!` ).
   ENDMETHOD.
 
   METHOD get_xml_test_string.
@@ -61,16 +57,12 @@ CLASS lcl_unit_tests_db_conversion IMPLEMENTATION.
     CREATE OBJECT cut.
 
     TRY.
-        cut->/usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer(
-          i_log_number                = '1'
-          i_message_number            = 1
-          i_serialized_data_cont_coll = ``
-        ).
+        cut->/usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer( i_log_number                = '1'
+                                                                           i_message_number            = 1
+                                                                           i_serialized_data_cont_coll = `` ).
 
-        cl_aunit_assert=>assert_initial(
-          act = cut->db_records
-          msg = `CUT should not create entries for initial input!`
-        ).
+        cl_aunit_assert=>assert_initial( act = cut->db_records
+                                         msg = `CUT should not create entries for initial input!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
@@ -94,21 +86,17 @@ CLASS lcl_unit_test_duplicate_msg IMPLEMENTATION.
 
     CREATE OBJECT cut TYPE /usi/cl_bal_data_cont_coll_dao.
     TRY.
-        cut->insert_collection_into_buffer(
-          i_log_number                = '1'
-          i_message_number            = 1
-          i_serialized_data_cont_coll = `<test>`
-        ).
+        cut->insert_collection_into_buffer( i_log_number                = '1'
+                                            i_message_number            = 1
+                                            i_serialized_data_cont_coll = `<test>` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
     TRY.
-        cut->insert_collection_into_buffer(
-          i_message_number            = 1
-          i_log_number                = '1'
-          i_serialized_data_cont_coll = `<test>`
-        ).
+        cut->insert_collection_into_buffer( i_message_number            = 1
+                                            i_log_number                = '1'
+                                            i_serialized_data_cont_coll = `<test>` ).
 
         cl_aunit_assert=>fail( `Call should have failed (Duplicate)!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.

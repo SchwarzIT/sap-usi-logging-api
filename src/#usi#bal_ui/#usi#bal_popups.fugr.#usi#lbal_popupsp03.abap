@@ -5,7 +5,8 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
 
     message_parameters        = get_message_parameters( i_message_parameters ).
     serialized_data_cont_coll = get_serialized_data_cont_coll( message_parameters ).
-    data_container_collection = /usi/cl_bal_dc_collection=>deserialize( serialized_data_cont_coll ).
+    data_container_collection = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize(
+                                        serialized_data_cont_coll ).
 
     CREATE OBJECT data_container_selector
       EXPORTING
@@ -32,9 +33,8 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     dao_factory                   = /usi/cl_bal_logger_dao_factory=>get_instance( ).
     data_container_collection_dao = dao_factory->get_data_container_collection( ).
     r_result                      = data_container_collection_dao->get_collection(
-                                      i_log_number     = i_message_parameters-log_number
-                                      i_message_number = i_message_parameters-message_number
-                                    ).
+                                          i_log_number     = i_message_parameters-log_number
+                                          i_message_number = i_message_parameters-message_number ).
   ENDMETHOD.
 
   METHOD lif_screen_controller~set_status.
@@ -76,22 +76,16 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
         columns = 2
       EXCEPTIONS
         OTHERS  = 0.
-    splitter_container->set_column_width(
-      id    = 1
-      width = 25
-    ).
+    splitter_container->set_column_width( id    = 1
+                                          width = 25 ).
 
-    navigation_container  = splitter_container->get_container(
-                              row    = 1
-                              column = 1
-                            ).
+    navigation_container = splitter_container->get_container( row    = 1
+                                                              column = 1 ).
     data_container_selector->render( navigation_container ).
     SET HANDLER on_select_container FOR data_container_selector.
 
-    detail_container      = splitter_container->get_container(
-                              row    = 1
-                              column = 2
-                            ).
+    detail_container = splitter_container->get_container( row    = 1
+                                                          column = 2 ).
   ENDMETHOD.
 
   METHOD on_select_container.

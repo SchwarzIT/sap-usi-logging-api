@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>/USI/CL_BAL_CD_LOG_LV_BY_USER</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Cust-DAO: Increased log level</DESCRIPT>
+    <DESCRIPT>Cust-DAO: Increased log level by User</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

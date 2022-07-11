@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_TOKEN</CLSNAME>
-     <CMPNAME>IS_EQUAL</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Compare with other instance</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

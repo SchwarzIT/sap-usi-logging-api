@@ -1,13 +1,11 @@
-CLASS /usi/cl_bal_cust_dao_factory DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_cust_dao_factory DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
+    INTERFACES /usi/if_bal_cust_dao_factory.
 
-    INTERFACES /usi/if_bal_cust_dao_factory .
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+
 ENDCLASS.
 
 CLASS /usi/cl_bal_cust_dao_factory IMPLEMENTATION.
@@ -21,6 +19,10 @@ CLASS /usi/cl_bal_cust_dao_factory IMPLEMENTATION.
 
   METHOD /usi/if_bal_cust_dao_factory~get_log_level_by_log_object.
     CREATE OBJECT r_result TYPE /usi/cl_bal_cd_log_lv_by_obj.
+  ENDMETHOD.
+
+  METHOD /usi/if_bal_cust_dao_factory~get_log_level_by_client.
+    CREATE OBJECT r_result TYPE /usi/cl_bal_cd_log_lv_by_clnt.
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_dao_factory~get_log_level_by_user.

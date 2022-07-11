@@ -49,50 +49,34 @@ ENDCLASS.
 
 CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD verify_static_instances.
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>abend
-      i_expected = 'A'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>abend
+                  i_expected = 'A' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>error
-      i_expected = 'E'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>error
+                  i_expected = 'E' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>exit
-      i_expected = 'X'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>exit
+                  i_expected = 'X' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>information
-      i_expected = 'I'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>information
+                  i_expected = 'I' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>success
-      i_expected = 'S'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>success
+                  i_expected = 'S' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_type=>warning
-      i_expected = 'W'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_type=>warning
+                  i_expected = 'W' ).
   ENDMETHOD.
 
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals(
-      act = i_instance->value
-      exp = i_expected
-    ).
+    cl_aunit_assert=>assert_equals( act = i_instance->value
+                                    exp = i_expected ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound(
-      act = i_instance
-    ).
+    cl_aunit_assert=>assert_bound( act = i_instance ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -118,44 +102,30 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
 
     TRY.
         /usi/cl_bal_enum_message_type=>get_by_value( invalid_message_type ).
-        cl_aunit_assert=>fail(
-          msg = 'Exception should have been raised, as input was invalid!'
-        ).
+        cl_aunit_assert=>fail( msg = 'Exception should have been raised, as input was invalid!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_get_by_value.
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>abend->value
-      i_expected = /usi/cl_bal_enum_message_type=>abend
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>abend->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>abend ).
 
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>error->value
-      i_expected = /usi/cl_bal_enum_message_type=>error
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>error->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>error ).
 
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>exit->value
-      i_expected = /usi/cl_bal_enum_message_type=>exit
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>exit->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>exit ).
 
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>information->value
-      i_expected = /usi/cl_bal_enum_message_type=>information
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>information->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>information ).
 
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>success->value
-      i_expected = /usi/cl_bal_enum_message_type=>success
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>success->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>success ).
 
-    assert_get_by_value_returns(
-      i_value    = /usi/cl_bal_enum_message_type=>warning->value
-      i_expected = /usi/cl_bal_enum_message_type=>warning
-    ).
+    assert_get_by_value_returns( i_value    = /usi/cl_bal_enum_message_type=>warning->value
+                                 i_expected = /usi/cl_bal_enum_message_type=>warning ).
   ENDMETHOD.
 
   METHOD assert_get_by_value_returns.
@@ -165,11 +135,9 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
     TRY.
         actual_result = /usi/cl_bal_enum_message_type=>get_by_value( i_value ).
 
-        cl_aunit_assert=>assert_equals(
-          act = actual_result
-          exp = i_expected
-          msg = `GET_BY_VALUE( ) returns wrong instance!`
-        ).
+        cl_aunit_assert=>assert_equals( act = actual_result
+                                        exp = i_expected
+                                        msg = `GET_BY_VALUE( ) returns wrong instance!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.

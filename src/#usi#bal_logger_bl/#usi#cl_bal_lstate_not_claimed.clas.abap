@@ -1,23 +1,25 @@
-CLASS /usi/cl_bal_lstate_not_claimed DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_lstate_not_claimed DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
+    TYPE-POOLS abap.
 
-    INTERFACES /usi/if_bal_logger_state .
+    INTERFACES /usi/if_bal_logger_state.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_factory | BL-Factory (Internal object creation)
     METHODS constructor
       IMPORTING
-        !i_factory TYPE REF TO /usi/if_bal_logger_bl_factory .
+        !i_factory TYPE REF TO /usi/if_bal_logger_bl_factory.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     DATA factory TYPE REF TO /usi/if_bal_logger_bl_factory.
 
     METHODS raise_wrong_state_exception
       RAISING
         /usi/cx_bal_root.
+
 ENDCLASS.
 
 

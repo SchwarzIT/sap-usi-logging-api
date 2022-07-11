@@ -8,6 +8,9 @@ INTERFACE /usi/if_bal_language_priority
          END   OF ty_language,
          ty_languages TYPE SORTED TABLE OF ty_language WITH UNIQUE KEY priority.
 
+  "! <h1>Get languages sorted by priority</h1>
+  "!
+  "! @parameter r_result | Language list
   METHODS get_languages
     RETURNING
       VALUE(r_result) TYPE ty_languages.

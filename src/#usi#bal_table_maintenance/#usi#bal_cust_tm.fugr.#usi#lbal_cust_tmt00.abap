@@ -7,6 +7,12 @@ DATA:  BEGIN OF STATUS_/USI/BAL_CX_MAP               .   "state vector
 DATA:  END OF STATUS_/USI/BAL_CX_MAP               .
 CONTROLS: TCTRL_/USI/BAL_CX_MAP
             TYPE TABLEVIEW USING SCREEN '0005'.
+*...processing: /USI/BAL_LV_CLNT................................*
+DATA:  BEGIN OF STATUS_/USI/BAL_LV_CLNT              .   "state vector
+         INCLUDE STRUCTURE VIMSTATUS.
+DATA:  END OF STATUS_/USI/BAL_LV_CLNT              .
+CONTROLS: TCTRL_/USI/BAL_LV_CLNT
+            TYPE TABLEVIEW USING SCREEN '0006'.
 *...processing: /USI/BAL_LV_DATA................................*
 DATA:  BEGIN OF STATUS_/USI/BAL_LV_DATA              .   "state vector
          INCLUDE STRUCTURE VIMSTATUS.
@@ -33,11 +39,13 @@ CONTROLS: TCTRL_/USI/BAL_LV_USER
             TYPE TABLEVIEW USING SCREEN '0002'.
 *.........table declarations:.................................*
 TABLES: */USI/BAL_CX_MAP               .
+TABLES: */USI/BAL_LV_CLNT              .
 TABLES: */USI/BAL_LV_DATA              .
 TABLES: */USI/BAL_LV_LOBJ              .
 TABLES: */USI/BAL_LV_RTIM              .
 TABLES: */USI/BAL_LV_USER              .
 TABLES: /USI/BAL_CX_MAP                .
+TABLES: /USI/BAL_LV_CLNT               .
 TABLES: /USI/BAL_LV_DATA               .
 TABLES: /USI/BAL_LV_LOBJ               .
 TABLES: /USI/BAL_LV_RTIM               .

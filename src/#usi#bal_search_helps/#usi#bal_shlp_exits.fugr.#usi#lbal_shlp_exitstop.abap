@@ -1,3 +1,3 @@
-FUNCTION-POOL /usi/bal_shlp_exits.          "MESSAGE-ID ..
+FUNCTION-POOL /usi/bal_shlp_exits.
 
-INCLUDE /usi/lbal_shlp_exitsdef.
+INCLUDE /usi/lbal_shlp_exitsd01.

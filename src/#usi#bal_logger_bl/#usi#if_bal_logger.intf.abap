@@ -1,53 +1,113 @@
-interface /USI/IF_BAL_LOGGER
-  public .
+INTERFACE /usi/if_bal_logger PUBLIC.
 
-  type-pools ABAP .
+  TYPE-POOLS abap.
 
-  events INSTANCE_INVALIDATED .
+  EVENTS instance_invalidated.
 
-  methods ADD_EXCEPTION
-    importing
-      !I_PROBLEM_CLASS type ref to /USI/CL_BAL_ENUM_PROBLEM_CLASS default /USI/CL_BAL_ENUM_PROBLEM_CLASS=>OTHER
-      !I_DETAIL_LEVEL type ref to /USI/CL_BAL_ENUM_DETAIL_LEVEL default /USI/CL_BAL_ENUM_DETAIL_LEVEL=>DETAIL_LEVEL_1
-      !I_MESSAGE_TYPE type ref to /USI/CL_BAL_ENUM_MESSAGE_TYPE default /USI/CL_BAL_ENUM_MESSAGE_TYPE=>ERROR
-      !I_EXCEPTION type ref to CX_ROOT
-      !I_LOG_PREVIOUS type ABAP_BOOL default ABAP_TRUE
-      !I_DETAILS type ref to /USI/IF_BAL_MESSAGE_DETAILS optional
-      !I_MESSAGE_CONTEXT type BAL_S_CONT optional .
-  methods ADD_FREE_TEXT
-    importing
-      !I_PROBLEM_CLASS type ref to /USI/CL_BAL_ENUM_PROBLEM_CLASS default /USI/CL_BAL_ENUM_PROBLEM_CLASS=>OTHER
-      !I_DETAIL_LEVEL type ref to /USI/CL_BAL_ENUM_DETAIL_LEVEL default /USI/CL_BAL_ENUM_DETAIL_LEVEL=>DETAIL_LEVEL_1
-      !I_MESSAGE_TYPE type ref to /USI/CL_BAL_ENUM_MESSAGE_TYPE default /USI/CL_BAL_ENUM_MESSAGE_TYPE=>ERROR
-      !I_FREE_TEXT type CSEQUENCE
-      !I_DETAILS type ref to /USI/IF_BAL_MESSAGE_DETAILS optional
-      !I_MESSAGE_CONTEXT type BAL_S_CONT optional .
-  methods ADD_MESSAGE
-    importing
-      !I_PROBLEM_CLASS type ref to /USI/CL_BAL_ENUM_PROBLEM_CLASS default /USI/CL_BAL_ENUM_PROBLEM_CLASS=>OTHER
-      !I_DETAIL_LEVEL type ref to /USI/CL_BAL_ENUM_DETAIL_LEVEL default /USI/CL_BAL_ENUM_DETAIL_LEVEL=>DETAIL_LEVEL_1
-      !I_MESSAGE_TYPE type ref to /USI/CL_BAL_ENUM_MESSAGE_TYPE default /USI/CL_BAL_ENUM_MESSAGE_TYPE=>ERROR
-      !I_MESSAGE_CLASS type SYMSGID
-      !I_MESSAGE_NUMBER type SYMSGNO
-      !I_MESSAGE_VARIABLE_1 type SIMPLE optional
-      !I_MESSAGE_VARIABLE_2 type SIMPLE optional
-      !I_MESSAGE_VARIABLE_3 type SIMPLE optional
-      !I_MESSAGE_VARIABLE_4 type SIMPLE optional
-      !I_DETAILS type ref to /USI/IF_BAL_MESSAGE_DETAILS optional
-      !I_MESSAGE_CONTEXT type BAL_S_CONT optional .
-  methods ADD_MESSAGE_FROM_SY_FIELDS
-    importing
-      !I_PROBLEM_CLASS type ref to /USI/CL_BAL_ENUM_PROBLEM_CLASS default /USI/CL_BAL_ENUM_PROBLEM_CLASS=>OTHER
-      !I_DETAIL_LEVEL type ref to /USI/CL_BAL_ENUM_DETAIL_LEVEL default /USI/CL_BAL_ENUM_DETAIL_LEVEL=>DETAIL_LEVEL_1
-      !I_DETAILS type ref to /USI/IF_BAL_MESSAGE_DETAILS optional
-      !I_MESSAGE_CONTEXT type BAL_S_CONT optional .
-  methods CLAIM_OWNERSHIP
-    returning
-      value(R_RESULT) type ref to /USI/IF_BAL_TOKEN .
-  methods FREE
-    importing
-      !I_TOKEN type ref to /USI/IF_BAL_TOKEN .
-  methods SAVE
-    importing
-      !I_TOKEN type ref to /USI/IF_BAL_TOKEN .
-endinterface.
+  "! <h1>Add exception to internal buffer</h1>
+  "!
+  "! @parameter i_problem_class | Problem class (Severity of the message)
+  "! @parameter i_detail_level | Detail level
+  "! @parameter i_message_type | Message type
+  "! @parameter i_exception | Exception
+  "! @parameter i_log_previous | Flag: Log previous exceptions as well?
+  "! @parameter i_details | Details (Data container / Data container collection)
+  "! @parameter i_message_context | Context structure
+  METHODS add_exception
+    IMPORTING
+      i_problem_class   TYPE REF TO /usi/cl_bal_enum_problem_class DEFAULT /usi/cl_bal_enum_problem_class=>other
+      i_detail_level    TYPE REF TO /usi/cl_bal_enum_detail_level DEFAULT /usi/cl_bal_enum_detail_level=>detail_level_1
+      i_message_type    TYPE REF TO /usi/cl_bal_enum_message_type DEFAULT /usi/cl_bal_enum_message_type=>error
+      i_exception       TYPE REF TO cx_root
+      i_log_previous    TYPE abap_bool DEFAULT abap_true
+      i_details         TYPE REF TO /usi/if_bal_message_details OPTIONAL
+      i_message_context TYPE bal_s_cont OPTIONAL.
+
+  "! <h1>Add free text to internal buffer</h1>
+  "!
+  "! @parameter i_problem_class | Problem class (Severity of the message)
+  "! @parameter i_detail_level | Detail level
+  "! @parameter i_message_type | Message type
+  "! @parameter i_free_text | Free text
+  "! @parameter i_details | Details (Data container / Data container collection)
+  "! @parameter i_message_context | Context structure
+  METHODS add_free_text
+    IMPORTING
+      i_problem_class   TYPE REF TO /usi/cl_bal_enum_problem_class DEFAULT /usi/cl_bal_enum_problem_class=>other
+      i_detail_level    TYPE REF TO /usi/cl_bal_enum_detail_level DEFAULT /usi/cl_bal_enum_detail_level=>detail_level_1
+      i_message_type    TYPE REF TO /usi/cl_bal_enum_message_type DEFAULT /usi/cl_bal_enum_message_type=>error
+      i_free_text       TYPE csequence
+      i_details         TYPE REF TO /usi/if_bal_message_details OPTIONAL
+      i_message_context TYPE bal_s_cont OPTIONAL.
+
+  "! <h1>Add message to internal buffer</h1>
+  "!
+  "! @parameter i_problem_class | Problem class (Severity of the message)
+  "! @parameter i_detail_level | Detail level
+  "! @parameter i_message_type | Message type
+  "! @parameter i_message_class | Message class
+  "! @parameter i_message_number | Message number
+  "! @parameter i_message_variable_1 | 1st message variable
+  "! @parameter i_message_variable_2 | 2nd message variable
+  "! @parameter i_message_variable_3 | 3rd message variable
+  "! @parameter i_message_variable_4 | 4th message variable
+  "! @parameter i_details | Details (Data container / Data container collection)
+  "! @parameter i_message_context | Context structure
+  METHODS add_message
+    IMPORTING
+      i_problem_class      TYPE REF TO /usi/cl_bal_enum_problem_class DEFAULT /usi/cl_bal_enum_problem_class=>other
+      i_detail_level       TYPE REF TO /usi/cl_bal_enum_detail_level
+                                            DEFAULT /usi/cl_bal_enum_detail_level=>detail_level_1
+      i_message_type       TYPE REF TO /usi/cl_bal_enum_message_type DEFAULT /usi/cl_bal_enum_message_type=>error
+      i_message_class      TYPE symsgid
+      i_message_number     TYPE symsgno
+      i_message_variable_1 TYPE simple OPTIONAL
+      i_message_variable_2 TYPE simple OPTIONAL
+      i_message_variable_3 TYPE simple OPTIONAL
+      i_message_variable_4 TYPE simple OPTIONAL
+      i_details            TYPE REF TO /usi/if_bal_message_details OPTIONAL
+      i_message_context    TYPE bal_s_cont OPTIONAL.
+
+  "! <h1>Add message to internal buffer (From SY-MSG*-Fields)</h1>
+  "!
+  "! @parameter i_problem_class | Problem class (Severity of the message)
+  "! @parameter i_detail_level | Detail level
+  "! @parameter i_details | Details (Data container / Data container collection)
+  "! @parameter i_message_context | Context structure
+  METHODS add_message_from_sy_fields
+    IMPORTING
+      i_problem_class   TYPE REF TO /usi/cl_bal_enum_problem_class DEFAULT /usi/cl_bal_enum_problem_class=>other
+      i_detail_level    TYPE REF TO /usi/cl_bal_enum_detail_level DEFAULT /usi/cl_bal_enum_detail_level=>detail_level_1
+      i_details         TYPE REF TO /usi/if_bal_message_details OPTIONAL
+      i_message_context TYPE bal_s_cont OPTIONAL.
+
+  "! <h1>Claim ownership of a log writer instance</h1>
+  "!
+  "! <p>The first call will return the "real" token, that will make the caller the actual owner of the log writer
+  "! instance. Subsequent calls will return "bogus-tokens" that are basically good for nothing.</p>
+  "!
+  "! @parameter r_result | Token (Proof of ownership)
+  METHODS claim_ownership
+    RETURNING
+      VALUE(r_result) TYPE REF TO /usi/if_bal_token.
+
+  "! <h1>Destructor</h1>
+  "!
+  "! <p>The log writer is currently a singleton held by the factory. Once created it can only be destroyed by its
+  "! owner. The token will be needed to authorize this action.</p>
+  "!
+  "! @parameter i_token | Token (Proof of ownership)
+  METHODS free
+    IMPORTING
+      i_token TYPE REF TO /usi/if_bal_token.
+
+  "! <h1>Save the log</h1>
+  "!
+  "! <p>Saves the log to the database. The token will be needed to authorize this action.</p>
+  "!
+  "! @parameter i_token | Token (Proof of ownership)
+  METHODS save
+    IMPORTING
+      i_token TYPE REF TO /usi/if_bal_token.
+
+ENDINTERFACE.

@@ -1,58 +1,52 @@
-CLASS /usi/cl_bal_ce_cx_mapper DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_ce_cx_mapper DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
-    CLASS cl_aunit_assert DEFINITION LOAD .
+    TYPE-POOLS abap.
 
-    INTERFACES /usi/if_bal_ce_cx_mapper .
+    CLASS cl_aunit_assert DEFINITION LOAD.
 
+    INTERFACES /usi/if_bal_ce_cx_mapper.
+
+    "! Constructor
+    "!
+    "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
       IMPORTING
-        !i_customizing_dao TYPE REF TO /usi/if_bal_cd_cx_mapper .
+        i_customizing_dao TYPE REF TO /usi/if_bal_cd_cx_mapper.
+
   PROTECTED SECTION.
 
   PRIVATE SECTION.
-    ALIASES get_fallback_mapper_classname FOR /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname.
+    TYPES: BEGIN OF ty_customizing_entry,
+             exception_class_type TYPE seoclstype,
+             exception_class_name TYPE /usi/bal_exception_classname,
+             mapper_class_name    TYPE /usi/bal_exception_mapper,
+           END   OF ty_customizing_entry,
+           ty_customizing_entries TYPE HASHED TABLE OF ty_customizing_entry WITH UNIQUE KEY exception_class_type
+                                                                                            exception_class_name.
 
-    TYPES:
-      BEGIN OF ty_customizing_entry,
-        exception_class_type TYPE seoclstype,
-        exception_class_name TYPE /usi/bal_exception_classname,
-        mapper_class_name    TYPE /usi/bal_exception_mapper,
-      END   OF ty_customizing_entry .
-    TYPES:
-      ty_customizing_entries TYPE HASHED TABLE OF ty_customizing_entry WITH UNIQUE KEY exception_class_type
-                                                                                       exception_class_name .
+    CONSTANTS: BEGIN OF class_type,
+                 class     TYPE seoclstype VALUE 0,
+                 interface TYPE seoclstype VALUE 1,
+               END   OF class_type.
 
-    CONSTANTS:
-      BEGIN OF class_type,
-        class     TYPE seoclstype VALUE 0,
-        interface TYPE seoclstype VALUE 1,
-      END   OF class_type.
-
-    DATA customizing_entries TYPE ty_customizing_entries .
-    DATA customizing_dao TYPE REF TO /usi/if_bal_cd_cx_mapper .
+    DATA: customizing_entries TYPE ty_customizing_entries,
+          customizing_dao     TYPE REF TO /usi/if_bal_cd_cx_mapper.
 
     METHODS get_mapper_class
       IMPORTING
-        !i_exception_class_description TYPE REF TO cl_abap_classdescr
+        i_exception_class_description TYPE REF TO cl_abap_classdescr
       RETURNING
-        VALUE(r_result)                TYPE /usi/bal_exception_mapper .
+        VALUE(r_result)               TYPE /usi/bal_exception_mapper.
 
     METHODS get_validated_customizing
       RETURNING
-        VALUE(r_result) TYPE ty_customizing_entries .
+        VALUE(r_result) TYPE ty_customizing_entries.
 
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
   METHOD /usi/if_bal_ce_cx_mapper~get_exception_mapper_classname.
     DATA class_description TYPE REF TO cl_abap_classdescr.
     class_description ?= cl_abap_typedescr=>describe_by_object_ref( i_exception ).
@@ -82,10 +76,10 @@ CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
 
     " Check customizing for the class itself
     exception_classname = i_exception_class_description->get_relative_name( ).
-    READ TABLE  customizing_entries
+    READ TABLE customizing_entries
       ASSIGNING <customizing_entry>
-      WITH KEY  exception_class_type = class_type-class
-                exception_class_name = exception_classname.
+      WITH KEY exception_class_type = class_type-class
+               exception_class_name = exception_classname.
     IF sy-subrc EQ 0.
       r_result = <customizing_entry>-mapper_class_name.
       RETURN.
@@ -93,10 +87,10 @@ CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
 
     " Check customizing for non-inherited interfaces
     LOOP AT i_exception_class_description->interfaces ASSIGNING <interface> WHERE is_inherited EQ abap_false.
-      READ TABLE  customizing_entries
+      READ TABLE customizing_entries
         ASSIGNING <customizing_entry>
-        WITH KEY  exception_class_type = class_type-interface
-                  exception_class_name = <interface>-name.
+        WITH KEY exception_class_type = class_type-interface
+                 exception_class_name = <interface>-name.
       IF sy-subrc EQ 0.
         r_result = <customizing_entry>-mapper_class_name.
         EXIT.
@@ -110,12 +104,12 @@ CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
           p_descr_ref           = superclass_description
         EXCEPTIONS
           super_class_not_found = 1
-          OTHERS                = 2
-      ).
+          OTHERS                = 2 ).
+
       IF sy-subrc EQ 0.
         r_result = get_mapper_class( superclass_description ).
       ELSE.
-        r_result = get_fallback_mapper_classname( ).
+        r_result = /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname( ).
       ENDIF.
     ENDIF.
 
@@ -134,7 +128,7 @@ CLASS /USI/CL_BAL_CE_CX_MAPPER IMPLEMENTATION.
     DATA: raw_customizing_table TYPE /usi/if_bal_cd_cx_mapper=>ty_records,
           mapper_description    TYPE REF TO /usi/cl_bal_object_descr,
           exception_description TYPE REF TO /usi/cl_bal_object_descr,
-          result_line           TYPE /usi/cl_bal_ce_cx_mapper=>ty_customizing_entry.
+          result_line           TYPE ty_customizing_entry.
 
     FIELD-SYMBOLS: <raw_customizing_entry> TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
 

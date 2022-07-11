@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_CE_CX_MAPPER</CLSNAME>
-     <CMPNAME>GET_EXCEPTION_MAPPER_CLASSNAME</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Get mapper instance for exception</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

@@ -1,12 +1,9 @@
-CLASS /usi/cl_bal_textpool_reader DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_textpool_reader DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_textpool_reader.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     CONSTANTS: BEGIN OF text_types,
                  selection_text TYPE textpoolid VALUE 'S',
@@ -25,27 +22,24 @@ CLASS /usi/cl_bal_textpool_reader DEFINITION
         VALUE(r_result) TYPE textpooltx
       RAISING
         /usi/cx_bal_not_found.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_textpool_reader IMPLEMENTATION.
   METHOD /usi/if_bal_textpool_reader~get_selection_text.
-    r_result  = get_textpool_line(
-                  i_program  = i_program
-                  i_language = i_language
-                  i_id       = text_types-selection_text
-                  i_key      = i_selection_text_key
-                ).
+    r_result  = get_textpool_line( i_program  = i_program
+                                   i_language = i_language
+                                   i_id       = text_types-selection_text
+                                   i_key      = i_selection_text_key ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_textpool_reader~get_text_symbol.
-    r_result  = get_textpool_line(
-                  i_program  = i_program
-                  i_language = i_language
-                  i_id       = text_types-text_symbol
-                  i_key      = i_text_symbol_key
-                ).
+    r_result  = get_textpool_line( i_program  = i_program
+                                   i_language = i_language
+                                   i_id       = text_types-text_symbol
+                                   i_key      = i_text_symbol_key ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_textpool_reader~get_textpool.
@@ -71,19 +65,17 @@ CLASS /usi/cl_bal_textpool_reader IMPLEMENTATION.
           message_variable_2 TYPE symsgv,
           message_variable_3 TYPE symsgv,
           message_variable_4 TYPE symsgv,
-          textpool           TYPE textpool_table.
+          textpool           TYPE /usi/if_bal_textpool_reader=>ty_textpool_table.
 
     FIELD-SYMBOLS: <textpool_line> TYPE textpool.
 
-    textpool = get_textpool(
-                 i_program  = i_program
-                 i_language = i_language
-               ).
+    textpool = get_textpool( i_program  = i_program
+                             i_language = i_language ).
 
-    READ TABLE  textpool
+    READ TABLE textpool
       ASSIGNING <textpool_line>
-      WITH KEY  id  = i_id
-                key = i_key.
+      WITH KEY id  = i_id
+               key = i_key.
 
     IF sy-subrc EQ 0.
       r_result = <textpool_line>-entry.

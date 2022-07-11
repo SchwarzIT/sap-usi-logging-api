@@ -1,20 +1,19 @@
-class /USI/CL_BAL_EM_BASE definition
-  public
-  create public .
+CLASS /usi/cl_bal_em_base DEFINITION PUBLIC CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES /usi/if_bal_exception_mapper.
 
-public section.
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_exception | The to-be-mapped exception
+    "! @raising /usi/cx_bal_root | Not bound
+    METHODS constructor
+      IMPORTING
+        i_exception TYPE REF TO cx_root
+      RAISING
+        /usi/cx_bal_root.
 
-  interfaces /USI/IF_BAL_EXCEPTION_MAPPER .
-
-  methods CONSTRUCTOR
-    importing
-      !I_EXCEPTION type ref to CX_ROOT
-    raising
-      /USI/CX_BAL_ROOT .
   PROTECTED SECTION.
-
-    TYPES ty_object_references TYPE STANDARD TABLE OF REF TO object
-                                        WITH NON-UNIQUE DEFAULT KEY.
+    TYPES: ty_object_references TYPE STANDARD TABLE OF REF TO object WITH NON-UNIQUE DEFAULT KEY.
 
     DATA exception TYPE REF TO cx_root.
 
@@ -31,29 +30,25 @@ public section.
       IMPORTING
         i_source_data_container TYPE REF TO object
         i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
+
   PRIVATE SECTION.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_EM_BASE IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_em_base IMPLEMENTATION.
   METHOD /usi/if_bal_exception_mapper~get_data_containers.
     DATA objects TYPE ty_object_references.
     FIELD-SYMBOLS <object> TYPE REF TO object.
 
     objects = get_exceptions_oref_attributes( ).
     LOOP AT objects ASSIGNING <object>.
-      get_attached_data_cont_coll(
-        i_source_data_cont_coll = <object>
-        i_target_data_cont_coll = i_target_data_cont_coll
-      ).
+      get_attached_data_cont_coll( i_source_data_cont_coll = <object>
+                                   i_target_data_cont_coll = i_target_data_cont_coll ).
 
-      get_attached_data_container(
-        i_source_data_container = <object>
-        i_target_data_cont_coll = i_target_data_cont_coll
-      ).
+      get_attached_data_container( i_source_data_container = <object>
+                                   i_target_data_cont_coll = i_target_data_cont_coll ).
     ENDLOOP.
   ENDMETHOD.
 

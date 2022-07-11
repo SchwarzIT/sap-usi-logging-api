@@ -1,17 +1,16 @@
-CLASS /usi/cl_bal_lstate_invalidated DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_lstate_invalidated DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
+    TYPE-POOLS abap.
 
-    INTERFACES /usi/if_bal_logger_state .
+    INTERFACES /usi/if_bal_logger_state.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     METHODS raise_wrong_state_exception
       RAISING
         /usi/cx_bal_root.
+
 ENDCLASS.
 
 

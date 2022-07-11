@@ -7,6 +7,9 @@ CLASS /usi/cl_bal_logger_dao_factory DEFINITION
 
     INTERFACES /usi/if_bal_logger_dao_factory .
 
+    "! <h1>Factory Method (Singleton pattern)</h1>
+    "!
+    "! @parameter r_result | Factory instance
     CLASS-METHODS get_instance
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/if_bal_logger_dao_factory .

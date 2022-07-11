@@ -1,21 +1,21 @@
-CLASS /usi/cl_bal_enum_message_param DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE .
-
+CLASS /usi/cl_bal_enum_message_param DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-    CLASS-DATA log_number TYPE REF TO /usi/cl_bal_enum_message_param READ-ONLY.
-    CLASS-DATA message_number TYPE REF TO /usi/cl_bal_enum_message_param READ-ONLY.
+    CLASS-DATA: log_number     TYPE REF TO /usi/cl_bal_enum_message_param READ-ONLY,
+                message_number TYPE REF TO /usi/cl_bal_enum_message_param READ-ONLY.
 
     DATA value TYPE balpar READ-ONLY.
 
-    CLASS-METHODS class_constructor .
+    "! <h1>Create static instances</h1>
+    CLASS-METHODS class_constructor.
 
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+    "! <h1>Create instances</h1>
     METHODS constructor
       IMPORTING
-        !i_value TYPE balpar.
+        i_value TYPE balpar.
+
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
 
 ENDCLASS.
 

@@ -43,7 +43,7 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
 
     " Create one item / node per data container
     LOOP AT i_sorted_data_containers ASSIGNING <sorted_data_container>.
-      ADD 1 TO tabix.
+      tabix = tabix + 1.
       CONCATENATE 'ID_' tabix INTO node_container-node_key IN CHARACTER MODE.
       node_container-data_container = <sorted_data_container>-data_container.
       INSERT node_container INTO TABLE node_containers.
@@ -63,42 +63,35 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
           parent_node                             = node_keys-unknown.
       ENDCASE.
 
-      insert_node_and_item_container(
-        i_node_key        = node_container-node_key
-        i_parent          = parent_node
-        i_image           = icon
-        i_data_container  = node_container-data_container
-      ).
+      insert_node_and_item_container( i_node_key       = node_container-node_key
+                                      i_parent         = parent_node
+                                      i_image          = icon
+                                      i_data_container = node_container-data_container ).
     ENDLOOP.
 
     " Create folders for container types
     IF needed_data_container_groups-unknown EQ abap_true.
-      insert_node_and_item_folder(
-        i_node_key = node_keys-unknown
-        i_parent   = node_keys-root
-        i_text     = TEXT-nuk " Node: Unknown
-      ).
+      " Node: Unknown
+      insert_node_and_item_folder( i_node_key = node_keys-unknown
+                                   i_parent   = node_keys-root
+                                   i_text     = TEXT-nuk ).
     ENDIF.
     IF needed_data_container_groups-navigator EQ abap_true.
-      insert_node_and_item_folder(
-        i_node_key = node_keys-navigator
-        i_parent   = node_keys-root
-        i_text     = TEXT-nnv " Node: Navigator
-      ).
+      " Node: Navigator
+      insert_node_and_item_folder( i_node_key = node_keys-navigator
+                                   i_parent   = node_keys-root
+                                   i_text     = TEXT-nnv ).
     ENDIF.
     IF needed_data_container_groups-navigator EQ abap_true.
-      insert_node_and_item_folder(
-        i_node_key = node_keys-renderer
-        i_parent   = node_keys-root
-        i_text     = TEXT-nrd " Node: Renderer
-      ).
+      " Node: Renderer
+      insert_node_and_item_folder( i_node_key = node_keys-renderer
+                                   i_parent   = node_keys-root
+                                   i_text     = TEXT-nrd ).
     ENDIF.
 
     " Create the root folder
-    insert_node_and_item_folder(
-      i_node_key = node_keys-root
-      i_text     = TEXT-nrt " Node: Root
-    ).
+    insert_node_and_item_folder( i_node_key = node_keys-root
+                                 i_text     = TEXT-nrt ).
   ENDMETHOD.
 
   METHOD insert_node_and_item_container.
@@ -157,19 +150,17 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
 
     tree_control->add_nodes_and_items(
       EXPORTING
-        node_table                     = nodes
-        item_table                     = items
-        item_table_structure_name      = 'MTREEITM'
+        node_table                = nodes
+        item_table                = items
+        item_table_structure_name = 'MTREEITM'
       EXCEPTIONS
-        OTHERS                         = 0
-    ).
+        OTHERS                    = 0 ).
 
     tree_control->expand_root_nodes(
       EXPORTING
-        expand_subtree            = abap_true
+        expand_subtree = abap_true
       EXCEPTIONS
-        OTHERS                    = 0
-    ).
+        OTHERS         = 0 ).
   ENDMETHOD.
 
   METHOD register_events.
@@ -186,16 +177,15 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
 
     tree_control->set_registered_events(
       EXPORTING
-        events =  tree_events
+        events = tree_events
       EXCEPTIONS
-        OTHERS = 0
-    ).
+        OTHERS = 0 ).
   ENDMETHOD.
 
   METHOD on_tree_item_double_click.
     FIELD-SYMBOLS: <node_containter> TYPE ty_node_container.
 
-    READ TABLE  node_containers
+    READ TABLE node_containers
       ASSIGNING <node_containter>
       WITH TABLE KEY node_key = node_key.
 

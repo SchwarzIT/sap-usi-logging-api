@@ -1,28 +1,24 @@
-CLASS /usi/cl_bal_cd_retention DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_cd_retention DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
+    INTERFACES /usi/if_bal_cd_retention.
 
-    INTERFACES /usi/if_bal_cd_retention .
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+
 ENDCLASS.
 
 
 
 CLASS /USI/CL_BAL_CD_RETENTION IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_cd_retention~get_records.
-    SELECT  log_level
-            log_object
-            sub_object
-            retention_time
-            no_early_delete
-      FROM  /usi/bal_lv_rtim
-      INTO  TABLE r_result
+    SELECT log_level
+           log_object
+           sub_object
+           retention_time
+           no_early_delete
+      FROM /usi/bal_lv_rtim
+      INTO TABLE r_result
       WHERE log_level  EQ i_log_level
         AND log_object IN i_log_object_range
         AND sub_object IN i_sub_object_range.

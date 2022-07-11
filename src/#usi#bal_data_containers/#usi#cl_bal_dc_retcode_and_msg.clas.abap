@@ -1,26 +1,27 @@
-CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
+    INTERFACES /usi/if_bal_message_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_data_container_rnd.
 
-    INTERFACES /usi/if_bal_message_details .
-    INTERFACES /usi/if_bal_data_container .
-    INTERFACES /usi/if_exception_details .
-    INTERFACES /usi/if_bal_data_container_rnd .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
-    ALIASES get_classname
-      FOR /usi/if_bal_data_container~get_classname .
-
+    "! Constructor
+    "!
+    "! @parameter i_message | The Message
+    "! @parameter i_return_code | The return code
     METHODS constructor
       IMPORTING
-        !i_message           TYPE symsg
-        VALUE(i_return_code) TYPE sysubrc .
+        i_message            TYPE symsg
+        VALUE(i_return_code) TYPE sysubrc.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     TYPES: ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value
-                                  WITH NON-UNIQUE DEFAULT KEY.
+                                       WITH NON-UNIQUE DEFAULT KEY.
+
     DATA: BEGIN OF alv_data,
             fieldcat TYPE lvc_t_fcat,
             output   TYPE ty_alv_output,
@@ -31,13 +32,12 @@ CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION
     METHODS get_alv_output_table
       RETURNING
         VALUE(r_result) TYPE ty_alv_output.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_data_container_rnd~render.
     DATA: alv_grid           TYPE REF TO cl_gui_alv_grid,
           excluded_functions TYPE ui_functions,
@@ -68,8 +68,7 @@ CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
         it_toolbar_excluding = excluded_functions
       CHANGING
         it_outtab            = alv_data-output
-        it_fieldcatalog      = alv_data-fieldcat
-    ).
+        it_fieldcatalog      = alv_data-fieldcat ).
   ENDMETHOD.
 
 
@@ -98,7 +97,7 @@ CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~get_classname.
-    r_result =  '/USI/CL_BAL_DC_RETCODE_AND_MSG'.
+    r_result = '/USI/CL_BAL_DC_RETCODE_AND_MSG'.
   ENDMETHOD.
 
 

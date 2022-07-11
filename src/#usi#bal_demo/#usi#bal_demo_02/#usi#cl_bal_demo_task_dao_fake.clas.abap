@@ -1,17 +1,33 @@
 CLASS /usi/cl_bal_demo_task_dao_fake DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
+
+    "! <h1>Factory method</h1>
+    "!
+    "! @parameter r_result | The singleton
     CLASS-METHODS get_instance
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_demo_task_dao_fake.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! <p>Creates Fake-DAO-Object and sets fake-data internally.</p>
     METHODS constructor.
 
+    "! <h1>Insert task into buffer (NO DB-Update)</h1>
+    "!
+    "! @parameter i_task | new task
+    "! @raising /usi/cx_bal_demo_root | ID already in use
     METHODS create_task
       IMPORTING
         i_task TYPE /usi/bal_demo_to_do_task
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Read task from buffer</h1>
+    "!
+    "! @parameter i_task_id | ID of to-be-read task
+    "! @parameter r_result | Task data
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS read_task
       IMPORTING
         i_task_id       TYPE /usi/bal_demo_to_do_task_id
@@ -20,16 +36,27 @@ CLASS /usi/cl_bal_demo_task_dao_fake DEFINITION PUBLIC FINAL CREATE PRIVATE.
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Read tasks from buffer</h1>
+    "!
+    "! @parameter r_result | Current buffer content
     METHODS read_tasks
       RETURNING
         VALUE(r_result) TYPE /usi/bal_demo_to_do_tasks.
 
+    "! <h1>Update task in buffer (NO DB-Update)</h1>
+    "!
+    "! @parameter i_task | to-be-updated task
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS update_task
       IMPORTING
         i_task TYPE /usi/bal_demo_to_do_task
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Delete task from buffer (NO DB-Update)</h1>
+    "!
+    "! @parameter i_task_id | Task-ID
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS delete_task
       IMPORTING
         i_task_id TYPE /usi/bal_demo_to_do_task_id
@@ -100,7 +127,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
 
     INSERT i_task INTO TABLE tasks.
     IF sy-subrc NE 0.
-      IF 1 EQ 0. MESSAGE e010(/usi/bal_demo_02) WITH i_task-id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE e010(/usi/bal_demo_02) WITH i_task-id.
+      ENDIF.
       TRY.
           WRITE i_task-id TO message_variable_1 LEFT-JUSTIFIED.
 
@@ -113,7 +142,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
       ENDTRY.
 
     ELSE.
-      IF 1 EQ 0. MESSAGE i011(/usi/bal_demo_02) WITH i_task-id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i011(/usi/bal_demo_02) WITH i_task-id.
+      ENDIF.
       log_info_message( i_message_number     = '011'
                         i_message_variable_1 = i_task-id ).
 
@@ -127,7 +158,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
     READ TABLE tasks INTO r_result WITH TABLE KEY id = i_task_id.
 
     IF sy-subrc NE 0.
-      IF 1 EQ 0. MESSAGE e014(/usi/bal_demo_02) WITH i_task_id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE e014(/usi/bal_demo_02) WITH i_task_id.
+      ENDIF.
       TRY.
           WRITE i_task_id TO message_variable_1 LEFT-JUSTIFIED.
 
@@ -140,7 +173,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
       ENDTRY.
 
     ELSE.
-      IF 1 EQ 0. MESSAGE i017(/usi/bal_demo_02) WITH i_task_id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i017(/usi/bal_demo_02) WITH i_task_id.
+      ENDIF.
       log_info_message( i_message_number     = '017'
                         i_message_variable_1 = i_task_id ).
 
@@ -160,7 +195,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
     READ TABLE tasks WITH TABLE KEY id = i_task-id REFERENCE INTO task_ref.
 
     IF sy-subrc NE 0.
-      IF 1 EQ 0. MESSAGE e014(/usi/bal_demo_02) WITH i_task-id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE e014(/usi/bal_demo_02) WITH i_task-id.
+      ENDIF.
       TRY.
           WRITE i_task-id TO message_variable_1 LEFT-JUSTIFIED.
 
@@ -175,7 +212,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
     ELSE.
       task_ref->text = i_task-text.
 
-      IF 1 EQ 0. MESSAGE i016(/usi/bal_demo_02) WITH i_task-id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i016(/usi/bal_demo_02) WITH i_task-id.
+      ENDIF.
       log_info_message( i_message_number     = '016'
                         i_message_variable_1 = i_task-id ).
 
@@ -190,7 +229,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
     DELETE TABLE tasks WITH TABLE KEY id = i_task_id.
 
     IF sy-subrc NE 0.
-      IF 1 EQ 0. MESSAGE e014(/usi/bal_demo_02) WITH i_task_id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE e014(/usi/bal_demo_02) WITH i_task_id.
+      ENDIF.
       TRY.
           WRITE i_task_id TO message_variable_1 LEFT-JUSTIFIED.
 
@@ -203,7 +244,9 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
       ENDTRY.
 
     ELSE.
-      IF 1 EQ 0. MESSAGE i015(/usi/bal_demo_02) WITH i_task_id. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i015(/usi/bal_demo_02) WITH i_task_id.
+      ENDIF.
       log_info_message( i_message_number     = '015'
                         i_message_variable_1 = i_task_id ).
 

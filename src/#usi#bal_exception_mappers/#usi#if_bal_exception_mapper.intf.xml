@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_EXCEPTION_MAPPER</CLSNAME>
-     <CMPNAME>GET_T100_MESSAGE</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Get SYMSG-Struc containing T100-data</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

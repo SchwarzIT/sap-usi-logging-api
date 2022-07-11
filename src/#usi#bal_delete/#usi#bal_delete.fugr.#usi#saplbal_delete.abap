@@ -1,8 +1,8 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE /USI/LBAL_DELETETOP.               " Global Declarations
-  INCLUDE /USI/LBAL_DELETEUXX.               " Function Modules
+INCLUDE /usi/lbal_deletetop.
+INCLUDE /usi/lbal_deleteuxx.
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *

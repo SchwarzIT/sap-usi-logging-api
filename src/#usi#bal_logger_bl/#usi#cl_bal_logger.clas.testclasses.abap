@@ -198,34 +198,26 @@ CLASS lcl_unit_test_delegation IMPLEMENTATION.
 
     cut->add_exception( exception ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-add_exception
-      msg = 'STATE->ADD_EXCEPTION( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-add_exception
+                                    msg = 'STATE->ADD_EXCEPTION( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_add_free_text.
     cut->add_free_text( `Just a test` ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-add_free_text
-      msg = 'STATE->ADD_FREE_TEXT( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-add_free_text
+                                    msg = 'STATE->ADD_FREE_TEXT( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_add_message.
-    cut->add_message(
-      i_message_class   = '38'
-      i_message_number  = '000'
-    ).
+    cut->add_message( i_message_class  = '38'
+                      i_message_number = '000' ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-add_message
-      msg = 'STATE->ADD_MESSAGE( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-add_message
+                                    msg = 'STATE->ADD_MESSAGE( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_free.
@@ -233,21 +225,17 @@ CLASS lcl_unit_test_delegation IMPLEMENTATION.
 
     cut->free( token ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-free
-      msg = 'STATE->FREE( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-free
+                                    msg = 'STATE->FREE( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_claim_ownership.
     cut->claim_ownership( ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-claim_ownership
-      msg = 'STATE->CLAIM_OWNERSHIP( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-claim_ownership
+                                    msg = 'STATE->CLAIM_OWNERSHIP( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_save.
@@ -255,11 +243,9 @@ CLASS lcl_unit_test_delegation IMPLEMENTATION.
 
     cut->save( token ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = state_double->called_methods-save
-      msg = 'STATE->SAVE( ) not called!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = state_double->called_methods-save
+                                    msg = 'STATE->SAVE( ) not called!' ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -312,11 +298,9 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
   METHOD test_raises_on_free_ok.
     cut->free( token ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = event_raised
-      msg = 'No event raised on free( )!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = event_raised
+                                    msg = 'No event raised on free( )!' ).
   ENDMETHOD.
 
   METHOD test_dont_raise_on_free_error.
@@ -324,11 +308,9 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
 
     cut->free( token ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = event_raised
-      msg = 'Event raised, though free( ) ran on errors!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = event_raised
+                                    msg = 'Event raised, though free( ) ran on errors!' ).
   ENDMETHOD.
 
   METHOD on_free.
@@ -417,10 +399,8 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
 
   METHOD test_state_trans_add_message.
     lcl_log_writer_state_double=>inject_into( cut ).
-    cut->add_message(
-      i_message_class   = '38'
-      i_message_number  = '000'
-    ).
+    cut->add_message( i_message_class  = '38'
+                      i_message_number = '000' ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
@@ -470,10 +450,8 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
 
     state_double = lcl_log_writer_state_double=>inject_into( cut ).
     state_double->make_next_call_fail( ).
-    cut->add_message(
-      i_message_class   = '38'
-      i_message_number  = '000'
-    ).
+    cut->add_message( i_message_class  = '38'
+                      i_message_number = '000' ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
@@ -556,10 +534,8 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
     log_writer ?= cut.
     r_result = log_writer->state.
 
-    cl_aunit_assert=>assert_bound(
-      act = r_result
-      msg = `State is not bound!`
-    ).
+    cl_aunit_assert=>assert_bound( act = r_result
+                                   msg = `State is not bound!` ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -614,10 +590,8 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
 
     actual_result = cut->claim_ownership( ).
 
-    cl_aunit_assert=>assert_bound(
-      act = actual_result
-      msg = `Should return dummy token!`
-    ).
+    cl_aunit_assert=>assert_bound( act = actual_result
+                                   msg = `Should return dummy token!` ).
     IF secret_token EQ actual_result.
       cl_aunit_assert=>fail( `Returns real token on failure!!!` ).
     ENDIF.
@@ -631,11 +605,9 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
     state_double->set_token( expected ).
     actual = cut->claim_ownership( ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = expected
-      act = actual
-      msg = `Token should come from state in this case!`
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected
+                                    act = actual
+                                    msg = `Token should come from state in this case!` ).
   ENDMETHOD.
 ENDCLASS.
 

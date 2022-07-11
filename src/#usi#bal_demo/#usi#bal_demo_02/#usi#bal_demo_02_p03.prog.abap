@@ -218,7 +218,9 @@ CLASS lcl_main_screen IMPLEMENTATION.
                                              i_external_id = i_external_id ).
     log-token  = log-logger->claim_ownership( ).
 
-    IF 1 EQ 0. MESSAGE i030(/usi/bal_demo_02). ENDIF.
+    IF 1 EQ 0.
+      MESSAGE i030(/usi/bal_demo_02).
+    ENDIF.
     log-logger->add_message( i_message_type   = /usi/cl_bal_enum_message_type=>information
                              i_message_class  = '/USI/BAL_DEMO_02'
                              i_message_number = '030' ).

@@ -16,10 +16,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
   METHOD verify_throws_on_no_cust.
     TRY.
-        cut->get_records(
-          i_user_name        = sy-uname
-          i_log_object_range = exclude_all_log_objects_range
-        ).
+        cut->get_records( i_user_name        = sy-uname
+                          i_log_object_range = exclude_all_log_objects_range ).
         cl_aunit_assert=>fail( `Should throw exception on no data!` ).
       CATCH /usi/cx_bal_root.
         RETURN.

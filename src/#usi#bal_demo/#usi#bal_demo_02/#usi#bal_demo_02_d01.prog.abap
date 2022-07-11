@@ -4,7 +4,7 @@
 CLASS lcl_popup_maintain_task DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
 
-    CLASS-DATA: singleton TYPE REF TO lcl_popup_maintain_task.
+    CLASS-DATA: singleton TYPE REF TO lcl_popup_maintain_task READ-ONLY.
 
     DATA: BEGIN OF screen_fields,
             user_command TYPE syucomm,

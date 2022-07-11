@@ -1,20 +1,21 @@
-CLASS /usi/cl_bal_ce_data_containers DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_ce_data_containers DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    CLASS cl_aunit_assert DEFINITION LOAD .
+    CLASS cl_aunit_assert DEFINITION LOAD.
 
-    INTERFACES /usi/if_bal_ce_data_containers .
+    INTERFACES /usi/if_bal_ce_data_containers.
 
+    "! Constructor
+    "!
+    "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
       IMPORTING
-        !i_customizing_dao TYPE REF TO /usi/if_bal_cd_data_containers.
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+        i_customizing_dao TYPE REF TO /usi/if_bal_cd_data_containers.
 
-    DATA customizing_dao TYPE REF TO /usi/if_bal_cd_data_containers .
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+    DATA customizing_dao TYPE REF TO /usi/if_bal_cd_data_containers.
+
 ENDCLASS.
 
 
@@ -41,10 +42,8 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
     sub_object_range_helper->insert_line( space ).
 
     TRY.
-        customizing_records = customizing_dao->get_records(
-                                i_log_object_range  = log_object_range_helper->range
-                                i_sub_object_range  = sub_object_range_helper->range
-                              ).
+        customizing_records = customizing_dao->get_records( i_log_object_range = log_object_range_helper->range
+                                                            i_sub_object_range = sub_object_range_helper->range ).
       CATCH /usi/cx_bal_root.
         CLEAR r_result.
     ENDTRY.
@@ -78,6 +77,7 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
       INSERT <customizing_record>-classname INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.
+
 
   METHOD constructor.
     customizing_dao = i_customizing_dao.

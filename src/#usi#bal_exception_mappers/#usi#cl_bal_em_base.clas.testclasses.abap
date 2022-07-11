@@ -81,10 +81,8 @@ CLASS lcl_unit_test IMPLEMENTATION.
     CREATE OBJECT data_container_collection TYPE /usi/cl_bal_dc_collection.
     cut->get_data_containers( data_container_collection ).
 
-    assert_container_in_collection(
-      i_data_container_collection = data_container_collection
-      i_data_container            = data_container
-    ).
+    assert_container_in_collection( i_data_container_collection = data_container_collection
+                                    i_data_container            = data_container ).
   ENDMETHOD.
 
   METHOD test_data_container_collection.
@@ -110,10 +108,8 @@ CLASS lcl_unit_test IMPLEMENTATION.
     CREATE OBJECT data_container_collection TYPE /usi/cl_bal_dc_collection.
     cut->get_data_containers( data_container_collection ).
 
-    assert_container_in_collection(
-      i_data_container_collection = data_container_collection
-      i_data_container            = data_container
-    ).
+    assert_container_in_collection( i_data_container_collection = data_container_collection
+                                    i_data_container            = data_container ).
   ENDMETHOD.
 
   METHOD test_does_not_dump_on_previous.

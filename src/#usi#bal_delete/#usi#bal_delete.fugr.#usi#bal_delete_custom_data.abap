@@ -1,4 +1,4 @@
-FUNCTION /USI/BAL_DELETE_CUSTOM_DATA.
+FUNCTION /usi/bal_delete_custom_data.
 *"----------------------------------------------------------------------
 *"*"Update Function Module:
 *"

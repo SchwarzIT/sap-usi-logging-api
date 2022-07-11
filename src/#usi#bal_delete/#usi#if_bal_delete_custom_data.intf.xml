@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_DELETE_CUSTOM_DATA</CLSNAME>
-     <CMPNAME>DELETE_CUSTOM_DATA</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Delete custom data</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

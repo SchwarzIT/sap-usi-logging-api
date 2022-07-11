@@ -17,11 +17,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     actual_result = cut->is_equal( cut ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = actual_result
-      msg = 'Instance does not equal itself!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = actual_result
+                                    msg = 'Instance does not equal itself!' ).
   ENDMETHOD.
 
   METHOD assert_not_equals_others.
@@ -34,10 +32,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     actual_result = cut->is_equal( other_instance ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = actual_result
-      msg = 'Two independet instances are considered equal!'
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = actual_result
+                                    msg = 'Two independet instances are considered equal!' ).
   ENDMETHOD.
 ENDCLASS.

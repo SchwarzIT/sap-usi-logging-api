@@ -5,27 +5,13 @@
    <VSEOCLASS>
     <CLSNAME>/USI/CL_BAL_EM_BASE</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Abstract base class for exception mappers</DESCRIPT>
+    <DESCRIPT>Base class for exception mappers</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
     <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
    </VSEOCLASS>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/CL_BAL_EM_BASE</CLSNAME>
-     <CMPNAME>CONSTRUCTOR</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>CONSTRUCTOR</DESCRIPT>
-    </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/CL_BAL_EM_BASE</CLSNAME>
-     <CMPNAME>EXCEPTION</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Abstract Superclass for All Global Exceptions</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

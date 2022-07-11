@@ -2,14 +2,22 @@ CLASS /usi/cl_bal_logger DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_logger.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_factory | BL-Factory (Internal object creation)
+    "! @parameter i_relevant_data_containers | Relevant data containers (Customizing)
+    "! @parameter i_log_level | Current log level (Customizing)
+    "! @parameter i_auto_save_pckg_size | Package size of auto save (Customizing)
+    "! @parameter i_log_dao | DAO-Instance for messages (Persistency Layer)
+    "! @parameter i_data_cont_coll_dao | DAO-Instance for data-containers (Persistency Layer)
     METHODS constructor
       IMPORTING
-        !i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
-        !i_relevant_data_containers TYPE /usi/bal_data_cont_classnames
-        !i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
-        !i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
-        !i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
-        !i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao.
+        i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
+        i_relevant_data_containers TYPE /usi/bal_data_cont_classnames
+        i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
+        i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
+        i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
+        i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao.
 
   PROTECTED SECTION.
 
@@ -27,8 +35,6 @@ ENDCLASS.
 
 
 CLASS /usi/cl_bal_logger IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_logger~add_exception.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
           exception_text TYPE string.
@@ -44,8 +50,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
@@ -68,8 +74,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
@@ -89,22 +95,22 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
            i_message_variable_4 TO message_variable_4 LEFT-JUSTIFIED.
 
     TRY.
-        state->add_message( i_problem_class       = i_problem_class
-                            i_detail_level        = i_detail_level
-                            i_message_type        = i_message_type
-                            i_message_class       = i_message_class
-                            i_message_number      = i_message_number
-                            i_message_variable_1  = message_variable_1
-                            i_message_variable_2  = message_variable_2
-                            i_message_variable_3  = message_variable_3
-                            i_message_variable_4  = message_variable_4
-                            i_details             = i_details
-                            i_message_context     = i_message_context ).
+        state->add_message( i_problem_class      = i_problem_class
+                            i_detail_level       = i_detail_level
+                            i_message_type       = i_message_type
+                            i_message_class      = i_message_class
+                            i_message_number     = i_message_number
+                            i_message_variable_1 = message_variable_1
+                            i_message_variable_2 = message_variable_2
+                            i_message_variable_3 = message_variable_3
+                            i_message_variable_4 = message_variable_4
+                            i_details            = i_details
+                            i_message_context    = i_message_context ).
       CATCH /usi/cx_bal_root INTO exception.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
@@ -116,9 +122,9 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
           message_type   TYPE REF TO /usi/cl_bal_enum_message_type.
 
     " Check sy-msgty and sy-msgid
-    ASSERT ID   /usi/bal_log_writer
-      FIELDS    sy-msgty
-                sy-msgid
+    ASSERT ID /usi/bal_log_writer
+      FIELDS sy-msgty
+             sy-msgid
       CONDITION sy-msgty IS NOT INITIAL
             AND sy-msgid IS NOT INITIAL.
     IF sy-msgty IS INITIAL OR
@@ -131,8 +137,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " SY-MSGTY contains an invalid message type!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
         RETURN.
     ENDTRY.
@@ -153,8 +159,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
@@ -180,8 +186,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
 
         " Return dummy-token, that grants no authorizations.
@@ -204,8 +210,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
@@ -220,8 +226,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO exception.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
-        ASSERT ID   /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.

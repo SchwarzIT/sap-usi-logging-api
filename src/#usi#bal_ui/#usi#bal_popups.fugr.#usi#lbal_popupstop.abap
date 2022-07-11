@@ -1,10 +1,10 @@
-FUNCTION-POOL /usi/bal_popups.              "MESSAGE-ID ..
+FUNCTION-POOL /usi/bal_popups.
 
 TYPE-POOLS: abap, icon.
 
-INCLUDE /usi/lbal_popupsd01.                " Local class (Def): LIF_SCREEN_CONTROLLER
-INCLUDE /usi/lbal_popupsd02.                " Local class (Def): LCL_DATA_CONTAINER_SELECTOR
-INCLUDE /usi/lbal_popupsd03.                " Local class (Def): LCL_LOG_MESSAGE_DETAIL
+INCLUDE /usi/lbal_popupsd01.
+INCLUDE /usi/lbal_popupsd02.
+INCLUDE /usi/lbal_popupsd03.
 
 DATA: screen_controller TYPE REF TO lif_screen_controller,
       user_command      TYPE syucomm.

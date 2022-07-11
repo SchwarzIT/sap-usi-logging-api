@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_DATA_CONTAINER_NAV</CLSNAME>
-     <CMPNAME>NAVIGATE</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Navigate</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

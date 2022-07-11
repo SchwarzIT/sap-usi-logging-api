@@ -1,56 +1,57 @@
-CLASS /usi/cl_bal_dc_itab DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_itab DEFINITION PUBLIC CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
+    TYPE-POOLS abap.
 
-    INTERFACES /usi/if_bal_message_details .
-    INTERFACES /usi/if_exception_details .
-    INTERFACES /usi/if_bal_data_container .
-    INTERFACES /usi/if_bal_data_container_rnd .
+    INTERFACES /usi/if_bal_message_details.
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container_rnd.
 
-    ALIASES get_classname
-      FOR /usi/if_bal_data_container~get_classname .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
+    "! Constructor
+    "!
+    "! @parameter i_internal_table | Internal table
+    "! @parameter i_title | Optional: Title text (useful, if more than one Itab is appended)
+    "! @parameter i_fieldcatalog | Optional: Field catalog
     METHODS constructor
       IMPORTING
-        !i_internal_table TYPE ANY TABLE
-        !i_title          TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL
-        !i_fieldcatalog   TYPE lvc_t_fcat OPTIONAL .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
-    TYPES:
-      ty_fieldcatalog_name TYPE c LENGTH 10 .
-    TYPES:
-      BEGIN OF ty_fieldcatalog,
-        name         TYPE ty_fieldcatalog_name,
-        fieldcatalog TYPE lvc_t_fcat,
-      END   OF ty_fieldcatalog .
-    TYPES:
-      ty_fieldcatalog_table TYPE HASHED TABLE OF ty_fieldcatalog WITH UNIQUE KEY name .
+        i_internal_table TYPE ANY TABLE
+        i_title          TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL
+        i_fieldcatalog   TYPE lvc_t_fcat OPTIONAL.
 
-    DATA selected_fieldcatalog_name TYPE ty_fieldcatalog_name .
-    DATA internal_table_ref TYPE REF TO data .
-    DATA title TYPE REF TO /usi/if_bal_text_container_c40.
-    DATA table_name TYPE tabname .
-    CONSTANTS:
-      BEGIN OF fieldcatalog_names,
-        external  TYPE ty_fieldcatalog_name VALUE 'EXTERNAL',
-        internal  TYPE ty_fieldcatalog_name VALUE 'INTERNAL',
-        technical TYPE ty_fieldcatalog_name VALUE 'TECHNICAL',
-      END   OF fieldcatalog_names .
-    CONSTANTS:
-      BEGIN OF user_commands,
-        set_external_fcat  TYPE ui_func VALUE 'SET_FCAT_EXTERNAL',
-        set_internal_fcat  TYPE ui_func VALUE 'SET_FCAT_INTERNAL',
-        set_technical_fcat TYPE ui_func VALUE 'SET_FCAT_TECHNICAL',
-      END   OF user_commands .
-    DATA fieldcatalog_table TYPE ty_fieldcatalog_table .
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+    TYPES: ty_fieldcatalog_name TYPE c LENGTH 10,
+           BEGIN OF ty_fieldcatalog,
+             name         TYPE ty_fieldcatalog_name,
+             fieldcatalog TYPE lvc_t_fcat,
+           END   OF ty_fieldcatalog,
+           ty_fieldcatalogs TYPE HASHED TABLE OF ty_fieldcatalog WITH UNIQUE KEY name.
+
+    CONSTANTS: BEGIN OF fieldcatalog_names,
+                 external  TYPE ty_fieldcatalog_name VALUE 'EXTERNAL',
+                 internal  TYPE ty_fieldcatalog_name VALUE 'INTERNAL',
+                 technical TYPE ty_fieldcatalog_name VALUE 'TECHNICAL',
+               END   OF fieldcatalog_names.
+
+    CONSTANTS: BEGIN OF user_commands,
+                 set_external_fcat  TYPE ui_func VALUE 'SET_FCAT_EXTERNAL',
+                 set_internal_fcat  TYPE ui_func VALUE 'SET_FCAT_INTERNAL',
+                 set_technical_fcat TYPE ui_func VALUE 'SET_FCAT_TECHNICAL',
+               END   OF user_commands.
+
+    DATA: fieldcatalog_table         TYPE ty_fieldcatalogs,
+          internal_table_ref         TYPE REF TO data,
+          selected_fieldcatalog_name TYPE ty_fieldcatalog_name,
+          title                      TYPE REF TO /usi/if_bal_text_container_c40,
+          table_name                 TYPE tabname.
 
     METHODS get_excluded_grid_functions
       RETURNING
-        VALUE(r_result) TYPE ui_functions .
+        VALUE(r_result) TYPE ui_functions.
+
     METHODS get_field_catalog
       IMPORTING
         i_name          TYPE ty_fieldcatalog_name
@@ -58,78 +59,84 @@ CLASS /usi/cl_bal_dc_itab DEFINITION
         VALUE(r_result) TYPE lvc_t_fcat
       RAISING
         /usi/cx_bal_root.
+
     METHODS get_layout
       RETURNING
-        VALUE(r_result) TYPE lvc_s_layo .
+        VALUE(r_result) TYPE lvc_s_layo.
+
     METHODS get_table_name_by_data
       IMPORTING
-        !i_internal_table TYPE ANY TABLE
+        i_internal_table TYPE ANY TABLE
       RETURNING
-        VALUE(r_result)   TYPE tabname
+        VALUE(r_result)  TYPE tabname
       RAISING
-        /usi/cx_bal_root .
+        /usi/cx_bal_root.
+
     METHODS has_field_catalog
       IMPORTING
         i_name          TYPE ty_fieldcatalog_name
       RETURNING
         VALUE(r_result) TYPE abap_bool.
+
     METHODS insert_fieldcatalog
       IMPORTING
         i_name         TYPE ty_fieldcatalog_name
         i_fieldcatalog TYPE lvc_t_fcat.
+
     METHODS merge_internal_fieldcatalog
       IMPORTING
-        !i_tabname      TYPE tabname
+        i_tabname       TYPE tabname
       RETURNING
         VALUE(r_result) TYPE lvc_t_fcat
       RAISING
         /usi/cx_bal_root.
+
     METHODS merge_technical_fieldcatalog
       IMPORTING
-        !i_tabname      TYPE tabname
+        i_tabname       TYPE tabname
       RETURNING
         VALUE(r_result) TYPE lvc_t_fcat
       RAISING
         /usi/cx_bal_root.
+
     METHODS on_alv_toolbar
         FOR EVENT toolbar OF cl_gui_alv_grid
       IMPORTING
-        !e_object .
+        e_object.
+
     METHODS on_alv_user_command
         FOR EVENT user_command OF cl_gui_alv_grid
       IMPORTING
-        !e_ucomm
-        !sender .
+        e_ucomm
+        sender.
+
     METHODS refresh_alv_output
       IMPORTING
         i_alv_grid TYPE REF TO cl_gui_alv_grid
       RAISING
         /usi/cx_bal_root.
+
     METHODS raise_exception_on_subrc
       RAISING
         /usi/cx_bal_root.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_dc_itab IMPLEMENTATION.
   METHOD /usi/if_bal_data_container_rnd~render.
     DATA: fieldcatalog TYPE lvc_t_fcat,
           alv_grid     TYPE REF TO cl_gui_alv_grid.
 
     " Create fieldcatalogs
     fieldcatalog = merge_internal_fieldcatalog( table_name ).
-    insert_fieldcatalog(
-      i_name         = fieldcatalog_names-internal
-      i_fieldcatalog = fieldcatalog
-    ).
+    insert_fieldcatalog( i_name         = fieldcatalog_names-internal
+                         i_fieldcatalog = fieldcatalog ).
+
     fieldcatalog = merge_technical_fieldcatalog( table_name ).
-    insert_fieldcatalog(
-      i_name         = fieldcatalog_names-technical
-      i_fieldcatalog = fieldcatalog
-    ).
+    insert_fieldcatalog( i_name         = fieldcatalog_names-technical
+                         i_fieldcatalog = fieldcatalog ).
 
     " Set initial field catalogs name
     IF has_field_catalog( fieldcatalog_names-external ) EQ abap_true.
@@ -152,8 +159,8 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
       raise_exception_on_subrc( ).
     ENDIF.
 
-    SET HANDLER: on_alv_toolbar      FOR alv_grid,
-                 on_alv_user_command FOR alv_grid.
+    SET HANDLER on_alv_toolbar FOR alv_grid.
+    SET HANDLER on_alv_user_command FOR alv_grid.
 
     refresh_alv_output( alv_grid ).
   ENDMETHOD.
@@ -192,8 +199,8 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
             CATCH cx_sy_dyn_call_error
                   /usi/cx_bal_root INTO exception.
               exception_text = exception->get_text( ).
-              ASSERT ID   /usi/bal_log_writer
-                FIELDS    exception_text
+              ASSERT ID /usi/bal_log_writer
+                FIELDS exception_text
                 CONDITION exception IS NOT BOUND.
 
               CLEAR title.
@@ -227,7 +234,7 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~get_classname.
-    r_result =  '/USI/CL_BAL_DC_ITAB'.
+    r_result = '/USI/CL_BAL_DC_ITAB'.
   ENDMETHOD.
 
 
@@ -297,12 +304,12 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
     FIELD-SYMBOLS: <internal_table> TYPE STANDARD TABLE.
 
     TRY.
-        table_name = get_table_name_by_data( i_internal_table  ).
+        table_name = get_table_name_by_data( i_internal_table ).
       CATCH /usi/cx_bal_root INTO exception.
         exception_text = exception->get_text( ).
 
-        ASSERT ID  /usi/bal_log_writer
-          FIELDS    exception_text
+        ASSERT ID /usi/bal_log_writer
+          FIELDS exception_text
           CONDITION exception IS NOT BOUND.
         RETURN.
     ENDTRY.
@@ -310,10 +317,8 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
     title = i_title.
 
     IF i_fieldcatalog IS NOT INITIAL.
-      insert_fieldcatalog(
-        i_name         = fieldcatalog_names-external
-        i_fieldcatalog = i_fieldcatalog
-      ).
+      insert_fieldcatalog( i_name         = fieldcatalog_names-external
+                           i_fieldcatalog = i_fieldcatalog ).
     ENDIF.
 
     CREATE DATA internal_table_ref TYPE STANDARD TABLE OF (table_name)
@@ -345,9 +350,9 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
   METHOD get_field_catalog.
     FIELD-SYMBOLS: <fieldcatalog> TYPE ty_fieldcatalog.
 
-    READ TABLE   fieldcatalog_table
+    READ TABLE fieldcatalog_table
       WITH TABLE KEY name = i_name
-      ASSIGNING  <fieldcatalog>.
+      ASSIGNING <fieldcatalog>.
     IF sy-subrc EQ 0.
       r_result = <fieldcatalog>-fieldcatalog.
     ELSE.
@@ -383,7 +388,7 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
 
 
   METHOD has_field_catalog.
-    READ TABLE   fieldcatalog_table
+    READ TABLE fieldcatalog_table
       TRANSPORTING NO FIELDS
       WITH TABLE KEY name = i_name.
     IF sy-subrc EQ 0.
@@ -459,7 +464,7 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
     IF selected_fieldcatalog_name EQ fieldcatalog_names-technical.
       toolbar_button-disabled = abap_true.
     ENDIF.
-    toolbar_button-text     = 'Technical fieldcatalog'(b03).
+    toolbar_button-text     = 'Technical fieldnames'(b03).
     INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
   ENDMETHOD.
 
@@ -543,8 +548,7 @@ CLASS /USI/CL_BAL_DC_ITAB IMPLEMENTATION.
         it_outtab            = <internal_table>
         it_fieldcatalog      = field_catalog
       EXCEPTIONS
-        OTHERS               = 0
-    ).
+        OTHERS               = 0 ).
     IF sy-subrc NE 0.
       raise_exception_on_subrc( ).
     ENDIF.

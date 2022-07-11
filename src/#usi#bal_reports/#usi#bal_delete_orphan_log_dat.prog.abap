@@ -34,10 +34,6 @@
 *----------------------------------------------------------------------*
 REPORT /usi/bal_delete_orphan_log_dat.
 
-START-OF-SELECTION.
-  /usi/cl_auth=>check_tcode( ).
-  PERFORM delete_orphan_log_data.
-
 FORM delete_orphan_log_data.
 
   CONSTANTS: max_package_size TYPE int4 VALUE 1000000.
@@ -51,8 +47,8 @@ FORM delete_orphan_log_data.
   dao_object = factory->get_data_container_collection( ).
 
   DO.
-    PERFORM    get_orphan_log_numbers
-      USING    max_package_size
+    PERFORM get_orphan_log_numbers
+      USING max_package_size
       CHANGING orphan_log_numbers.
 
     IF orphan_log_numbers IS NOT INITIAL.
@@ -71,7 +67,7 @@ FORM delete_orphan_log_data.
 ENDFORM.
 
 FORM get_orphan_log_numbers
-  USING    u_max_package_size   TYPE int4
+  USING i_max_package_size TYPE int4
   CHANGING c_orphan_log_numbers TYPE bal_t_logn.
 
   TYPES: ty_log_numbers TYPE SORTED TABLE OF balognr WITH UNIQUE KEY table_line.
@@ -83,14 +79,14 @@ FORM get_orphan_log_numbers
 
   SELECT DISTINCT lognumber
     FROM /usi/bal_data
-    PACKAGE SIZE u_max_package_size
+    PACKAGE SIZE i_max_package_size
     INTO TABLE data_container_log_numbers.
 
     IF data_container_log_numbers IS NOT INITIAL.
-      SELECT  lognumber
-        FROM  balhdr
-        INTO  TABLE log_header_log_numbers
-        FOR   ALL ENTRIES IN data_container_log_numbers
+      SELECT lognumber
+        FROM balhdr
+        INTO TABLE log_header_log_numbers
+        FOR ALL ENTRIES IN data_container_log_numbers
         WHERE lognumber EQ data_container_log_numbers-table_line.
 
       LOOP AT data_container_log_numbers ASSIGNING <log_number>.
@@ -99,15 +95,19 @@ FORM get_orphan_log_numbers
           WITH TABLE KEY table_line = <log_number>.
         IF sy-subrc NE 0.
           INSERT <log_number> INTO TABLE c_orphan_log_numbers.
-          IF lines( c_orphan_log_numbers ) EQ u_max_package_size.
+          IF lines( c_orphan_log_numbers ) EQ i_max_package_size.
             EXIT.
           ENDIF.
         ENDIF.
       ENDLOOP.
     ENDIF.
 
-    IF lines( c_orphan_log_numbers ) EQ u_max_package_size.
+    IF lines( c_orphan_log_numbers ) EQ i_max_package_size.
       EXIT.
     ENDIF.
   ENDSELECT.
 ENDFORM.
+
+START-OF-SELECTION.
+  /usi/cl_auth=>check_tcode( ).
+  PERFORM delete_orphan_log_data.

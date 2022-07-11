@@ -1,11 +1,15 @@
-interface /USI/IF_BAL_TOKEN
-  public .
+INTERFACE /usi/if_bal_token PUBLIC.
 
-  type-pools ABAP .
+  TYPE-POOLS abap.
 
-  methods IS_EQUAL
-    importing
-      !I_TOKEN type ref to /USI/IF_BAL_TOKEN
-    returning
-      value(R_RESULT) type ABAP_BOOL .
-endinterface.
+  "! <h1>Is same instance?</h1>
+  "!
+  "! @parameter i_token | Token to compare
+  "! @parameter r_result | abap_true, if same instance
+  METHODS is_equal
+    IMPORTING
+      i_token         TYPE REF TO /usi/if_bal_token
+    RETURNING
+      VALUE(r_result) TYPE abap_bool.
+
+ENDINTERFACE.

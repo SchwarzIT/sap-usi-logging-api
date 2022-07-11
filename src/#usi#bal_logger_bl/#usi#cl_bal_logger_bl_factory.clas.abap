@@ -1,22 +1,26 @@
-CLASS /usi/cl_bal_logger_bl_factory DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE.
-
+CLASS /usi/cl_bal_logger_bl_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_logger_bl_factory.
 
+    "! <h1>Factory Method (Singleton pattern)</h1>
+    "!
+    "! @parameter i_cust_eval_factory | Customizing evaluator factory (Access to API-Customizing)
+    "! @parameter r_result | Factory instance
     CLASS-METHODS get_instance
       IMPORTING
         i_cust_eval_factory TYPE REF TO /usi/if_bal_cust_eval_factory
       RETURNING
         VALUE(r_result)     TYPE REF TO /usi/if_bal_logger_bl_factory.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_cust_eval_factory | Customizing evaluator factory (Access to API-Customizing)
     METHODS constructor
       IMPORTING
         i_cust_eval_factory TYPE REF TO /usi/if_bal_cust_eval_factory.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     CLASS-DATA: instance TYPE REF TO /usi/if_bal_logger_bl_factory.
 

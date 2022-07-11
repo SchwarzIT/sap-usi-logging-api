@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_CE_DATA_CONTAINERS</CLSNAME>
-     <CMPNAME>GET_RELEVANT_PLUGIN_CLASSNAMES</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Get relevant message context data containers</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

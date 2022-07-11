@@ -19,9 +19,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA: cut TYPE REF TO /usi/cl_bal_dc_retcode_and_msg.
     TRY.
         cut ?= /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize( `Invalid garbage` ).
-        cl_aunit_assert=>fail(
-          msg = 'Input was garbage! Exception expected!'
-        ).
+        cl_aunit_assert=>fail( msg = 'Input was garbage! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -59,14 +57,10 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    cl_aunit_assert=>assert_equals(
-      act = cut->message
-      exp = input-message
-    ).
-    cl_aunit_assert=>assert_equals(
-      act = cut->return_code
-      exp = input-return_code
-    ).
+    cl_aunit_assert=>assert_equals( act = cut->message
+                                    exp = input-message ).
+    cl_aunit_assert=>assert_equals( act = cut->return_code
+                                    exp = input-return_code ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -85,10 +79,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = actual_result
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = actual_result ).
   ENDMETHOD.
 ENDCLASS.
 

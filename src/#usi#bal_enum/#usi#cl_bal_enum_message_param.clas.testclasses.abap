@@ -49,29 +49,21 @@ ENDCLASS.
 
 CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD verify_static_instances.
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_param=>log_number
-      i_expected = '%LOGNUMBER'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_param=>log_number
+                 i_expected  = '%LOGNUMBER' ).
 
-    assert_value(
-      i_instance = /usi/cl_bal_enum_message_param=>message_number
-      i_expected = 'MSG_NUMBER'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_message_param=>message_number
+                  i_expected = 'MSG_NUMBER' ).
   ENDMETHOD.
 
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals(
-      act = i_instance->value
-      exp = i_expected
-    ).
+    cl_aunit_assert=>assert_equals( act = i_instance->value
+                                    exp = i_expected ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound(
-      act = i_instance
-    ).
+    cl_aunit_assert=>assert_bound( act = i_instance ).
   ENDMETHOD.
 ENDCLASS.

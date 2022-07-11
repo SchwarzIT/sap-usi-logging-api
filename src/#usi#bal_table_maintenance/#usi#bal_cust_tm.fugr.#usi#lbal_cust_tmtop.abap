@@ -1,6 +1,4 @@
-* regenerated at 05.06.2020 12:52:12
-FUNCTION-POOL /USI/BAL_CUST_TM           MESSAGE-ID SV.
+FUNCTION-POOL /usi/bal_cust_tm MESSAGE-ID sv.
 
-* INCLUDE /USI/LBAL_CUST_TMD...              " Local class definition
-  INCLUDE LSVIMDAT                                . "general data decl.
-  INCLUDE /USI/LBAL_CUST_TMT00                    . "view rel. data dcl.
+INCLUDE lsvimdat.                          " general data decl.
+INCLUDE /usi/lbal_cust_tmt00.              " view rel. data dcl.

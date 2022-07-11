@@ -1,6 +1,3 @@
-*&---------------------------------------------------------------------*
-*&  Include           /USI/LBAL_SHLP_EXITSIMP
-*&---------------------------------------------------------------------*
 CLASS lcl_plugin_interface IMPLEMENTATION.
   METHOD constructor.
     DATA exception TYPE REF TO cx_root.
@@ -21,7 +18,7 @@ CLASS lcl_plugin_interface IMPLEMENTATION.
           subclasses           TYPE seo_relkeys,
           oo_object            TYPE REF TO cl_oo_object,
           oo_class             TYPE REF TO cl_oo_class,
-          result_line          TYPE class_name_and_description.
+          result_line          TYPE ty_class.
 
     FIELD-SYMBOLS: <implementing_class> TYPE seorelkey,
                    <subclass>           TYPE seorelkey.

@@ -300,10 +300,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
 
     IF has_container( i_data_container ) NE abap_true.
       data_container_classname = i_data_container->get_classname( ).
-      cl_aunit_assert=>fail(
-        msg     = `Expected container is missing!`
-        detail  = data_container_classname
-      ).
+      cl_aunit_assert=>fail( msg    = `Expected container is missing!`
+                             detail = data_container_classname ).
     ENDIF.
   ENDMETHOD.
 
@@ -312,10 +310,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
 
     IF has_container( i_data_container ) EQ abap_true.
       data_container_classname = i_data_container->get_classname( ).
-      cl_aunit_assert=>fail(
-        msg     = `Unexpected container found!`
-        detail  = data_container_classname
-      ).
+      cl_aunit_assert=>fail( msg    = `Unexpected container found!`
+                             detail = data_container_classname ).
     ENDIF.
   ENDMETHOD.
 
@@ -404,11 +400,9 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
     cut = serialize_and_deserialize_coll( cut ).
 
     actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-      msg = `Data altered during serialization/deserialization!`
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result
+                                    msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_deserialize_unknown_class.
@@ -429,16 +423,14 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
     cut = serialize_and_deserialize_coll( cut ).
 
     actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-      msg = `Data altered during serialization/deserialization!`
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result
+                                    msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_deserialize_total_garbage.
     TRY.
-        /usi/cl_bal_dc_collection=>deserialize( `Absolute garbage, that can not be parsed.` ).
+        /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( `Garbage, that cannot be parsed.` ).
         cl_aunit_assert=>fail( `Errors on collection level should raise an exception!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
@@ -466,11 +458,9 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
     cut = serialize_and_deserialize_coll( cut ).
 
     actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals(
-      exp = expected_result
-      act = actual_result
-      msg = `Data altered during serialization/deserialization!`
-    ).
+    cl_aunit_assert=>assert_equals( exp = expected_result
+                                    act = actual_result
+                                    msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_empty_collection.
@@ -482,10 +472,8 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
     cut           = serialize_and_deserialize_coll( cut ).
     actual_result = flatten_data_cont_coll( cut ).
 
-    cl_aunit_assert=>assert_initial(
-      act = actual_result
-      msg = `Empty collection returned containers!`
-    ).
+    cl_aunit_assert=>assert_initial( act = actual_result
+                                     msg = `Empty collection returned containers!` ).
   ENDMETHOD.
 
   METHOD get_bad_data_container.
@@ -532,7 +520,7 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
 
     serialized_data_cont_coll = i_data_container_collection->serialize( ).
     TRY.
-        r_result = /usi/cl_bal_dc_collection=>deserialize( serialized_data_cont_coll ).
+        r_result = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( serialized_data_cont_coll ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
@@ -562,11 +550,9 @@ CLASS lcl_unit_test_convenience IMPLEMENTATION.
     CREATE OBJECT cut TYPE /usi/cl_bal_dc_collection.
     actual_result = cut->insert( data_container ).
 
-    cl_aunit_assert=>assert_equals(
-      msg = 'Insert( ) has to return the collection itself (me)!'
-      exp = cut
-      act = actual_result
-    ).
+    cl_aunit_assert=>assert_equals( msg = 'Insert( ) has to return the collection itself (me)!'
+                                    exp = cut
+                                    act = actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -602,11 +588,9 @@ CLASS lcl_unit_test_bad_data_cont IMPLEMENTATION.
     cut->insert( bad_data_container ).
     has_containers = cut->has_data_containers( ).
 
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = has_containers
-      msg = `Invalid container was added`
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = has_containers
+                                    msg = `Invalid container was added` ).
   ENDMETHOD.
 
   METHOD test_serialize_bad_data_cont.
@@ -621,11 +605,9 @@ CLASS lcl_unit_test_bad_data_cont IMPLEMENTATION.
 
     cut->insert( bad_data_container ).
     has_containers = cut->has_data_containers( ).
-    cl_aunit_assert=>assert_equals(
-      exp = abap_true
-      act = has_containers
-      msg = `Container should have been added`
-    ).
+    cl_aunit_assert=>assert_equals( exp = abap_true
+                                    act = has_containers
+                                    msg = `Container should have been added` ).
 
     bad_data_container->set_throw_on_serialize( abap_true ).
     serialized_data_cont_coll = cut->serialize( ).
@@ -636,10 +618,9 @@ CLASS lcl_unit_test_bad_data_cont IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
     has_containers = cut->has_data_containers( ).
-    cl_aunit_assert=>assert_equals(
-      exp = abap_false
-      act = has_containers
-      msg = `Container should have been dropped due to serialization errors`
-    ).
+
+    cl_aunit_assert=>assert_equals( exp = abap_false
+                                    act = has_containers
+                                    msg = `Container should have been dropped due to serialization errors` ).
   ENDMETHOD.
 ENDCLASS.

@@ -1,13 +1,11 @@
-CLASS /usi/cl_bal_cd_cx_mapper DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_cd_cx_mapper DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
+    INTERFACES /usi/if_bal_cd_cx_mapper.
 
-    INTERFACES /usi/if_bal_cd_cx_mapper .
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+
 ENDCLASS.
 
 

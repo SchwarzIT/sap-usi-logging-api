@@ -1,24 +1,24 @@
-CLASS /usi/cl_bal_tc_literal_c40 DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_tc_literal_c40 DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_text_container_c40.
 
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_text | Text as literal (Not translatable)
     METHODS constructor
       IMPORTING
         i_text TYPE /usi/if_bal_text_container_c40=>ty_text.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     DATA text TYPE /usi/if_bal_text_container_c40=>ty_text.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_TC_LITERAL_C40 IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_tc_literal_c40 IMPLEMENTATION.
   METHOD /usi/if_bal_text_container_c40~deserialize.
     DATA: text      TYPE /usi/if_bal_text_container_c40=>ty_text,
           exception TYPE REF TO cx_transformation_error.

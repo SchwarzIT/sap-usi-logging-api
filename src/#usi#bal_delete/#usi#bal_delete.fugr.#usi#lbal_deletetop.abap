@@ -1,3 +1,3 @@
-FUNCTION-POOL /USI/BAL_DELETE.              "MESSAGE-ID ..
+FUNCTION-POOL /usi/bal_delete.
 
 * INCLUDE /USI/LBAL_DELETED...               " Local class definition

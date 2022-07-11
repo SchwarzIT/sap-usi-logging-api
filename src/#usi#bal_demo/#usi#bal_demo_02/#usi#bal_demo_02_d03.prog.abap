@@ -3,7 +3,7 @@
 *&---------------------------------------------------------------------*
 CLASS lcl_main_screen DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-    CLASS-DATA: singleton TYPE REF TO lcl_main_screen.
+    CLASS-DATA: singleton TYPE REF TO lcl_main_screen READ-ONLY.
 
     DATA: BEGIN OF screen_fields,
             with_log     TYPE abap_bool,
@@ -20,9 +20,9 @@ CLASS lcl_main_screen DEFINITION FINAL CREATE PRIVATE.
 
   PRIVATE SECTION.
     DATA: to_do_list TYPE REF TO /usi/cl_bal_demo_to_do_list,
-          task_grid  TYPE REF TO lcl_task_grid,
+          task_grid  TYPE REF TO lcl_task_grid.
 
-          BEGIN OF log,
+    DATA: BEGIN OF log,
             logger TYPE REF TO /usi/if_bal_logger,
             token  TYPE REF TO /usi/if_bal_token,
           END   OF log.

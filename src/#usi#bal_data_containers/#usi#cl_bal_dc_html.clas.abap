@@ -1,26 +1,25 @@
-CLASS /usi/cl_bal_dc_html DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_html DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    INTERFACES /usi/if_exception_details .
-    INTERFACES /usi/if_bal_data_container .
-    INTERFACES /usi/if_bal_data_container_rnd .
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container_rnd.
 
-    ALIASES get_classname
-      FOR /usi/if_bal_data_container~get_classname .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
+    "! Constructor
+    "!
+    "! @parameter i_html_document | HTML-Document as string
+    "! @parameter i_document_title | Optional: Document title (Useful, if multiple documents are appended)
     METHODS constructor
       IMPORTING
-        !i_html_document  TYPE string
-        !i_document_title TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL .
+        i_html_document  TYPE string
+        i_document_title TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
     TYPES: ty_html_table_line TYPE c LENGTH 1000,
-           ty_html_table      TYPE STANDARD TABLE OF ty_html_table_line
-                                       WITH NON-UNIQUE DEFAULT KEY.
+           ty_html_table      TYPE STANDARD TABLE OF ty_html_table_line WITH NON-UNIQUE DEFAULT KEY.
 
     DATA: html_document  TYPE string,
           document_title TYPE REF TO /usi/if_bal_text_container_c40,
@@ -28,20 +27,19 @@ CLASS /usi/cl_bal_dc_html DEFINITION
 
     METHODS get_html_table
       IMPORTING
-        !i_html_document TYPE string
+        i_html_document TYPE string
       RETURNING
-        VALUE(r_result)  TYPE ty_html_table .
+        VALUE(r_result) TYPE ty_html_table.
 
     METHODS raise_exception_on_subrc
       RAISING
         /usi/cx_bal_root.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_data_container_rnd~render.
     DATA: document_size TYPE int4,
           html_viewer   TYPE REF TO cl_gui_html_viewer,
@@ -74,8 +72,7 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
         dp_error_general       = 2
         cntl_error             = 3
         html_syntax_notcorrect = 4
-        OTHERS                 = 5
-    ).
+        OTHERS                 = 5 ).
     IF sy-subrc NE 0.
       raise_exception_on_subrc( ).
     ENDIF.
@@ -88,8 +85,7 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
         cnht_error_not_allowed = 2
         cnht_error_parameter   = 3
         dp_error_general       = 4
-        OTHERS                 = 5
-    ).
+        OTHERS                 = 5 ).
     IF sy-subrc NE 0.
       raise_exception_on_subrc( ).
     ENDIF.
@@ -121,8 +117,8 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
             CATCH cx_sy_dyn_call_error
                   /usi/cx_bal_root INTO exception.
               exception_text = exception->get_text( ).
-              ASSERT ID   /usi/bal_log_writer
-                FIELDS    exception_text
+              ASSERT ID /usi/bal_log_writer
+                FIELDS exception_text
                 CONDITION exception IS NOT BOUND.
 
               CLEAR document_title.
@@ -143,7 +139,7 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~get_classname.
-    r_result =  '/USI/CL_BAL_DC_HTML'.
+    r_result = '/USI/CL_BAL_DC_HTML'.
   ENDMETHOD.
 
 

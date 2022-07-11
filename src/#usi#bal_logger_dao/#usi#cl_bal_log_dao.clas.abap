@@ -1,39 +1,43 @@
-class /USI/CL_BAL_LOG_DAO definition
-  public
-  final
-  create public .
+CLASS /usi/cl_bal_log_dao DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES /usi/if_bal_log_dao.
 
-public section.
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_log_object | Log Object (Defined in SLG0)
+    "! @parameter i_sub_object | Sub Object (Defined in SLG0)
+    "! @parameter i_external_id | External ID of the log (Filter in SLG1 - use ID of processed object if feasible)
+    "! @parameter i_retention_parameters | Retention parameters
+    "! @parameter i_context | Context structure
+    "! @parameter i_params | Parameters for standard API
+    "! @raising /usi/cx_bal_root | Error in standard API
+    METHODS constructor
+      IMPORTING
+        i_log_object           TYPE balobj_d
+        i_sub_object           TYPE balsubobj OPTIONAL
+        i_external_id          TYPE balnrext OPTIONAL
+        i_retention_parameters TYPE /usi/bal_retention_parameters
+        i_context              TYPE bal_s_cont OPTIONAL
+        i_params               TYPE bal_s_parm OPTIONAL
+      RAISING
+        /usi/cx_bal_root.
 
-  interfaces /USI/IF_BAL_LOG_DAO .
-
-  methods CONSTRUCTOR
-    importing
-      !I_LOG_OBJECT type BALOBJ_D
-      !I_SUB_OBJECT type BALSUBOBJ optional
-      !I_EXTERNAL_ID type BALNREXT optional
-      !I_RETENTION_PARAMETERS type /USI/BAL_RETENTION_PARAMETERS
-      !I_CONTEXT type BAL_S_CONT optional
-      !I_PARAMS type BAL_S_PARM optional
-    raising
-      /USI/CX_BAL_ROOT .
   PROTECTED SECTION.
-  PRIVATE SECTION.
-    ALIASES log_header FOR /usi/if_bal_log_dao~log_header .
 
+  PRIVATE SECTION.
     DATA: log_handle TYPE balloghndl,
           log_number TYPE balognr.
 
     METHODS get_log_header
       IMPORTING
-        !i_log_object           TYPE balobj_d
-        !i_sub_object           TYPE balsubobj
-        !i_external_id          TYPE balnrext
-        !i_retention_parameters TYPE /usi/bal_retention_parameters
-        !i_context              TYPE bal_s_cont
-        !i_params               TYPE bal_s_parm
+        i_log_object           TYPE balobj_d
+        i_sub_object           TYPE balsubobj
+        i_external_id          TYPE balnrext
+        i_retention_parameters TYPE /usi/bal_retention_parameters
+        i_context              TYPE bal_s_cont
+        i_params               TYPE bal_s_parm
       RETURNING
-        VALUE(r_result)         TYPE bal_s_log .
+        VALUE(r_result)        TYPE bal_s_log.
 
     METHODS create_log
       IMPORTING
@@ -41,22 +45,21 @@ public section.
       RETURNING
         VALUE(r_result) TYPE balloghndl
       RAISING
-        /usi/cx_bal_root .
+        /usi/cx_bal_root.
 
     METHODS get_data_container_rc_and_msg
       IMPORTING
         VALUE(i_return_code) TYPE sysubrc
       RETURNING
         VALUE(r_result)      TYPE REF TO /usi/if_bal_data_container.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_LOG_DAO IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
   METHOD /usi/if_bal_log_dao~add_message.
-    DATA: data_container TYPE REF TO /usi/if_bal_data_container.
+    DATA data_container TYPE REF TO /usi/if_bal_data_container.
 
     CALL FUNCTION 'BAL_LOG_MSG_ADD'
       EXPORTING
@@ -126,10 +129,10 @@ CLASS /USI/CL_BAL_LOG_DAO IMPLEMENTATION.
           textid  = /usi/cx_bal_external_api_error=>log_save_error
           details = data_container.
     ELSEIF log_numbers IS NOT INITIAL.
-      READ TABLE  log_numbers
+      READ TABLE log_numbers
         ASSIGNING <log_number>
-        WITH KEY  extnumber  = log_header-extnumber
-                  log_handle = log_handle.
+        WITH KEY extnumber  = /usi/if_bal_log_dao~log_header-extnumber
+                 log_handle = log_handle.
       IF sy-subrc EQ 0.
         log_number = <log_number>-lognumber.
       ENDIF.
@@ -138,15 +141,13 @@ CLASS /USI/CL_BAL_LOG_DAO IMPLEMENTATION.
 
 
   METHOD constructor.
-    log_header  = get_log_header(
-                    i_log_object            = i_log_object
-                    i_sub_object            = i_sub_object
-                    i_external_id           = i_external_id
-                    i_retention_parameters  = i_retention_parameters
-                    i_context               = i_context
-                    i_params                = i_params
-                  ).
-    log_handle  = create_log( log_header ).
+    /usi/if_bal_log_dao~log_header = get_log_header( i_log_object           = i_log_object
+                                                     i_sub_object           = i_sub_object
+                                                     i_external_id          = i_external_id
+                                                     i_retention_parameters = i_retention_parameters
+                                                     i_context              = i_context
+                                                     i_params               = i_params ).
+    log_handle = create_log( /usi/if_bal_log_dao~log_header ).
   ENDMETHOD.
 
 

@@ -10,26 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_LOG_DAO</CLSNAME>
-     <CMPNAME>FREE</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Destructor</DESCRIPT>
-    </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_LOG_DAO</CLSNAME>
-     <CMPNAME>LOG_HEADER</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Application Log: Log header data</DESCRIPT>
-    </SEOCOMPOTX>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_LOG_DAO</CLSNAME>
-     <CMPNAME>SAVE</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Save buffer to database</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

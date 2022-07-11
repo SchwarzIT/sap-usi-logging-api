@@ -49,7 +49,7 @@ CLASS lcl_report IMPLEMENTATION.
     logger->save( token ).
     logger->free( token ).
 
-    WRITE AT /1: 'End of demo. Check results using transaction SLG1.'(t02).
+    WRITE AT /1 'End of demo. Check results using transaction SLG1.'(t02).
   ENDMETHOD.
 ENDCLASS.
 

@@ -116,10 +116,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     request-log_level  = /usi/cl_bal_enum_log_level=>everything.
 
     " then
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = empty_result
-    ).
+    assert_expected_result( i_request         = request
+                            i_expected_result = empty_result ).
   ENDMETHOD.
 
   METHOD test_ignore_invalid_classes.
@@ -130,18 +128,12 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     log_level = /usi/cl_bal_enum_log_level=>very_important.
 
     " given
-    test_double_cust_dao->insert_mock_data_line(
-      i_classname     = '/USI/IF_BAL_MSG_CDAT'
-      i_min_log_level = log_level
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_classname     = 'CL_GUI_ALV_GRID'
-      i_min_log_level = log_level
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_classname     = 'SFLIGHT'
-      i_min_log_level = log_level
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_classname     = '/USI/IF_BAL_MSG_CDAT'
+                                                 i_min_log_level = log_level ).
+    test_double_cust_dao->insert_mock_data_line( i_classname     = 'CL_GUI_ALV_GRID'
+                                                 i_min_log_level = log_level ).
+    test_double_cust_dao->insert_mock_data_line( i_classname     = 'SFLIGHT'
+                                                 i_min_log_level = log_level ).
 
     " when
     request-log_object = 'DUMMY'.
@@ -149,10 +141,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     request-log_level  = log_level.
 
     " then
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = empty_result
-    ).
+    assert_expected_result( i_request         = request
+                            i_expected_result = empty_result ).
   ENDMETHOD.
 
   METHOD test_filter_by_log_level.
@@ -162,18 +152,14 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           request                  TYPE ty_request.
 
     " Given
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = space
-      i_sub_object    = space
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>very_important
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = space
-      i_sub_object    = space
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>everything
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = space
+                                                 i_sub_object    = space
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>very_important ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = space
+                                                 i_sub_object    = space
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>everything ).
 
     " When
     request-log_object = 'DUMMY'.
@@ -184,10 +170,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     CLEAR expected_result.
     data_container_classname = '/USI/CL_BAL_DC_SRC_POS_CALLER'.
     INSERT data_container_classname INTO TABLE expected_result.
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = expected_result
-    ).
+
+    assert_expected_result( i_request         = request
+                            i_expected_result = expected_result ).
   ENDMETHOD.
 
   METHOD test_most_specific_rule_wins.
@@ -196,24 +181,18 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           request                  TYPE ty_request.
 
     " Given
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = space
-      i_sub_object    = space
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>very_important
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = 'OBJECT'
-      i_sub_object    = space
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>important
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = 'OBJECT'
-      i_sub_object    = 'SUB_OBJECT'
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>medium
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = space
+                                                 i_sub_object    = space
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>very_important ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = 'OBJECT'
+                                                 i_sub_object    = space
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>important ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = 'OBJECT'
+                                                 i_sub_object    = 'SUB_OBJECT'
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>medium ).
 
     " When
     request-log_object = 'OBJECT'.
@@ -222,10 +201,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     " Then
     CLEAR expected_result.
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = expected_result
-    ).
+    assert_expected_result( i_request         = request
+                            i_expected_result = expected_result ).
 
     " When
     request-log_object = 'OBJECT'.
@@ -236,10 +213,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     CLEAR expected_result.
     data_container_classname = '/USI/CL_BAL_DC_SRC_POS_CALLER'.
     INSERT data_container_classname INTO TABLE expected_result.
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = expected_result
-    ).
+
+    assert_expected_result( i_request         = request
+                            i_expected_result = expected_result ).
   ENDMETHOD.
 
   METHOD test_generic_sub_object.
@@ -248,18 +224,14 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           request                  TYPE ty_request.
 
     " Given
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = 'CUST_OBJECT'
-      i_sub_object    = space
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>important
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = 'CUST_OBJECT'
-      i_sub_object    = 'CUST_SUB_OBJECT'
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>medium
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = 'CUST_OBJECT'
+                                                 i_sub_object    = space
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>important ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = 'CUST_OBJECT'
+                                                 i_sub_object    = 'CUST_SUB_OBJECT'
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>medium ).
 
     " When
     request-log_object = 'CUST_OBJECT'.
@@ -270,10 +242,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     CLEAR expected_result.
     data_container_classname = '/USI/CL_BAL_DC_SRC_POS_CX'.
     INSERT data_container_classname INTO TABLE expected_result.
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = expected_result
-    ).
+
+    assert_expected_result( i_request         = request
+                            i_expected_result = expected_result ).
   ENDMETHOD.
 
   METHOD test_generic_log_object.
@@ -282,18 +253,14 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           request                  TYPE ty_request.
 
     " Given
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = space
-      i_sub_object    = 'CUST_SUB_OBJECT'
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>important
-    ).
-    test_double_cust_dao->insert_mock_data_line(
-      i_log_object    = 'CUST_OBJECT'
-      i_sub_object    = 'CUST_SUB_OBJECT'
-      i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
-      i_min_log_level = /usi/cl_bal_enum_log_level=>medium
-    ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = space
+                                                 i_sub_object    = 'CUST_SUB_OBJECT'
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CX'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>important ).
+    test_double_cust_dao->insert_mock_data_line( i_log_object    = 'CUST_OBJECT'
+                                                 i_sub_object    = 'CUST_SUB_OBJECT'
+                                                 i_classname     = '/USI/CL_BAL_DC_SRC_POS_CALLER'
+                                                 i_min_log_level = /usi/cl_bal_enum_log_level=>medium ).
 
     " When
     request-log_object = 'UNKNOWN_OBJECT'.
@@ -304,25 +271,18 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     CLEAR expected_result.
     data_container_classname = '/USI/CL_BAL_DC_SRC_POS_CX'.
     INSERT data_container_classname INTO TABLE expected_result.
-    assert_expected_result(
-      i_request         = request
-      i_expected_result = expected_result
-    ).
+    assert_expected_result( i_request         = request
+                            i_expected_result = expected_result ).
   ENDMETHOD.
 
   METHOD assert_expected_result.
     DATA actual_result TYPE /usi/bal_data_cont_classnames.
 
-    actual_result = cut->get_relevant_plugin_classnames(
-                      i_log_object = i_request-log_object
-                      i_sub_object = i_request-sub_object
-                      i_log_level  = i_request-log_level
-                    ).
+    actual_result = cut->get_relevant_plugin_classnames( i_log_object = i_request-log_object
+                                                         i_sub_object = i_request-sub_object
+                                                         i_log_level  = i_request-log_level ).
 
-    cl_aunit_assert=>assert_equals(
-      act = actual_result
-      exp = i_expected_result
-    ).
+    cl_aunit_assert=>assert_equals( act = actual_result
+                                    exp = i_expected_result ).
   ENDMETHOD.
-
 ENDCLASS.

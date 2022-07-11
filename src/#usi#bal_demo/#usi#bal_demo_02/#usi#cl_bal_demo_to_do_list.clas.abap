@@ -1,13 +1,22 @@
 CLASS /usi/cl_bal_demo_to_do_list DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
+    "! <h1>Create Instance with fake data</h1>
     METHODS constructor.
 
+    "! <h1>Create task (In buffer; No DB-Update)</h1>
+    "!
+    "! @parameter i_task_text | Task text
+    "! @raising /usi/cx_bal_demo_root | Task with same text already exists
     METHODS create_task
       IMPORTING
         i_task_text TYPE /usi/bal_demo_to_do_task_text
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Read task from buffer</h1>
+    "!
+    "! @parameter i_task_id | Task id
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS read_task
       IMPORTING
         i_task_id       TYPE /usi/bal_demo_to_do_task_id
@@ -16,18 +25,29 @@ CLASS /usi/cl_bal_demo_to_do_list DEFINITION PUBLIC FINAL CREATE PUBLIC.
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Read all tasks from buffer</h1>
+    "!
+    "! @raising /usi/cx_bal_demo_root | Current buffer content
     METHODS read_tasks
       RETURNING
         VALUE(r_result) TYPE /usi/bal_demo_to_do_tasks
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Update task in buffer</h1>
+    "!
+    "! @parameter i_task | Task
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS update_task
       IMPORTING
         i_task TYPE /usi/bal_demo_to_do_task
       RAISING
         /usi/cx_bal_demo_root.
 
+    "! <h1>Delete task from buffer</h1>
+    "!
+    "! @parameter i_task_id | Task ID
+    "! @raising /usi/cx_bal_demo_root | Not found
     METHODS delete_task
       IMPORTING
         i_task_id TYPE /usi/bal_demo_to_do_task_id
@@ -40,9 +60,9 @@ CLASS /usi/cl_bal_demo_to_do_list DEFINITION PUBLIC FINAL CREATE PUBLIC.
     DATA: BEGIN OF to_do_list,
             dao_object      TYPE REF TO /usi/cl_bal_demo_task_dao_fake,
             highest_task_id TYPE /usi/bal_demo_to_do_task_id,
-          END OF to_do_list,
+          END OF to_do_list.
 
-          BEGIN OF log,
+    DATA: BEGIN OF log,
             logger TYPE REF TO /usi/if_bal_logger,
             token  TYPE REF TO /usi/if_bal_token,
           END   OF log.
@@ -83,7 +103,7 @@ ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
+CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -129,7 +149,9 @@ CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
         duplicates = get_tasks_by_text( i_task_text ).
 
         " We already had that text => Reject the duplicate!
-        IF 1 EQ 0. MESSAGE e004(/usi/bal_demo_02) WITH i_task_text. ENDIF.
+        IF 1 EQ 0.
+          MESSAGE e004(/usi/bal_demo_02) WITH i_task_text.
+        ENDIF.
         TRY.
             message_variable = i_task_text.
             RAISE EXCEPTION TYPE /usi/cx_bal_demo_duplicate
@@ -149,13 +171,15 @@ CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
       CATCH /usi/cx_bal_demo_root INTO no_duplicates_exception.
 
         " We did not have that text so far => Add it
-        ADD 1 TO to_do_list-highest_task_id.
+        to_do_list-highest_task_id = to_do_list-highest_task_id + 1.
         new_task-id   = to_do_list-highest_task_id.
         new_task-text = i_task_text.
 
         to_do_list-dao_object->create_task( new_task ).
 
-        IF 1 EQ 0. MESSAGE i003(/usi/bal_demo_02) WITH new_task-text new_task-id. ENDIF.
+        IF 1 EQ 0.
+          MESSAGE i003(/usi/bal_demo_02) WITH new_task-text new_task-id.
+        ENDIF.
         log_info_message( i_message_number     = '003'
                           i_message_variable_1 = new_task-text
                           i_message_variable_2 = new_task-id ).
@@ -192,7 +216,9 @@ CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
     ENDLOOP.
 
     IF r_result IS INITIAL.
-      IF 1 EQ 0. MESSAGE i012(/usi/bal_demo_02) WITH i_task_text. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i012(/usi/bal_demo_02) WITH i_task_text.
+      ENDIF.
       TRY.
           message_variable_1 = i_task_text.
           RAISE EXCEPTION TYPE /usi/cx_bal_demo_not_found
@@ -243,7 +269,9 @@ CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
                                                i_title_text_key = 'T01'
                                                i_title_text     = TEXT-t01 ).
 
-      IF 1 EQ 0. MESSAGE i002(/usi/bal_demo_02) WITH line_count. ENDIF.
+      IF 1 EQ 0.
+        MESSAGE i002(/usi/bal_demo_02) WITH line_count.
+      ENDIF.
       log_info_message( i_message_number     = '002'
                         i_message_variable_1 = line_count
                         i_details            = table_container ).
@@ -251,7 +279,9 @@ CLASS /USI/CL_BAL_DEMO_TO_DO_LIST IMPLEMENTATION.
       save_and_destroy_log( ).
 
     ELSE.
-      IF 1 EQ 0. MESSAGE s013(/usi/bal_demo_02). ENDIF.
+      IF 1 EQ 0.
+        MESSAGE s013(/usi/bal_demo_02).
+      ENDIF.
       TRY.
           RAISE EXCEPTION TYPE /usi/cx_bal_demo_not_found
             EXPORTING

@@ -78,10 +78,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
           EXPORTING
             i_customizing_dao = test_double_cust_dao.
       CATCH /usi/cx_bal_root INTO exception.
-        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception(
-          i_exception = exception
-          i_quit      = i_quit
-        ).
+        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = exception
+                                                                    i_quit      = i_quit ).
     ENDTRY.
   ENDMETHOD.
 
@@ -108,11 +106,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     expected_result = cut->get_fallback_mapper_classname( ).
 
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = expected_result
-    ).
+    assert_expected_result( i_customizing     = customizing_records
+                            i_exception       = test_exception
+                            i_expected_result = expected_result ).
   ENDMETHOD.
 
   METHOD test_match_class.
@@ -129,11 +125,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     customizing_record-exception_class = '/USI/CX_BAL_NOT_FOUND'.
     customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_BASE'
-    ).
+
+    assert_expected_result( i_customizing     = customizing_records
+                            i_exception       = test_exception
+                            i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD test_match_new_interface.
@@ -150,11 +145,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     customizing_record-exception_class = 'IF_T100_MESSAGE'.
     customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_BASE'
-    ).
+
+    assert_expected_result( i_customizing     = customizing_records
+                            i_exception       = test_exception
+                            i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD test_match_superclass.
@@ -171,11 +165,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     customizing_record-exception_class = '/USI/CX_BAL_ROOT'.
     customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
     INSERT customizing_record INTO TABLE customizing_records.
-    assert_expected_result(
-      i_customizing     = customizing_records
-      i_exception       = test_exception
-      i_expected_result = '/USI/CL_BAL_EM_BASE'
-    ).
+
+    assert_expected_result( i_customizing     = customizing_records
+                            i_exception       = test_exception
+                            i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD assert_expected_result.
@@ -191,10 +184,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    cl_aunit_assert=>assert_equals(
-      act = mapper_class_name
-      exp = i_expected_result
-    ).
+    cl_aunit_assert=>assert_equals( act = mapper_class_name
+                                    exp = i_expected_result ).
   ENDMETHOD.
 
   METHOD test_validate_fallback.

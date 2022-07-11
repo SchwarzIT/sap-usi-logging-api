@@ -1,9 +1,8 @@
-* regenerated at 05.06.2020 12:52:12
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE /USI/LBAL_CUST_TMTOP.              " Global Data
-  INCLUDE /USI/LBAL_CUST_TMUXX.              " Function Modules
+  INCLUDE /usi/lbal_cust_tmtop.              " Global Data
+  INCLUDE /usi/lbal_cust_tmuxx.              " Function Modules
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *
@@ -14,10 +13,10 @@
 * INCLUDE /USI/LBAL_CUST_TME...              " Events
 * INCLUDE /USI/LBAL_CUST_TMP...              " Local class implement.
 * INCLUDE /USI/LBAL_CUST_TMT99.              " ABAP Unit tests
-  INCLUDE /USI/LBAL_CUST_TMF00                    . " subprograms
-  INCLUDE /USI/LBAL_CUST_TMI00                    . " PAI modules
-  INCLUDE LSVIMFXX                                . " subprograms
-  INCLUDE LSVIMOXX                                . " PBO modules
-  INCLUDE LSVIMIXX                                . " PAI modules
+  INCLUDE /usi/lbal_cust_tmf00                    . " subprograms
+  INCLUDE /usi/lbal_cust_tmi00                    . " PAI modules
+  INCLUDE lsvimfxx                                . " subprograms
+  INCLUDE lsvimoxx                                . " PBO modules
+  INCLUDE lsvimixx                                . " PAI modules
 
-INCLUDE /usi/lbal_cust_tmf01.
+  INCLUDE /usi/lbal_cust_tmf01.

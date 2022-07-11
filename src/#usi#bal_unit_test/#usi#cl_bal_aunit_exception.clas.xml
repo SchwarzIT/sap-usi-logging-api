@@ -12,14 +12,6 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/CL_BAL_AUNIT_EXCEPTION</CLSNAME>
-     <CMPNAME>FAIL_ON_UNEXPECTED_EXCEPTION</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Fail on unexpected exception</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

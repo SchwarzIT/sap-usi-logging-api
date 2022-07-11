@@ -1,53 +1,56 @@
-CLASS /usi/cl_bal_enum_message_type DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE .
-
+CLASS /usi/cl_bal_enum_message_type DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
+    CLASS-DATA: abend       TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY,
+                error       TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY,
+                exit        TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY,
+                information TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY,
+                success     TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY,
+                warning     TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY.
 
-    CLASS-DATA abend TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    CLASS-DATA error TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    CLASS-DATA exit TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    CLASS-DATA information TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    CLASS-DATA success TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    CLASS-DATA warning TYPE REF TO /usi/cl_bal_enum_message_type READ-ONLY .
-    DATA value TYPE symsgty READ-ONLY .
+    DATA value TYPE symsgty READ-ONLY.
 
-    CLASS-METHODS class_constructor .
+    "! <h1>Create static instances</h1>
+    CLASS-METHODS class_constructor.
 
-    METHODS constructor
-      IMPORTING
-        !i_msgty TYPE symsgty .
-
+    "! <h1>Get enumeration-instance by value</h1>
+    "!
+    "! <p>In some cases the value of an enum instance is known, but for an API call the instance itself is needed.</p>
+    "!
+    "! <p>This method provides a backwards search and returns the matching instance for the passed value.</p>
+    "!
+    "! @parameter i_value | The value to search for
+    "! @parameter r_result | The corresponding instance
+    "! @raising /usi/cx_bal_root | Unsupported value
     CLASS-METHODS get_by_value
       IMPORTING
-        !i_value        TYPE symsgty
+        i_value         TYPE symsgty
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_message_type
       RAISING
-        /usi/cx_bal_root .
+        /usi/cx_bal_root.
+
+    "! <h1>Create instances</h1>
+    METHODS constructor
+      IMPORTING
+        i_msgty TYPE symsgty.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+    TYPES: BEGIN OF ty_buffered_instance,
+             value    TYPE symsgty,
+             instance TYPE REF TO /usi/cl_bal_enum_message_type,
+           END   OF ty_buffered_instance,
+           ty_buffered_instances TYPE HASHED TABLE OF ty_buffered_instance WITH UNIQUE KEY value.
 
-    TYPES:
-      BEGIN OF ty_instance_map_entry,
-        value    TYPE symsgty,
-        instance TYPE REF TO /usi/cl_bal_enum_message_type,
-      END   OF ty_instance_map_entry .
-    TYPES:
-      ty_instance_map_table TYPE HASHED TABLE OF ty_instance_map_entry WITH UNIQUE KEY value.
+    CLASS-DATA buffered_instances TYPE ty_buffered_instances.
 
-    CLASS-DATA instance_map_table TYPE ty_instance_map_table.
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_enum_message_type IMPLEMENTATION.
-
-
   METHOD class_constructor.
-
     CREATE OBJECT abend
       EXPORTING
         i_msgty = 'A'.
@@ -71,30 +74,29 @@ CLASS /usi/cl_bal_enum_message_type IMPLEMENTATION.
     CREATE OBJECT warning
       EXPORTING
         i_msgty = 'W'.
-
   ENDMETHOD.
 
 
   METHOD constructor.
-    DATA instance_map_entry TYPE ty_instance_map_entry.
+    DATA buffered_instance TYPE ty_buffered_instance.
 
     value = i_msgty.
 
-    instance_map_entry-value    = me->value.
-    instance_map_entry-instance = me.
-    INSERT instance_map_entry INTO TABLE instance_map_table.
+    buffered_instance-value    = me->value.
+    buffered_instance-instance = me.
+    INSERT buffered_instance INTO TABLE buffered_instances.
   ENDMETHOD.
 
 
   METHOD get_by_value.
-    FIELD-SYMBOLS <instance_map_entry> TYPE ty_instance_map_entry.
+    FIELD-SYMBOLS <buffered_instance> TYPE ty_buffered_instance.
 
-    READ TABLE  instance_map_table
-      ASSIGNING <instance_map_entry>
+    READ TABLE buffered_instances
+      ASSIGNING <buffered_instance>
       WITH TABLE KEY value = i_value.
 
     IF sy-subrc EQ 0.
-      r_result = <instance_map_entry>-instance.
+      r_result = <buffered_instance>-instance.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
         EXPORTING

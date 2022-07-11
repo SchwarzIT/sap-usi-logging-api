@@ -5,7 +5,7 @@
    <VSEOINTERF>
     <CLSNAME>/USI/IF_BAL_CD_LOG_LV_BY_USER</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Cust-DAO: Increased log level</DESCRIPT>
+    <DESCRIPT>Cust-DAO: Increased log level by User</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>

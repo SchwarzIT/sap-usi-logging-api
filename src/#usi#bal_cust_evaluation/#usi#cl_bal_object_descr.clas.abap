@@ -1,43 +1,63 @@
-CLASS /usi/cl_bal_object_descr DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_object_descr DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap .
+    TYPE-POOLS abap.
 
+    CLASS cl_abap_typedescr DEFINITION LOAD.
+
+    "! Is the object type implementing the interface?
+    "!
+    "! @parameter i_interface_name | the interface name
+    "! @parameter r_result | abap_bool
     METHODS is_implementing
       IMPORTING
-        !i_interface_name TYPE seoclsname
+        i_interface_name TYPE seoclsname
       RETURNING
-        VALUE(r_result)   TYPE abap_bool .
+        VALUE(r_result)   TYPE abap_bool.
+
+    "! Is this class inheriting from i_super_class_name?
+    "!
+    "! @parameter i_super_class_name | Super-Class
+    "! @parameter r_result | abap_bool
     METHODS is_inheriting_from
       IMPORTING
-        !i_super_class_name TYPE seoclsname
+        i_super_class_name TYPE seoclsname
       RETURNING
-        VALUE(r_result)     TYPE abap_bool .
+        VALUE(r_result)     TYPE abap_bool.
+
+    "! Is this object type instantiatable (=NOT ABSTRACT)
+    "!
+    "! @parameter r_result | abap_bool
     METHODS is_instantiatable
       RETURNING
-        VALUE(r_result) TYPE abap_bool .
+        VALUE(r_result) TYPE abap_bool.
+
+    "! Is this object type an interface?
+    "!
+    "! @parameter r_result | abap_bool
     METHODS is_interface
       RETURNING
-        VALUE(r_result) TYPE abap_bool .
+        VALUE(r_result) TYPE abap_bool.
+
+    "! Constructor
+    "!
+    "! @parameter i_object_type_name | Class or Interface name
+    "! @raising /usi/cx_bal_root | Invalid name
     METHODS constructor
       IMPORTING
-        !i_object_type_name TYPE seoclsname
+        i_object_type_name TYPE seoclsname
       RAISING
-        /usi/cx_bal_root .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+        /usi/cx_bal_root.
 
-    DATA object_description TYPE REF TO cl_abap_objectdescr .
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+    DATA object_description TYPE REF TO cl_abap_objectdescr.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_OBJECT_DESCR IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_object_descr IMPLEMENTATION.
   METHOD constructor.
     DATA type_description TYPE REF TO cl_abap_typedescr.
 
@@ -47,8 +67,7 @@ CLASS /USI/CL_BAL_OBJECT_DESCR IMPLEMENTATION.
       RECEIVING
         p_descr_ref = type_description
       EXCEPTIONS
-        OTHERS      = 0
-    ).
+        OTHERS      = 0 ).
 
     TRY.
         object_description ?= type_description.

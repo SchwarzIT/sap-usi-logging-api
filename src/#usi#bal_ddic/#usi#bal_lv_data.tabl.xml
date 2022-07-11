@@ -120,7 +120,7 @@
    <TABL_EXTRAS>
     <TDDAT>
      <TABNAME>/USI/BAL_LV_DATA</TABNAME>
-     <CCLASS>ZNC</CCLASS>
+     <CCLASS>/USI/BAL</CCLASS>
     </TDDAT>
    </TABL_EXTRAS>
   </asx:values>

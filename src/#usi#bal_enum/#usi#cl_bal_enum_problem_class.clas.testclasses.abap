@@ -39,49 +39,37 @@ CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING.
 
     METHODS assert_value
       IMPORTING
-        i_instance TYPE REF TO /USI/CL_BAL_ENUM_PROBLEM_CLASS
+        i_instance TYPE REF TO /usi/cl_bal_enum_problem_class
         i_expected TYPE balprobcl.
 
     METHODS assert_bound
       IMPORTING
-        i_instance TYPE REF TO /USI/CL_BAL_ENUM_PROBLEM_CLASS.
+        i_instance TYPE REF TO /usi/cl_bal_enum_problem_class.
 ENDCLASS.
 
 CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD verify_static_instances.
-    assert_value(
-      i_instance = /USI/CL_BAL_ENUM_PROBLEM_CLASS=>very_important
-      i_expected = '1'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_problem_class=>very_important
+                  i_expected = '1' ).
 
-    assert_value(
-      i_instance = /USI/CL_BAL_ENUM_PROBLEM_CLASS=>important
-      i_expected = '2'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_problem_class=>important
+                  i_expected = '2' ).
 
-    assert_value(
-      i_instance = /USI/CL_BAL_ENUM_PROBLEM_CLASS=>medium
-      i_expected = '3'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_problem_class=>medium
+                  i_expected = '3' ).
 
-    assert_value(
-      i_instance = /USI/CL_BAL_ENUM_PROBLEM_CLASS=>additional_information
-      i_expected = '4'
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_problem_class=>additional_information
+                  i_expected = '4' ).
 
-    assert_value(
-      i_instance = /USI/CL_BAL_ENUM_PROBLEM_CLASS=>other
-      i_expected = ' '
-    ).
+    assert_value( i_instance = /usi/cl_bal_enum_problem_class=>other
+                  i_expected = ' ' ).
   ENDMETHOD.
 
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals(
-      act = i_instance->value
-      exp = i_expected
-    ).
+    cl_aunit_assert=>assert_equals( act = i_instance->value
+                                    exp = i_expected ).
   ENDMETHOD.
 
   METHOD assert_bound.

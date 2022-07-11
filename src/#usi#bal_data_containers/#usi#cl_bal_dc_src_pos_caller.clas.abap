@@ -1,30 +1,29 @@
-CLASS /usi/cl_bal_dc_src_pos_caller DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_dc_src_pos_caller DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    INTERFACES /usi/if_exception_details .
-    INTERFACES /usi/if_bal_data_container .
-    INTERFACES /usi/if_bal_data_container_nav .
+    INTERFACES /usi/if_bal_message_details.
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container_nav.
 
-    ALIASES get_classname
-      FOR /usi/if_bal_data_container~get_classname .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
+    "! Constructor
+    "!
+    "! @parameter i_source_code_position | The to-be-logged Source-Code-Position of the caller
     METHODS constructor
       IMPORTING
-        !i_source_code_position TYPE /usi/bal_source_code_position .
+        i_source_code_position TYPE /usi/bal_source_code_position.
 
   PROTECTED SECTION.
+
   PRIVATE SECTION.
-    DATA source_code_position TYPE /usi/bal_source_code_position .
+    DATA source_code_position TYPE /usi/bal_source_code_position.
+
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_dc_src_pos_caller IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_data_container_nav~navigate.
     CALL FUNCTION 'RS_TOOL_ACCESS'
       EXPORTING
@@ -60,7 +59,7 @@ CLASS /usi/cl_bal_dc_src_pos_caller IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~get_classname.
-    r_result =  '/USI/CL_BAL_DC_SRC_POS_CALLER'.
+    r_result = '/USI/CL_BAL_DC_SRC_POS_CALLER'.
   ENDMETHOD.
 
 

@@ -120,13 +120,19 @@
      <SPRSL>E</SPRSL>
      <ARBGB>/USI/BAL</ARBGB>
      <MSGNR>024</MSGNR>
-     <TEXT>End date should not be in the past. Entry was corrected automatically.</TEXT>
+     <TEXT>End date must not be in the past. Entry was corrected automatically.</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>/USI/BAL</ARBGB>
      <MSGNR>025</MSGNR>
-     <TEXT>A productive run would delete &amp;1 entries.</TEXT>
+     <TEXT>A productive run would delete &amp;1 entries from table &amp;2.</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>026</MSGNR>
+     <TEXT>&amp;1 entries have been deleted from table &amp;2.</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -239,12 +245,17 @@
     <item>
      <SPRSL>D</SPRSL>
      <MSGNR>024</MSGNR>
-     <TEXT>Enddatum sollte nicht in der Vergangenheit liegen (Autom. korrigiert).</TEXT>
+     <TEXT>Enddatum darf nicht in der Vergangenheit liegen (Autom. korrigiert).</TEXT>
     </item>
     <item>
      <SPRSL>D</SPRSL>
      <MSGNR>025</MSGNR>
-     <TEXT>Ein Echtlauf würde &amp;1 Datensätze löschen.</TEXT>
+     <TEXT>Ein Echtlauf würde &amp;1 Datensätze aus Tabelle &amp;2 löschen.</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>026</MSGNR>
+     <TEXT>&amp;1 Einträge wurden aus Tabelle &amp;2 gelöscht.</TEXT>
     </item>
     <item>
      <SPRSL>D</SPRSL>

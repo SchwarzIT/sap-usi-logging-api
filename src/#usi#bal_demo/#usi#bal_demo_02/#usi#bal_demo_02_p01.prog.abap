@@ -7,8 +7,8 @@ CLASS lcl_popup_maintain_task IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD display.
-    CLEAR: screen_fields,
-           input_cancelled.
+    CLEAR screen_fields.
+    CLEAR input_cancelled.
 
     screen_fields-task = i_old_task_data.
     CALL SCREEN 0100 STARTING AT 10 10.

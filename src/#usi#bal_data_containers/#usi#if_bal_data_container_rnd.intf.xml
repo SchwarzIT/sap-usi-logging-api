@@ -10,14 +10,6 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
-   <DESCRIPTIONS>
-    <SEOCOMPOTX>
-     <CLSNAME>/USI/IF_BAL_DATA_CONTAINER_RND</CLSNAME>
-     <CMPNAME>RENDER</CMPNAME>
-     <LANGU>E</LANGU>
-     <DESCRIPT>Render data in given container</DESCRIPT>
-    </SEOCOMPOTX>
-   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

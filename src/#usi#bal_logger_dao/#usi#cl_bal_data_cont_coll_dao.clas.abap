@@ -1,40 +1,35 @@
-CLASS /usi/cl_bal_data_cont_coll_dao DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PUBLIC .
-
+CLASS /usi/cl_bal_data_cont_coll_dao DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_data_cont_coll_dao.
 
   PROTECTED SECTION.
-  PRIVATE SECTION.
 
-    TYPES ty_db_record TYPE /usi/bal_data .
-    TYPES:
-      ty_db_records TYPE SORTED TABLE OF ty_db_record WITH UNIQUE KEY lognumber msgnumber record_number .
+  PRIVATE SECTION.
+    TYPES: ty_db_record  TYPE /usi/bal_data,
+           ty_db_records TYPE SORTED TABLE OF ty_db_record WITH UNIQUE KEY lognumber msgnumber record_number.
 
     CONSTANTS db_connection TYPE dbcon_name VALUE 'R/3*SAP_2TH_CONNECT_APPL_LOG'.
-    DATA db_records TYPE ty_db_records .
+
+    DATA db_records TYPE ty_db_records.
 
     METHODS convert_xml_to_db
       IMPORTING
-        !i_log_number                TYPE balognr
-        !i_message_number            TYPE /usi/bal_message_number
-        !i_serialized_data_cont_coll TYPE /usi/bal_xml_string
+        i_log_number                TYPE balognr
+        i_message_number            TYPE /usi/bal_message_number
+        i_serialized_data_cont_coll TYPE /usi/bal_xml_string
       RETURNING
-        VALUE(r_result)              TYPE ty_db_records .
+        VALUE(r_result)              TYPE ty_db_records.
+
     METHODS convert_db_to_xml
       IMPORTING
-        !i_db_records   TYPE ty_db_records
+        i_db_records   TYPE ty_db_records
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_xml_string .
+        VALUE(r_result) TYPE /usi/bal_xml_string.
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_DATA_CONT_COLL_DAO IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_data_cont_coll_dao IMPLEMENTATION.
   METHOD /usi/if_bal_data_cont_coll_dao~delete_collections.
     TYPES: BEGIN OF ty_database_key,
              mandt         TYPE mandt,
@@ -59,16 +54,16 @@ CLASS /USI/CL_BAL_DATA_CONT_COLL_DAO IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_cont_coll_dao~get_collection.
-    DATA: db_records  TYPE ty_db_records.
+    DATA: db_records TYPE ty_db_records.
 
-    SELECT  mandt
-            lognumber
-            msgnumber
-            record_number
-            used_bytes
-            data
-      FROM  /usi/bal_data
-      INTO  CORRESPONDING FIELDS OF TABLE db_records
+    SELECT mandt
+           lognumber
+           msgnumber
+           record_number
+           used_bytes
+           data
+      FROM /usi/bal_data
+      INTO CORRESPONDING FIELDS OF TABLE db_records
       CONNECTION (db_connection)
       WHERE lognumber EQ i_log_number
         AND msgnumber EQ i_message_number.
@@ -93,11 +88,9 @@ CLASS /USI/CL_BAL_DATA_CONT_COLL_DAO IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    new_records = convert_xml_to_db(
-                    i_log_number                = i_log_number
-                    i_message_number            = i_message_number
-                    i_serialized_data_cont_coll = i_serialized_data_cont_coll
-                  ).
+    new_records = convert_xml_to_db( i_log_number                = i_log_number
+                                     i_message_number            = i_message_number
+                                     i_serialized_data_cont_coll = i_serialized_data_cont_coll ).
 
     LOOP AT new_records ASSIGNING <new_record>.
       INSERT <new_record> INTO TABLE db_records.

@@ -1,20 +1,22 @@
 *----------------------------------------------------------------------*
 * Title   | Delete outdated customizing                                *
 *----------------------------------------------------------------------*
-* Purpose | Table /usi/bal_lv_user can be used to increase the         *
-*         | log level for a user on demand to get a more verbose log.  *
-*         | The table can be maintained directly in the productive     *
+* Purpose | The tables /usi/bal_lv_clnt and /usi/bal_lv_user can be    *
+*         | used to increase the log level for a client or user on     *
+*         | demand to get a more verbose log.                          *
+*         |                                                            *
+*         | The tables can be maintained directly in the productive    *
 *         | system as a current  setting.                              *
 *         |                                                            *
 *         | Since a higher log level leads to more log data, the log   *
 *         | level should only be increased temporarily. In order to    *
-*         | enforce that, the field ENDDA has been added to the table  *
+*         | enforce that, the field ENDDA has been added to the tables *
 *         | and the table maintenance view has been enhanced by a      *
-*         | validation, that will refuse enddates, that are more than  *
-*         | 14 days in the future.                                     *
+*         | validation, that will refuse enddates, that are too far in *
+*         | the future.                                                *
 *         |                                                            *
-*         | This report will delete all outdated entries in table      *
-*         | /usi/bal_lv_user.                                          *
+*         | This report will delete all outdated entries from the      *
+*         | tables.                                                    *
 *----------------------------------------------------------------------*
 REPORT /usi/bal_delete_outdated_cust.
 
@@ -22,7 +24,7 @@ TYPE-POOLS: abap.
 
 CLASS lcl_report DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-    CLASS-DATA singleton TYPE REF TO lcl_report.
+    CLASS-DATA singleton TYPE REF TO lcl_report READ-ONLY.
     CLASS-METHODS class_constructor.
 
     METHODS run
@@ -30,8 +32,18 @@ CLASS lcl_report DEFINITION FINAL CREATE PRIVATE.
         i_test_mode TYPE abap_bool.
 
   PRIVATE SECTION.
+    CONSTANTS: BEGIN OF c_table_names,
+                 client TYPE tabname VALUE '/USI/BAL_LV_CLNT',
+                 user   TYPE tabname VALUE '/USI/BAL_LV_USER',
+               END   OF c_table_names.
+
     METHODS run_test.
     METHODS run_productive.
+
+    METHODS write_and_display_message_text
+      IMPORTING
+        i_message_text TYPE bapi_msg.
+
 ENDCLASS.
 
 CLASS lcl_report IMPLEMENTATION.
@@ -48,26 +60,50 @@ CLASS lcl_report IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD run_test.
-    DATA: entries_to_delete TYPE int4.
+    DATA: message_text            TYPE bapi_msg,
+          outdated_client_entries TYPE int4,
+          outdated_user_entries   TYPE int4.
 
-    SELECT  COUNT( * )
-      FROM  /usi/bal_lv_user
-      INTO  entries_to_delete
+    SELECT COUNT( * )
+      FROM /usi/bal_lv_clnt
+      INTO outdated_client_entries
       WHERE endda LT sy-datum.
+    MESSAGE s025(/usi/bal) WITH outdated_client_entries c_table_names-client INTO message_text.
+    write_and_display_message_text( message_text ).
 
-    MESSAGE s025(/usi/bal) WITH entries_to_delete.
+    SELECT COUNT( * )
+      FROM /usi/bal_lv_user
+      INTO outdated_user_entries
+      WHERE endda LT sy-datum.
+    MESSAGE s025(/usi/bal) WITH outdated_user_entries c_table_names-user INTO message_text.
+    write_and_display_message_text( message_text ).
   ENDMETHOD.
 
   METHOD run_productive.
-    DATA: deleted_entries TYPE int4.
+    DATA: message_text            TYPE bapi_msg,
+          outdated_client_entries TYPE int4,
+          outdated_user_entries   TYPE int4.
+
+    DELETE FROM /usi/bal_lv_clnt WHERE endda LT sy-datum.
+    IF sy-subrc EQ 0.
+      outdated_client_entries = sy-dbcnt.
+      CALL FUNCTION 'ABAP4_COMMIT_WORK'.
+    ENDIF.
+    MESSAGE s026(/usi/bal) WITH outdated_client_entries c_table_names-client INTO message_text.
+    write_and_display_message_text( message_text ).
 
     DELETE FROM /usi/bal_lv_user WHERE endda LT sy-datum.
     IF sy-subrc EQ 0.
-      deleted_entries = sy-dbcnt.
+      outdated_user_entries = sy-dbcnt.
       CALL FUNCTION 'ABAP4_COMMIT_WORK'.
     ENDIF.
+    MESSAGE s026(/usi/bal) WITH outdated_user_entries c_table_names-user INTO message_text.
+    write_and_display_message_text( message_text ).
+  ENDMETHOD.
 
-    MESSAGE s023(/usi/bal) WITH deleted_entries.
+  METHOD write_and_display_message_text.
+    WRITE AT /1: i_message_text.
+    MESSAGE i_message_text TYPE 'S'.
   ENDMETHOD.
 ENDCLASS.
 

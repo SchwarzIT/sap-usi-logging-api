@@ -1,8 +1,8 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE /usi/lbal_shlp_exitstop.           " Global Data
-  INCLUDE /usi/lbal_shlp_exitsuxx.           " Function Modules
+INCLUDE /usi/lbal_shlp_exitstop.
+INCLUDE /usi/lbal_shlp_exitsuxx.
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *
@@ -13,4 +13,4 @@
 * INCLUDE /USI/LBAL_SHLP_EXITSE...           " Events
 * INCLUDE /USI/LBAL_SHLP_EXITSP...           " Local class implement.
 * INCLUDE /USI/LBAL_SHLP_EXITST99.           " ABAP Unit tests
-  INCLUDE /usi/lbal_shlp_exitsimp.
+INCLUDE /usi/lbal_shlp_exitsp01.

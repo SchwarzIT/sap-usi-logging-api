@@ -1,65 +1,93 @@
-CLASS /usi/cl_bal_enum_log_level DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE .
-
+CLASS /usi/cl_bal_enum_log_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
+    CLASS-DATA: additional_info TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                everything      TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                important       TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                medium          TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                nothing         TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                other           TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY,
+                very_important  TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY.
 
-    CLASS-DATA additional_info TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA everything TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA important TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA medium TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA nothing TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA other TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    CLASS-DATA very_important TYPE REF TO /usi/cl_bal_enum_log_level READ-ONLY .
-    DATA value TYPE /usi/bal_log_level READ-ONLY .
+    DATA value TYPE /usi/bal_log_level READ-ONLY.
 
-    CLASS-METHODS class_constructor .
-    METHODS constructor
-      IMPORTING
-        !i_value TYPE /usi/bal_log_level .
+    "! <h1>Create static instances</h1>
+    CLASS-METHODS class_constructor.
+
+    "! <h1>Get enumeration-instance by value</h1>
+    "!
+    "! <p>In some cases the value of an enum instance is known, but for an API call the instance itself is needed.</p>
+    "!
+    "! <p>This method provides a backwards search and returns the matching instance for the passed value.</p>
+    "!
+    "! @parameter i_value | The value to search for
+    "! @parameter r_result | The corresponding instance
+    "! @raising /usi/cx_bal_root | Unsupported value
     CLASS-METHODS get_by_value
       IMPORTING
-        !i_value        TYPE /usi/bal_log_level
+        i_value         TYPE /usi/bal_log_level
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level
       RAISING
-        /usi/cx_bal_root .
+        /usi/cx_bal_root.
+
+    "! <h1>Create instances</h1>
+    METHODS constructor
+      IMPORTING
+        i_value TYPE /usi/bal_log_level.
+
+    "! <h1>Log-Level comparison</h1>
+    "!
+    "! <p>Will return abap_true, if this instance represents a higher log-level than the one passed for comparison.</p>
+    "!
+    "! @parameter i_log_level | The log-level to compare with
+    "! @parameter r_result | Flag: Is this log-level higher, than i_log_level?
     METHODS is_higher_than
       IMPORTING
-        !i_log_level    TYPE REF TO /usi/cl_bal_enum_log_level
+        i_log_level     TYPE REF TO /usi/cl_bal_enum_log_level
       RETURNING
-        VALUE(r_result) TYPE abap_bool .
+        VALUE(r_result) TYPE abap_bool.
+
+    "! <h1>Relevance check for problem class</h1>
+    "!
+    "! <p>There is a strong correlation between the log-level used by this API and the problem class used by the
+    "! SAP standard logging API.</p>
+    "!
+    "! <p>Problem classes represent the severity of a log message. Log-levels are used to filter log messages by
+    "! severity thereby controlling the detail level of the log.</p>
+    "!
+    "! <p>This method indicates, whether a certain problem class is relevant for the current log level.
+    "! The passed message will be logged or discarded based on the result.</p>
+    "!
+    "! @parameter i_problem_class | Problem class of the log message
+    "! @parameter r_result | Flag: Relevant for current log-level?
     METHODS is_problem_class_relevant
       IMPORTING
-        !i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
+        i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
       RETURNING
-        VALUE(r_result)  TYPE abap_bool .
+        VALUE(r_result) TYPE abap_bool.
+
   PROTECTED SECTION.
+
   PRIVATE SECTION.
+    TYPES: BEGIN OF ty_buffered_instance,
+             value    TYPE /usi/bal_log_level,
+             instance TYPE REF TO /usi/cl_bal_enum_log_level,
+           END   OF ty_buffered_instance,
+           ty_buffered_instances TYPE HASHED TABLE OF ty_buffered_instance WITH UNIQUE KEY value.
 
-    TYPES:
-      BEGIN OF ty_instance_map_entry,
-        value    TYPE /usi/bal_log_level,
-        instance TYPE REF TO /usi/cl_bal_enum_log_level,
-      END   OF ty_instance_map_entry .
-    TYPES:
-      ty_instance_map_table TYPE HASHED TABLE OF ty_instance_map_entry WITH UNIQUE KEY value .
-
-    CLASS-DATA instance_map_table TYPE ty_instance_map_table .
+    CLASS-DATA buffered_instances TYPE ty_buffered_instances.
 
     METHODS get_min_loglevel_for_probclass
       IMPORTING
-        !i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
+        i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
       RETURNING
-        VALUE(r_result)  TYPE REF TO /usi/cl_bal_enum_log_level.
+        VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level.
+
 ENDCLASS.
 
 
 
-CLASS /USI/CL_BAL_ENUM_LOG_LEVEL IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_enum_log_level IMPLEMENTATION.
   METHOD class_constructor.
     CREATE OBJECT nothing
       EXPORTING
@@ -92,25 +120,25 @@ CLASS /USI/CL_BAL_ENUM_LOG_LEVEL IMPLEMENTATION.
 
 
   METHOD constructor.
-    DATA instance_map_entry TYPE ty_instance_map_entry.
+    DATA buffered_instance TYPE ty_buffered_instance.
 
     value = i_value.
 
-    instance_map_entry-value    = me->value.
-    instance_map_entry-instance = me.
-    INSERT instance_map_entry INTO TABLE instance_map_table.
+    buffered_instance-value    = me->value.
+    buffered_instance-instance = me.
+    INSERT buffered_instance INTO TABLE buffered_instances.
   ENDMETHOD.
 
 
   METHOD get_by_value.
-    FIELD-SYMBOLS <instance_map_entry> TYPE ty_instance_map_entry.
+    FIELD-SYMBOLS <buffered_instance> TYPE ty_buffered_instance.
 
-    READ TABLE  instance_map_table
-      ASSIGNING <instance_map_entry>
+    READ TABLE buffered_instances
+      ASSIGNING <buffered_instance>
       WITH TABLE KEY value = i_value.
 
     IF sy-subrc EQ 0.
-      r_result = <instance_map_entry>-instance.
+      r_result = <buffered_instance>-instance.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
         EXPORTING

@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_ENSC" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <SHORTTEXT>Enhancements for customizing dialogs</SHORTTEXT>
+   <ENH_SPOTS>
+    <ENHSPOTNAME>/USI/BAL_CUSTOMIZING_VALIDITY</ENHSPOTNAME>
+   </ENH_SPOTS>
+   <SOTR>
+    <item>
+     <HEADER>
+      <CONCEPT>7A047530010C1EECB8A1185E8F79B7F4</CONCEPT>
+      <CREA_LAN>E</CREA_LAN>
+      <TRALA_TYPE>1</TRALA_TYPE>
+      <OBJID_VEC>AABA</OBJID_VEC>
+     </HEADER>
+     <ENTRIES>
+      <SOTR_TEXT>
+       <CONCEPT>7A047530010C1EECB8A1185E8F79B7F4</CONCEPT>
+       <LANGU>E</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>054</LENGTH>
+       <TEXT>Enhancements for customizing dialogs</TEXT>
+      </SOTR_TEXT>
+     </ENTRIES>
+    </item>
+   </SOTR>
+   <SOTR_USE>
+    <SOTR_USE>
+     <PGMID>R3TR</PGMID>
+     <OBJECT>ENSC</OBJECT>
+     <OBJ_NAME>/USI/BAL_CUSTOMIZING</OBJ_NAME>
+     <CONCEPT>7A047530010C1EECB8A1185E8F79B7F4</CONCEPT>
+     <LFD_NUM>0001</LFD_NUM>
+    </SOTR_USE>
+   </SOTR_USE>
+  </asx:values>
+ </asx:abap>
+</abapGit>
