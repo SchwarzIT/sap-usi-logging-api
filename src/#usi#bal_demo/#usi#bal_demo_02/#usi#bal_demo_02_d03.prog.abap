@@ -3,7 +3,7 @@
 *&---------------------------------------------------------------------*
 CLASS lcl_main_screen DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-    CLASS-DATA: singleton TYPE REF TO lcl_main_screen READ-ONLY.
+    CLASS-DATA singleton TYPE REF TO lcl_main_screen READ-ONLY.
 
     DATA: BEGIN OF screen_fields,
             with_log     TYPE abap_bool,

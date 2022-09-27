@@ -48,13 +48,31 @@
      <SPRSL>E</SPRSL>
      <ARBGB>/USI/BAL</ARBGB>
      <MSGNR>006</MSGNR>
-     <TEXT>Line type must be a DDIC-structure!</TEXT>
+     <TEXT>Unsupported line type!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Requested data/object not found!</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>/USI/BAL</ARBGB>
      <MSGNR>008</MSGNR>
      <TEXT>The message has not been logged!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>009</MSGNR>
+     <TEXT>The input must be an internal table!</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>010</MSGNR>
+     <TEXT>Unsupported field type!</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
@@ -185,12 +203,27 @@
     <item>
      <SPRSL>D</SPRSL>
      <MSGNR>006</MSGNR>
-     <TEXT>Der Zeilentyp muss eine DDIC-Struktur sein!</TEXT>
+     <TEXT>Der Zeilentyp wird nicht unterstützt!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>007</MSGNR>
+     <TEXT>Angeforderte Daten/Objekt nicht gefunden!</TEXT>
     </item>
     <item>
      <SPRSL>D</SPRSL>
      <MSGNR>008</MSGNR>
      <TEXT>Die Nachricht wurde nicht protokolliert!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>009</MSGNR>
+     <TEXT>Der Input muss eine interne Tabelle sein!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>010</MSGNR>
+     <TEXT>Der Feldtyp wird nicht unterstützt!</TEXT>
     </item>
     <item>
      <SPRSL>D</SPRSL>

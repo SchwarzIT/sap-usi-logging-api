@@ -1,30 +1,24 @@
-CLASS /usi/cl_bal_logger_dao_factory DEFINITION
-  PUBLIC
-  FINAL
-  CREATE PRIVATE .
-
+CLASS /usi/cl_bal_logger_dao_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-
-    INTERFACES /usi/if_bal_logger_dao_factory .
+    INTERFACES /usi/if_bal_logger_dao_factory.
 
     "! <h1>Factory Method (Singleton pattern)</h1>
     "!
     "! @parameter r_result | Factory instance
     CLASS-METHODS get_instance
       RETURNING
-        VALUE(r_result) TYPE REF TO /usi/if_bal_logger_dao_factory .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
-    CLASS-DATA: instance TYPE REF TO /usi/if_bal_logger_dao_factory.
+        VALUE(r_result) TYPE REF TO /usi/if_bal_logger_dao_factory.
 
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+    CLASS-DATA instance TYPE REF TO /usi/if_bal_logger_dao_factory.
 
 ENDCLASS.
 
 
 
 CLASS /usi/cl_bal_logger_dao_factory IMPLEMENTATION.
-
-
   METHOD /usi/if_bal_logger_dao_factory~get_data_container_collection.
     CREATE OBJECT r_result TYPE /usi/cl_bal_data_cont_coll_dao.
   ENDMETHOD.

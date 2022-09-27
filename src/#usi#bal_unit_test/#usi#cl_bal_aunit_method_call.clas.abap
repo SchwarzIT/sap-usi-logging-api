@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_aunit_method_call DEFINITION PUBLIC FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
-
     TYPES: ty_method_name    TYPE abap_methname,
            ty_parameter_name TYPE abap_parmname.
 

@@ -9,13 +9,38 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
   PRIVATE SECTION.
-    METHODS test_deserialize_bad_xml   FOR TESTING.
-    METHODS test_deserialize_valid_xml FOR TESTING.
+    TYPES: BEGIN OF ty_input,
+             table        TYPE REF TO data,
+             fieldcatalog TYPE lvc_t_fcat,
+             title        TYPE REF TO /usi/if_bal_text_container_c40,
+           END   OF ty_input.
+
+    METHODS test_rejects_invalid_xml       FOR TESTING.
+
+    METHODS test_fieldcat                  FOR TESTING.
+    METHODS test_title                     FOR TESTING.
+    METHODS test_table_of_ddic_struc       FOR TESTING.
+    METHODS test_table_of_non_ddic_struc   FOR TESTING.
+    METHODS test_table_of_ddic_elem        FOR TESTING.
+
+    "! For ITABs with non-ddic-line-types the internal fieldcatalog will become part of the serialized data.
+    "! During deserialization the internal fieldcatalog will be used to rebuild the line structure.
+    "! This will only work if the needed fields of the fieldcatalog had been filled before serializing the data.
+    "!
+    "! This method tests a non-ddic-line-type containing fields having data types that could become problematic,
+    "! if the fieldcatatlog was incomplete.
+    METHODS test_rebuild_from_fieldcatalog FOR TESTING.
+
+    METHODS get_deserialized_cut
+      IMPORTING
+        i_input_to_serialize TYPE ty_input
+      RETURNING
+        VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab.
 ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
-  METHOD test_deserialize_bad_xml.
-    DATA: cut           TYPE REF TO /usi/cl_bal_dc_callstack,
+  METHOD test_rejects_invalid_xml.
+    DATA: cut           TYPE REF TO /usi/cl_bal_dc_itab,
           invalid_input TYPE /usi/bal_xml_string.
 
     TRY.
@@ -26,68 +51,180 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_deserialize_valid_xml.
-    DATA: cut           TYPE REF TO /usi/cl_bal_dc_itab,
-          fieldcat_line TYPE lvc_s_fcat,
-          BEGIN OF input,
-            table    TYPE abap_callstack,
-            fieldcat TYPE lvc_t_fcat,
-            title    TYPE REF TO /usi/if_bal_text_container_c40,
-          END   OF input,
-          serialized_data_container TYPE /usi/bal_xml_string,
-          serialized_title_in       TYPE /usi/bal_xml_string,
-          serialized_title_out      TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+  METHOD test_fieldcat.
+    DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
+          input TYPE ty_input.
 
-    FIELD-SYMBOLS: <output_fieldcat> TYPE /usi/cl_bal_dc_itab=>ty_fieldcatalog,
-                   <output_table>    TYPE any.
+    CREATE DATA input-table TYPE bapirettab.
+    CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
+      EXPORTING
+        i_structure_name = 'BAPIRET2'
+      CHANGING
+        ct_fieldcat      = input-fieldcatalog
+      EXCEPTIONS
+        OTHERS           = 0.
 
-    " Set test input
-    CALL FUNCTION 'SYSTEM_CALLSTACK'
-      IMPORTING
-        callstack = input-table.
+    cut = get_deserialized_cut( input ).
 
-    fieldcat_line-fieldname = 'TEST'.
-    INSERT fieldcat_line INTO TABLE input-fieldcat.
+    cl_aunit_assert=>assert_equals( exp = input-fieldcatalog
+                                    act = cut->external_fieldcatalog ).
+  ENDMETHOD.
 
+  METHOD test_title.
+    DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
+          input TYPE ty_input.
+
+    DATA: BEGIN OF serialized_title,
+            input  TYPE /usi/bal_xml_string,
+            output TYPE /usi/bal_xml_string,
+          END OF serialized_title.
+
+    CREATE DATA input-table TYPE bapirettab.
     CREATE OBJECT input-title TYPE /usi/cl_bal_tc_literal_c40
       EXPORTING
         i_text = 'Callstack'.
 
-    " serialize & deserialize
-    TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input-table
-            i_title          = input-title
-            i_fieldcatalog   = input-fieldcat.
+    cut = get_deserialized_cut( input ).
 
+    serialized_title-input  = input-title->serialize( ).
+    serialized_title-output = cut->title->serialize( ).
+    cl_aunit_assert=>assert_equals( exp = serialized_title-input
+                                    act = serialized_title-output ).
+  ENDMETHOD.
+
+  METHOD test_table_of_ddic_struc.
+    DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
+          input TYPE ty_input.
+
+    FIELD-SYMBOLS: <input_table>  TYPE bapirettab,
+                   <input_line>   TYPE bapiret2,
+                   <output_table> TYPE STANDARD TABLE.
+
+    CREATE DATA input-table TYPE bapirettab.
+    ASSIGN input-table->* TO <input_table>.
+    INSERT INITIAL LINE INTO TABLE <input_table> ASSIGNING <input_line>.
+    <input_line>-message = `Just a test`.
+
+    cut = get_deserialized_cut( input ).
+
+    ASSIGN cut->internal_table_ref->* TO <output_table>.
+    cl_aunit_assert=>assert_equals( exp = <input_table>
+                                    act = <output_table> ).
+  ENDMETHOD.
+
+  METHOD test_table_of_non_ddic_struc.
+    TYPES: BEGIN OF ty_non_ddic_structure,
+             field1 TYPE char10,
+             field2 TYPE char40,
+           END   OF ty_non_ddic_structure,
+           ty_non_ddic_itab TYPE HASHED TABLE OF ty_non_ddic_structure WITH UNIQUE KEY field1.
+
+    DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
+          input            TYPE ty_input,
+          input_table_line TYPE ty_non_ddic_structure.
+
+    FIELD-SYMBOLS: <input_table>  TYPE ty_non_ddic_itab,
+                   <output_table> TYPE STANDARD TABLE.
+
+    CREATE DATA input-table TYPE ty_non_ddic_itab.
+    ASSIGN input-table->* TO <input_table>.
+    input_table_line-field1 = 'LINE1'.
+    INSERT input_table_line INTO TABLE <input_table>.
+
+    cut = get_deserialized_cut( input ).
+
+    ASSIGN cut->internal_table_ref->* TO <output_table>.
+    cl_aunit_assert=>assert_equals( exp = <input_table>
+                                    act = <output_table> ).
+  ENDMETHOD.
+
+  METHOD test_table_of_ddic_elem.
+    DATA: cut          TYPE REF TO /usi/cl_bal_dc_itab,
+          input        TYPE ty_input,
+          output_table TYPE string_table.
+
+    FIELD-SYMBOLS: <input_table>  TYPE string_table,
+                   <output_table> TYPE STANDARD TABLE,
+                   <output_line>  TYPE any,
+                   <output_field> TYPE string.
+
+    CREATE DATA input-table TYPE string_table.
+    ASSIGN input-table->* TO <input_table>.
+    INSERT `Just a test` INTO TABLE <input_table>.
+
+    cut = get_deserialized_cut( input ).
+
+    " Revert structure conversion (CUT converts elementary line types to structured line types internally)
+    ASSIGN cut->internal_table_ref->* TO <output_table>.
+    LOOP AT <output_table> ASSIGNING <output_line>.
+      ASSIGN COMPONENT 1 OF STRUCTURE <output_line> TO <output_field>.
+      INSERT <output_field> INTO TABLE output_table.
+    ENDLOOP.
+
+    cl_aunit_assert=>assert_equals( exp = <input_table>
+                                    act = output_table ).
+  ENDMETHOD.
+
+  METHOD test_rebuild_from_fieldcatalog.
+    TYPES: BEGIN OF ty_line,
+             field1 TYPE c LENGTH 40,
+             field2 TYPE x LENGTH 8,
+             field3 TYPE n LENGTH 10,
+             field4 TYPE p LENGTH 5 DECIMALS 2,
+           END   OF ty_line,
+           ty_table TYPE STANDARD TABLE OF ty_line WITH NON-UNIQUE DEFAULT KEY.
+
+    DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
+          input            TYPE ty_input,
+          input_table_line TYPE ty_line,
+          output_table     TYPE ty_table,
+          output_line      TYPE ty_line.
+
+    FIELD-SYMBOLS: <input_table>  TYPE ty_table,
+                   <output_table> TYPE STANDARD TABLE,
+                   <output_line>  TYPE any.
+
+    CREATE DATA input-table TYPE ty_table.
+    ASSIGN input-table->* TO <input_table>.
+    input_table_line-field1 = 'Just a test'.
+    input_table_line-field3 = 42.
+    input_table_line-field4 = '123.45'.
+    INSERT input_table_line INTO TABLE <input_table>.
+
+    cut = get_deserialized_cut( input ).
+
+    ASSIGN cut->internal_table_ref->* TO <output_table>.
+    LOOP AT <output_table> ASSIGNING <output_line>.
+      MOVE-CORRESPONDING <output_line> TO output_line.
+      INSERT output_line INTO TABLE output_table.
+    ENDLOOP.
+
+    cl_aunit_assert=>assert_equals( exp = <input_table>
+                                    act = output_table ).
+  ENDMETHOD.
+
+  METHOD get_deserialized_cut.
+    DATA: cut                       TYPE REF TO /usi/cl_bal_dc_itab,
+          serialized_data_container TYPE /usi/bal_xml_string,
+          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+
+    FIELD-SYMBOLS <table> TYPE ANY TABLE.
+
+    ASSIGN i_input_to_serialize-table->* TO <table>.
+    CREATE OBJECT cut
+      EXPORTING
+        i_internal_table = <table>
+        i_title          = i_input_to_serialize-title
+        i_fieldcatalog   = i_input_to_serialize-fieldcatalog.
+
+    TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
         CLEAR cut.
-        cut ?= /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
+
+        r_result ?= /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
-
-    " compare
-    ASSIGN cut->internal_table_ref->* TO <output_table>.
-    cl_aunit_assert=>assert_equals( act = <output_table>
-                                    exp = input-table ).
-
-    READ TABLE cut->fieldcatalog_table
-      ASSIGNING <output_fieldcat>
-      WITH KEY name = cut->fieldcatalog_names-external.
-    IF sy-subrc EQ 0.
-      cl_aunit_assert=>assert_equals( act = <output_fieldcat>-fieldcatalog
-                                      exp = input-fieldcat ).
-    ELSE.
-      cl_aunit_assert=>fail( `Field catalog was lost!` ).
-    ENDIF.
-
-    serialized_title_in  = input-title->serialize( ).
-    serialized_title_out = cut->title->serialize( ).
-    cl_aunit_assert=>assert_equals( act = serialized_title_out
-                                    exp = serialized_title_in ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -134,17 +271,19 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 * Unit test: Cardinality
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_input_validation DEFINITION FINAL FOR TESTING.
+CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
   PRIVATE SECTION.
-    METHODS test_good_table       FOR TESTING.
-    METHODS test_non_ddic_table   FOR TESTING.
-    METHODS test_wrong_line_type  FOR TESTING.
+    METHODS test_accepts_ddic_structure  FOR TESTING.
+    METHODS test_accepts_non_ddic_struct FOR TESTING.
+    METHODS test_accepts_elementary      FOR TESTING.
+    METHODS test_rejects_table_of_tables FOR TESTING.
+    METHODS test_rejects_table_of_orefs  FOR TESTING.
 ENDCLASS.
 
-CLASS lcl_unit_test_input_validation IMPLEMENTATION.
-  METHOD test_good_table.
+CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
+  METHOD test_accepts_ddic_structure.
     DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
           input                TYPE abap_callstack,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
@@ -158,14 +297,47 @@ CLASS lcl_unit_test_input_validation IMPLEMENTATION.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_non_ddic_table.
+  METHOD test_accepts_non_ddic_struct.
     TYPES: BEGIN OF ty_non_ddic_table_line,
              mandt TYPE mandt,
            END   OF ty_non_ddic_table_line,
            ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH NON-UNIQUE DEFAULT KEY.
 
+    DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
+          input                TYPE ty_non_ddic_table,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    TRY.
+        CREATE OBJECT cut
+          EXPORTING
+            i_internal_table = input.
+
+        cut->/usi/if_bal_data_container~serialize( ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD test_accepts_elementary.
+    DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
+          input                TYPE string_table,
+          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+
+    TRY.
+        CREATE OBJECT cut
+          EXPORTING
+            i_internal_table = input.
+
+        cut->/usi/if_bal_data_container~serialize( ).
+      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+  ENDMETHOD.
+
+  METHOD test_rejects_table_of_tables.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE ty_non_ddic_table.
+          input TYPE STANDARD TABLE OF bapirettab WITH NON-UNIQUE DEFAULT KEY.
 
     TRY.
         CREATE OBJECT cut
@@ -174,16 +346,16 @@ CLASS lcl_unit_test_input_validation IMPLEMENTATION.
 
         cut->/usi/if_bal_data_container~serialize( ).
 
-        cl_aunit_assert=>fail( `The class is not supposed to support non-ddic tables!` ).
+        cl_aunit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
       CATCH /usi/cx_bal_root.
         " We expected that
         RETURN.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_wrong_line_type.
+  METHOD test_rejects_table_of_orefs.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE string_table.
+          input TYPE STANDARD TABLE OF REF TO cl_gui_alv_grid WITH NON-UNIQUE DEFAULT KEY.
 
     TRY.
         CREATE OBJECT cut
@@ -192,7 +364,7 @@ CLASS lcl_unit_test_input_validation IMPLEMENTATION.
 
         cut->/usi/if_bal_data_container~serialize( ).
 
-        cl_aunit_assert=>fail( `The class is not supposed to support tables with non-structured line types!` ).
+        cl_aunit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
       CATCH /usi/cx_bal_root.
         " We expected that
         RETURN.

@@ -33,10 +33,11 @@ CLASS lcl_unit_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_throws_on_add_exception.
-    DATA: input TYPE REF TO cx_sy_conversion_no_number.
+    DATA input TYPE REF TO /usi/cx_bal_invalid_input.
+
     TRY.
-        sy-tabix = 1 + 'A'.
-      CATCH cx_sy_conversion_no_number INTO input.
+        RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input.
+      CATCH /usi/cx_bal_invalid_input INTO input.
         TRY.
             cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                                 i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1

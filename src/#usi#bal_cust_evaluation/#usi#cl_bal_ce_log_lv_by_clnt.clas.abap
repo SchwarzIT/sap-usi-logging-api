@@ -2,21 +2,21 @@ CLASS /usi/cl_bal_ce_log_lv_by_clnt DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_ce_log_lv_by_clnt.
 
-    "! Constructor
+    "! <h1>Constructor</h1>
     "!
     "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
       IMPORTING
         i_customizing_dao TYPE REF TO /usi/if_bal_cd_log_lv_by_clnt.
 
-    "! Returns the fallback log-level if no customizing is maintained
+    "! <h1>Returns the fallback log-level if no customizing is maintained</h1>
     "!
     "! @parameter r_result | Fallback log-level
     METHODS get_fallback_log_level
       RETURNING
         VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level.
 
-    "! Returns the fallback auto-save-package-size if no customizing is maintained
+    "! <h1>Returns the fallback auto-save-package-size if no customizing is maintained</h1>
     "!
     "! @parameter r_result | Fallback auto-save-package-size
     METHODS get_fallback_auto_save

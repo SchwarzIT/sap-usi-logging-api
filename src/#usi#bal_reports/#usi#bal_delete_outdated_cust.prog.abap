@@ -20,8 +20,6 @@
 *----------------------------------------------------------------------*
 REPORT /usi/bal_delete_outdated_cust.
 
-TYPE-POOLS: abap.
-
 CLASS lcl_report DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     CLASS-DATA singleton TYPE REF TO lcl_report READ-ONLY.
@@ -102,13 +100,12 @@ CLASS lcl_report IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD write_and_display_message_text.
-    WRITE AT /1: i_message_text.
+    WRITE AT /1 i_message_text.
     MESSAGE i_message_text TYPE 'S'.
   ENDMETHOD.
 ENDCLASS.
 
-PARAMETERS:
-  testmode TYPE xfeld.
+PARAMETERS testmode TYPE xfeld.
 
 START-OF-SELECTION.
   /usi/cl_auth=>check_tcode( ).

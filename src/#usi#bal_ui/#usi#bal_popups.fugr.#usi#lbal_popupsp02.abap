@@ -1,6 +1,6 @@
 CLASS lcl_data_container_selector IMPLEMENTATION.
   METHOD constructor.
-    DATA: sorted_data_containers TYPE ty_sorted_data_containers.
+    DATA sorted_data_containers TYPE ty_sorted_data_containers.
     sorted_data_containers = sort_data_containers( i_data_container_collection ).
     insert_data_containers( sorted_data_containers ).
   ENDMETHOD.
@@ -9,7 +9,7 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
     DATA: data_containers       TYPE /usi/bal_data_containers,
           sorted_data_container TYPE ty_sorted_data_container.
 
-    FIELD-SYMBOLS: <data_container> TYPE REF TO /usi/if_bal_data_container.
+    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
 
     data_containers = i_data_container_collection->get_data_containers( ).
     LOOP AT data_containers ASSIGNING <data_container>.
@@ -39,7 +39,7 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
           parent_node    TYPE tv_nodekey,
           tabix          TYPE n LENGTH 6.
 
-    FIELD-SYMBOLS: <sorted_data_container> TYPE ty_sorted_data_container.
+    FIELD-SYMBOLS <sorted_data_container> TYPE ty_sorted_data_container.
 
     " Create one item / node per data container
     LOOP AT i_sorted_data_containers ASSIGNING <sorted_data_container>.
@@ -183,7 +183,7 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD on_tree_item_double_click.
-    FIELD-SYMBOLS: <node_containter> TYPE ty_node_container.
+    FIELD-SYMBOLS <node_containter> TYPE ty_node_container.
 
     READ TABLE node_containers
       ASSIGNING <node_containter>

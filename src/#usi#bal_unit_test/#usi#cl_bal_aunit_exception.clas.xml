@@ -12,6 +12,14 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>FAIL_ON_UNEXPECTED_EXCEPTION</CMPNAME>
+     <SCONAME>I_EXCEPTION</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Abstract Superclass for All Global Exceptions</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

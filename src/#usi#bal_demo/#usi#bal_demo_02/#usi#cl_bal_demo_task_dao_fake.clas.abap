@@ -68,7 +68,7 @@ CLASS /usi/cl_bal_demo_task_dao_fake DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PRIVATE SECTION.
     CLASS-DATA singleton TYPE REF TO /usi/cl_bal_demo_task_dao_fake.
 
-    DATA: tasks TYPE /usi/bal_demo_to_do_tasks.
+    DATA tasks TYPE /usi/bal_demo_to_do_tasks.
 
     METHODS set_fake_data.
 
@@ -106,7 +106,7 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD set_fake_data.
-    DATA: task TYPE /usi/bal_demo_to_do_task.
+    DATA task TYPE /usi/bal_demo_to_do_task.
 
     task-id   = lines( tasks ) + 1.
     task-text = 'Add simple demo'.
@@ -254,14 +254,14 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD log_exception.
-    DATA: logger  TYPE REF TO /usi/if_bal_logger.
+    DATA logger  TYPE REF TO /usi/if_bal_logger.
 
     logger = get_logger( ).
     logger->add_exception( i_exception ).
   ENDMETHOD.
 
   METHOD log_info_message.
-    DATA: logger  TYPE REF TO /usi/if_bal_logger.
+    DATA logger  TYPE REF TO /usi/if_bal_logger.
 
     logger = get_logger( ).
     logger->add_message( i_message_type       = /usi/cl_bal_enum_message_type=>information
@@ -274,7 +274,7 @@ CLASS /usi/cl_bal_demo_task_dao_fake IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_logger.
-    DATA: factory TYPE REF TO /usi/if_bal_factory.
+    DATA factory TYPE REF TO /usi/if_bal_factory.
 
     " The logger was created by some object, that called us.
     "   => We can just get the existing logger

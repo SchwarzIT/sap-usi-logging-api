@@ -20,7 +20,7 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    DATA: cut TYPE REF TO /usi/cl_bal_dc_callstack.
+    DATA cut TYPE REF TO /usi/cl_bal_dc_callstack.
 
     TRY.
         cut ?= /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~deserialize( `Invalid garbage` ).

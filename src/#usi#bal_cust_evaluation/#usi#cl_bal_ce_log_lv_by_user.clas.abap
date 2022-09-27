@@ -44,7 +44,7 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
   METHOD /usi/if_bal_ce_log_lv_by_user~get_auto_save_package_size.
-    DATA: customizing_record TYPE /usi/if_bal_cd_log_lv_by_user=>ty_record.
+    DATA customizing_record TYPE /usi/if_bal_cd_log_lv_by_user=>ty_record.
 
     TRY.
         customizing_record = get_customizing_record( i_user_name  = i_user_name
@@ -63,7 +63,7 @@ CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_ce_log_lv_by_user~get_log_level.
-    DATA: customizing_record TYPE /usi/if_bal_cd_log_lv_by_user=>ty_record.
+    DATA customizing_record TYPE /usi/if_bal_cd_log_lv_by_user=>ty_record.
 
     TRY.
         customizing_record = get_customizing_record( i_user_name  = i_user_name

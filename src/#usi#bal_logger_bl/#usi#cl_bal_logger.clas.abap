@@ -127,8 +127,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
              sy-msgid
       CONDITION sy-msgty IS NOT INITIAL
             AND sy-msgid IS NOT INITIAL.
-    IF sy-msgty IS INITIAL OR
-       sy-msgid IS INITIAL.
+    IF sy-msgty IS INITIAL
+        OR sy-msgid IS INITIAL.
       RETURN.
     ENDIF.
 

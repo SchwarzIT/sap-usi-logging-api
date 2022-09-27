@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_aunit_method_calls DEFINITION PUBLIC FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
-    CLASS /usi/cl_bal_aunit_method_call DEFINITION LOAD.
-
     TYPES: BEGIN OF ty_method_call,
              method_name TYPE /usi/cl_bal_aunit_method_call=>ty_method_name,
              method_call TYPE REF TO /usi/cl_bal_aunit_method_call,

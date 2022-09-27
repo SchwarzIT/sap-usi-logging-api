@@ -10,6 +10,14 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>DELETE_CUSTOM_DATA</CMPNAME>
+     <SCONAME>I_LOG_HEADERS</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Application Log: Log header data table</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

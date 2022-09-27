@@ -22,9 +22,9 @@ CLASS /usi/cl_bal_logger_bl_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
   PROTECTED SECTION.
 
   PRIVATE SECTION.
-    CLASS-DATA: instance TYPE REF TO /usi/if_bal_logger_bl_factory.
+    CLASS-DATA instance TYPE REF TO /usi/if_bal_logger_bl_factory.
 
-    DATA: cust_eval_factory  TYPE REF TO /usi/if_bal_cust_eval_factory.
+    DATA cust_eval_factory TYPE REF TO /usi/if_bal_cust_eval_factory.
 
 ENDCLASS.
 

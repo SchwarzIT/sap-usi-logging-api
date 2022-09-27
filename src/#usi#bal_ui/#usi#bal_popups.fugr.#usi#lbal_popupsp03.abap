@@ -138,7 +138,7 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     LOOP AT i_parent->children ASSIGNING <child>.
       TRY.
           container ?= <child>.
-          free_children( i_parent = container ).
+          free_children( container ).
         CATCH cx_sy_move_cast_error.
       ENDTRY.
 

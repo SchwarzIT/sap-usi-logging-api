@@ -1,10 +1,7 @@
 CLASS /usi/cl_bal_object_descr DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
 
-    CLASS cl_abap_typedescr DEFINITION LOAD.
-
-    "! Is the object type implementing the interface?
+    "! <h1>Is the object type implementing the interface?</h1>
     "!
     "! @parameter i_interface_name | the interface name
     "! @parameter r_result | abap_bool
@@ -14,7 +11,7 @@ CLASS /usi/cl_bal_object_descr DEFINITION PUBLIC FINAL CREATE PUBLIC.
       RETURNING
         VALUE(r_result)   TYPE abap_bool.
 
-    "! Is this class inheriting from i_super_class_name?
+    "! <h1>Is this class inheriting from i_super_class_name?</h1>
     "!
     "! @parameter i_super_class_name | Super-Class
     "! @parameter r_result | abap_bool
@@ -24,21 +21,21 @@ CLASS /usi/cl_bal_object_descr DEFINITION PUBLIC FINAL CREATE PUBLIC.
       RETURNING
         VALUE(r_result)     TYPE abap_bool.
 
-    "! Is this object type instantiatable (=NOT ABSTRACT)
+    "! <h1>Is this object type instantiatable (=NOT ABSTRACT)</h1>
     "!
     "! @parameter r_result | abap_bool
     METHODS is_instantiatable
       RETURNING
         VALUE(r_result) TYPE abap_bool.
 
-    "! Is this object type an interface?
+    "! <h1>Is this object type an interface?</h1>
     "!
     "! @parameter r_result | abap_bool
     METHODS is_interface
       RETURNING
         VALUE(r_result) TYPE abap_bool.
 
-    "! Constructor
+    "! <h1>Constructor</h1>
     "!
     "! @parameter i_object_type_name | Class or Interface name
     "! @raising /usi/cx_bal_root | Invalid name

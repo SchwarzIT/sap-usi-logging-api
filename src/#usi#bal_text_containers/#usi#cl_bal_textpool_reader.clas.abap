@@ -10,8 +10,6 @@ CLASS /usi/cl_bal_textpool_reader DEFINITION PUBLIC FINAL CREATE PUBLIC.
                  text_symbol    TYPE textpoolid VALUE 'I',
                END   OF text_types.
 
-    ALIASES get_textpool FOR /usi/if_bal_textpool_reader~get_textpool.
-
     METHODS get_textpool_line
       IMPORTING
         i_program       TYPE syrepid
@@ -67,10 +65,10 @@ CLASS /usi/cl_bal_textpool_reader IMPLEMENTATION.
           message_variable_4 TYPE symsgv,
           textpool           TYPE /usi/if_bal_textpool_reader=>ty_textpool_table.
 
-    FIELD-SYMBOLS: <textpool_line> TYPE textpool.
+    FIELD-SYMBOLS <textpool_line> TYPE textpool.
 
-    textpool = get_textpool( i_program  = i_program
-                             i_language = i_language ).
+    textpool = /usi/if_bal_textpool_reader~get_textpool( i_program  = i_program
+                                                         i_language = i_language ).
 
     READ TABLE textpool
       ASSIGNING <textpool_line>

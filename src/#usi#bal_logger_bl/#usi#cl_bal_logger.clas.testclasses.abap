@@ -662,7 +662,7 @@ CLASS lcl_unit_test_type_conversions IMPLEMENTATION.
 
     " Logger uses type CSEQUENCE, the state uses CHAR200.
     "   => Explicit conversion needed!
-    cut->add_free_text( i_free_text = the_text ).
+    cut->add_free_text( the_text ).
   ENDMETHOD.
 
   METHOD test_add_message.

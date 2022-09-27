@@ -93,48 +93,54 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: document_title            TYPE REF TO /usi/if_bal_text_container_c40,
+    DATA: deserializer              TYPE REF TO /usi/cl_bal_serializer,
+          document_title            TYPE REF TO /usi/if_bal_text_container_c40,
           document_title_classname  TYPE /usi/bal_text_cont_classname,
           exception                 TYPE REF TO cx_root,
           exception_text            TYPE string,
-          html_document             TYPE string,
-          serialized_document_title TYPE /usi/bal_xml_string.
+          serialized_document_title TYPE /usi/bal_xml_string,
+          parameter                 TYPE abap_trans_srcbind,
+          parameters                TYPE abap_trans_srcbind_tab,
+          html_document             TYPE string.
 
-    TRY.
-        CALL TRANSFORMATION id
-          SOURCE XML i_serialized_data_container
-          RESULT html_document              = html_document
-                 document_title_classname   = document_title_classname
-                 serialized_document_title  = serialized_document_title.
+    parameter-name = `HTML_DOCUMENT`.
+    GET REFERENCE OF html_document INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
 
-        IF document_title_classname IS NOT INITIAL.
-          TRY.
-              CALL METHOD (document_title_classname)=>/usi/if_bal_text_container_c40~deserialize
-                EXPORTING
-                  i_serialized_text_container = serialized_document_title
-                RECEIVING
-                  r_result                    = document_title.
-            CATCH cx_sy_dyn_call_error
-                  /usi/cx_bal_root INTO exception.
-              exception_text = exception->get_text( ).
-              ASSERT ID /usi/bal_log_writer
-                FIELDS exception_text
-                CONDITION exception IS NOT BOUND.
+    parameter-name = `DOCUMENT_TITLE_CLASSNAME`.
+    GET REFERENCE OF document_title_classname INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
 
-              CLEAR document_title.
-          ENDTRY.
-        ENDIF.
+    parameter-name = `SERIALIZED_DOCUMENT_TITLE`.
+    GET REFERENCE OF serialized_document_title INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
 
-        CREATE OBJECT r_result TYPE /usi/cl_bal_dc_html
-          EXPORTING
-            i_html_document  = html_document
-            i_document_title = document_title.
-      CATCH cx_transformation_error INTO exception.
-        RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
-    ENDTRY.
+    CREATE OBJECT deserializer.
+    deserializer->deserialize_fields( i_serialized_data = i_serialized_data_container
+                                      i_parameters      = parameters ).
+
+    IF document_title_classname IS NOT INITIAL.
+      TRY.
+          CALL METHOD (document_title_classname)=>/usi/if_bal_text_container_c40~deserialize
+            EXPORTING
+              i_serialized_text_container = serialized_document_title
+            RECEIVING
+              r_result                    = document_title.
+        CATCH cx_sy_dyn_call_error
+              /usi/cx_bal_root INTO exception.
+          exception_text = exception->get_text( ).
+          ASSERT ID /usi/bal_log_writer
+            FIELDS exception_text
+            CONDITION exception IS NOT BOUND.
+
+          CLEAR document_title.
+      ENDTRY.
+    ENDIF.
+
+    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_html
+      EXPORTING
+        i_html_document  = html_document
+        i_document_title = document_title.
   ENDMETHOD.
 
 
@@ -164,18 +170,30 @@ CLASS /usi/cl_bal_dc_html IMPLEMENTATION.
 
   METHOD /usi/if_bal_data_container~serialize.
     DATA: document_title_classname  TYPE /usi/bal_text_cont_classname,
-          serialized_document_title TYPE /usi/bal_xml_string.
+          serialized_document_title TYPE /usi/bal_xml_string,
+          parameter                 TYPE abap_trans_srcbind,
+          parameters                TYPE abap_trans_srcbind_tab,
+          serializer                TYPE REF TO /usi/cl_bal_serializer.
 
     IF document_title IS BOUND.
       document_title_classname  = document_title->get_classname( ).
       serialized_document_title = document_title->serialize( ).
     ENDIF.
 
-    CALL TRANSFORMATION id
-      SOURCE html_document              = html_document
-             document_title_classname   = document_title_classname
-             serialized_document_title  = serialized_document_title
-      RESULT XML r_result.
+    parameter-name = `HTML_DOCUMENT`.
+    GET REFERENCE OF html_document INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    parameter-name = `DOCUMENT_TITLE_CLASSNAME`.
+    GET REFERENCE OF document_title_classname INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    parameter-name = `SERIALIZED_DOCUMENT_TITLE`.
+    GET REFERENCE OF serialized_document_title INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    CREATE OBJECT serializer.
+    r_result = serializer->serialize_fields_as_json( parameters ).
   ENDMETHOD.
 
 

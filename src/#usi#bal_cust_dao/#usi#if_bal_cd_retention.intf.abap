@@ -5,11 +5,11 @@ INTERFACE /usi/if_bal_cd_retention PUBLIC.
            log_object TYPE balobj_d,
            sub_object TYPE balsubobj.
   INCLUDE TYPE /usi/bal_retention_parameters AS retention_parameters.
-  TYPES: END   OF ty_record.
+  TYPES END OF ty_record.
 
-  TYPES: ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
+  TYPES ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
 
-  "! Read table /usi/bal_lv_rtim (Retention time per Log-Level)
+  "! <h1>Read table /usi/bal_lv_rtim (Retention time per Log-Level)</h1>
   "!
   "! @parameter r_result | Records
   "! @raising /usi/cx_bal_root | Nothing found

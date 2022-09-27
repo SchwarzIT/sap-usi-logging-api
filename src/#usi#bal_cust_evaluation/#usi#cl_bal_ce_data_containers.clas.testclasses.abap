@@ -13,15 +13,13 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
         i_min_log_level TYPE REF TO /usi/cl_bal_enum_log_level.
 
   PRIVATE SECTION.
-    ALIASES: ty_records FOR /usi/if_bal_cd_data_containers~ty_records,
-             ty_record  FOR /usi/if_bal_cd_data_containers~ty_record.
-
     DATA mock_data TYPE /usi/if_bal_cd_data_containers=>ty_records.
+
 ENDCLASS.
 
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   METHOD insert_mock_data_line.
-    DATA mock_data_line TYPE ty_record.
+    DATA mock_data_line TYPE /usi/if_bal_cd_data_containers~ty_record.
     mock_data_line-log_object     = i_log_object.
     mock_data_line-sub_object     = i_sub_object.
     mock_data_line-classname      = i_classname.
@@ -34,11 +32,11 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_cd_data_containers~get_records.
-    DATA mock_data_line_dref TYPE REF TO ty_record.
+    DATA mock_data_line_dref TYPE REF TO /usi/if_bal_cd_data_containers~ty_record.
     LOOP AT mock_data
-      REFERENCE INTO mock_data_line_dref
-      WHERE log_object    IN i_log_object_range
-        AND sub_object    IN i_sub_object_range.
+        REFERENCE INTO mock_data_line_dref
+        WHERE log_object IN i_log_object_range
+        AND sub_object IN i_sub_object_range.
       INSERT mock_data_line_dref->* INTO TABLE r_result.
     ENDLOOP.
 

@@ -12,6 +12,14 @@
     <UNICODE>X</UNICODE>
     <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
    </VSEOCLASS>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>INSERT_MESSAGE</CMPNAME>
+     <SCONAME>/USI/CX_BAL_ROOT</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Root exception class</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

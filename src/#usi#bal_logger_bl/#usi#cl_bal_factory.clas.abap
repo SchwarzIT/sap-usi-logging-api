@@ -182,7 +182,7 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
 
 
   METHOD get_auto_save_package_size.
-    CONSTANTS: c_auto_save_disabled TYPE /usi/bal_auto_save_pckg_size VALUE 0.
+    CONSTANTS c_auto_save_disabled TYPE /usi/bal_auto_save_pckg_size VALUE 0.
 
     DATA: cust_evaluator_by_log_object TYPE REF TO /usi/if_bal_ce_log_lv_by_obj,
           cust_evaluator_by_client     TYPE REF TO /usi/if_bal_ce_log_lv_by_clnt,
@@ -205,17 +205,17 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
     package_size_by_user    = cust_evaluator_by_user->get_auto_save_package_size( i_log_object = i_log_object
                                                                                   i_sub_object = i_sub_object ).
 
-    IF package_size_by_user   NE c_auto_save_disabled AND (
-       package_size_by_client EQ c_auto_save_disabled OR
-       package_size_by_user   LT package_size_by_client ).
+    IF package_size_by_user   NE c_auto_save_disabled
+        AND ( package_size_by_client EQ c_auto_save_disabled OR
+              package_size_by_user   LT package_size_by_client ).
       smallest_package_size = package_size_by_user.
     ELSE.
       smallest_package_size = package_size_by_client.
     ENDIF.
 
-    IF package_size_by_log_object NE c_auto_save_disabled AND (
-       smallest_package_size      EQ c_auto_save_disabled OR
-       package_size_by_log_object LT smallest_package_size ).
+    IF package_size_by_log_object NE c_auto_save_disabled
+        AND ( smallest_package_size      EQ c_auto_save_disabled OR
+              package_size_by_log_object LT smallest_package_size ).
       smallest_package_size = package_size_by_log_object.
     ENDIF.
 

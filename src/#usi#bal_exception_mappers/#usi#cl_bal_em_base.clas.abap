@@ -13,7 +13,7 @@ CLASS /usi/cl_bal_em_base DEFINITION PUBLIC CREATE PUBLIC.
         /usi/cx_bal_root.
 
   PROTECTED SECTION.
-    TYPES: ty_object_references TYPE STANDARD TABLE OF REF TO object WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_object_references TYPE STANDARD TABLE OF REF TO object WITH NON-UNIQUE DEFAULT KEY.
 
     DATA exception TYPE REF TO cx_root.
 

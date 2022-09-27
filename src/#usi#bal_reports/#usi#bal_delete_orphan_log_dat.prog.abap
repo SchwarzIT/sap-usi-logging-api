@@ -21,7 +21,7 @@
 *         | the now obsolete data.                                     *
 *         |                                                            *
 *         | CAUTION: As this API is backwards compatible to            *
-*         |          SAP_BASIS 700, new SQL-features, that would have  *
+*         |          SAP_BASIS 731, new SQL-features, that would have  *
 *         |          improved the performance of this report could not *
 *         |          be used.                                          *
 *         |                                                            *
@@ -34,80 +34,75 @@
 *----------------------------------------------------------------------*
 REPORT /usi/bal_delete_orphan_log_dat.
 
-FORM delete_orphan_log_data.
+CLASS lcl_report DEFINITION FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-METHODS run.
 
-  CONSTANTS: max_package_size TYPE int4 VALUE 1000000.
+  PRIVATE SECTION.
+    CONSTANTS c_package_size TYPE int4 VALUE 1000000.
 
-  DATA: orphan_log_numbers    TYPE bal_t_logn,
-        factory               TYPE REF TO /usi/if_bal_logger_dao_factory,
-        dao_object            TYPE REF TO /usi/if_bal_data_cont_coll_dao,
-        total_entries_deleted TYPE int4.
+    METHODS delete_orphan_log_data.
 
-  factory    = /usi/cl_bal_logger_dao_factory=>get_instance( ).
-  dao_object = factory->get_data_container_collection( ).
+    METHODS get_orphan_log_numbers
+      RETURNING
+        VALUE(r_result) TYPE bal_t_logn.
 
-  DO.
-    PERFORM get_orphan_log_numbers
-      USING max_package_size
-      CHANGING orphan_log_numbers.
+    METHODS delete_message_details
+      IMPORTING
+        i_lognumbers TYPE bal_t_logn.
 
-    IF orphan_log_numbers IS NOT INITIAL.
-      dao_object->delete_collections( orphan_log_numbers ).
-      CALL FUNCTION 'ABAP4_COMMIT_WORK'.
+ENDCLASS.
+
+CLASS lcl_report IMPLEMENTATION.
+  METHOD run.
+    DATA report_instance TYPE REF TO lcl_report.
+
+    CREATE OBJECT report_instance.
+    report_instance->delete_orphan_log_data( ).
+  ENDMETHOD.
+
+  METHOD delete_orphan_log_data.
+    DATA: orphan_log_numbers    TYPE bal_t_logn,
+          total_entries_deleted TYPE int4.
+
+    DO.
+      orphan_log_numbers = get_orphan_log_numbers( ).
+      delete_message_details( orphan_log_numbers ).
 
       total_entries_deleted = total_entries_deleted + lines( orphan_log_numbers ).
+
+      IF lines( orphan_log_numbers ) LT c_package_size.
+        EXIT.
+      ENDIF.
+    ENDDO.
+
+    MESSAGE s023(/usi/bal) WITH total_entries_deleted.
+  ENDMETHOD.
+
+  METHOD get_orphan_log_numbers.
+    SELECT DISTINCT lognumber
+      FROM /usi/bal_data
+      INTO TABLE r_result
+      UP TO c_package_size ROWS
+      WHERE NOT EXISTS ( SELECT * FROM balhdr WHERE lognumber EQ /usi/bal_data~lognumber )
+      ORDER BY lognumber.
+  ENDMETHOD.
+
+  METHOD delete_message_details.
+    DATA: factory    TYPE REF TO /usi/if_bal_logger_dao_factory,
+          dao_object TYPE REF TO /usi/if_bal_data_cont_coll_dao.
+
+    IF i_lognumbers IS INITIAL.
+      RETURN.
     ENDIF.
 
-    IF lines( orphan_log_numbers ) LT max_package_size.
-      EXIT.
-    ENDIF.
-  ENDDO.
-
-  MESSAGE s023(/usi/bal) WITH total_entries_deleted.
-ENDFORM.
-
-FORM get_orphan_log_numbers
-  USING i_max_package_size TYPE int4
-  CHANGING c_orphan_log_numbers TYPE bal_t_logn.
-
-  TYPES: ty_log_numbers TYPE SORTED TABLE OF balognr WITH UNIQUE KEY table_line.
-
-  DATA: data_container_log_numbers TYPE ty_log_numbers,
-        log_header_log_numbers     TYPE ty_log_numbers.
-
-  FIELD-SYMBOLS <log_number> TYPE balognr.
-
-  SELECT DISTINCT lognumber
-    FROM /usi/bal_data
-    PACKAGE SIZE i_max_package_size
-    INTO TABLE data_container_log_numbers.
-
-    IF data_container_log_numbers IS NOT INITIAL.
-      SELECT lognumber
-        FROM balhdr
-        INTO TABLE log_header_log_numbers
-        FOR ALL ENTRIES IN data_container_log_numbers
-        WHERE lognumber EQ data_container_log_numbers-table_line.
-
-      LOOP AT data_container_log_numbers ASSIGNING <log_number>.
-        READ TABLE log_header_log_numbers
-          TRANSPORTING NO FIELDS
-          WITH TABLE KEY table_line = <log_number>.
-        IF sy-subrc NE 0.
-          INSERT <log_number> INTO TABLE c_orphan_log_numbers.
-          IF lines( c_orphan_log_numbers ) EQ i_max_package_size.
-            EXIT.
-          ENDIF.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-    IF lines( c_orphan_log_numbers ) EQ i_max_package_size.
-      EXIT.
-    ENDIF.
-  ENDSELECT.
-ENDFORM.
+    factory    = /usi/cl_bal_logger_dao_factory=>get_instance( ).
+    dao_object = factory->get_data_container_collection( ).
+    dao_object->delete_collections( i_lognumbers ).
+    CALL FUNCTION 'ABAP4_COMMIT_WORK'.
+  ENDMETHOD.
+ENDCLASS.
 
 START-OF-SELECTION.
   /usi/cl_auth=>check_tcode( ).
-  PERFORM delete_orphan_log_data.
+  lcl_report=>run( ).

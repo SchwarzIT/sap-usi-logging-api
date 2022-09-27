@@ -16,7 +16,7 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    DATA: cut TYPE REF TO /usi/cl_bal_dc_html.
+    DATA cut TYPE REF TO /usi/cl_bal_dc_html.
 
     TRY.
         cut ?= /usi/cl_bal_dc_html=>/usi/if_bal_data_container~deserialize( `Garbage input - should fail.` ).

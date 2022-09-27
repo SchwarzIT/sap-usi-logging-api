@@ -3,7 +3,6 @@
 *--------------------------------------------------------------------*
 * Test-Double for Log-DAO
 *--------------------------------------------------------------------*
-CLASS /usi/cl_bal_aunit_method_call DEFINITION LOAD.
 CLASS lcl_dao_spy DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_log_dao.
@@ -15,7 +14,7 @@ CLASS lcl_dao_spy DEFINITION FINAL FOR TESTING.
                  save           TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'SAVE',
                END   OF method_names.
 
-    DATA: method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
+    DATA method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
 
     METHODS constructor.
   PRIVATE SECTION.
@@ -70,7 +69,7 @@ CLASS lcl_data_cont_coll_dao_spy DEFINITION FINAL FOR TESTING.
         serialized_collection TYPE /usi/cl_bal_aunit_method_call=>ty_parameter_name VALUE 'I_SERIALIZED_COLLECTION',
       END   OF parameter_names.
 
-    DATA: method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
+    DATA method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
 
     METHODS constructor.
 ENDCLASS.
@@ -162,7 +161,7 @@ CLASS lcl_private_data IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_message.
-    FIELD-SYMBOLS: <message> TYPE cut->ty_message.
+    FIELD-SYMBOLS <message> TYPE cut->ty_message.
 
     READ TABLE cut->messages-message_buffer ASSIGNING <message> INDEX i_index.
     IF sy-subrc NE 0.
@@ -173,7 +172,7 @@ CLASS lcl_private_data IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_data_container_collection.
-    FIELD-SYMBOLS: <message> TYPE cut->ty_message.
+    FIELD-SYMBOLS <message> TYPE cut->ty_message.
 
     READ TABLE cut->messages-message_buffer ASSIGNING <message> INDEX i_index.
     IF sy-subrc NE 0.
@@ -276,14 +275,13 @@ CLASS lcl_data_container_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_itab_container.
-    DATA: t000_table           TYPE STANDARD TABLE OF t000 WITH NON-UNIQUE DEFAULT KEY,
+    DATA: string_table         TYPE string_table,
           title                TYPE REF TO /usi/if_bal_text_container_c40,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    SELECT *
-      FROM t000
-      INTO TABLE t000_table
-      WHERE mandt EQ sy-mandt.
+    INSERT `Just` INTO TABLE string_table.
+    INSERT `a   ` INTO TABLE string_table.
+    INSERT `test` INTO TABLE string_table.
 
     IF i_title IS NOT INITIAL.
       CREATE OBJECT title TYPE /usi/cl_bal_tc_literal_c40
@@ -294,7 +292,7 @@ CLASS lcl_data_container_factory IMPLEMENTATION.
     TRY.
         CREATE OBJECT r_result TYPE /usi/cl_bal_dc_itab
           EXPORTING
-            i_internal_table = t000_table
+            i_internal_table = string_table
             i_title          = title.
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
@@ -579,7 +577,7 @@ CLASS lcl_unit_test_unbound_dc_coll IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -592,7 +590,7 @@ CLASS lcl_unit_test_unbound_dc_coll IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
@@ -851,7 +849,7 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -866,7 +864,7 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
@@ -1076,7 +1074,7 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_irrelevant_free_text.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>important
@@ -1090,7 +1088,7 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_irrelevant_message.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>important
@@ -1123,7 +1121,7 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_relevant_free_text.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1137,7 +1135,7 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_add_relevant_message.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
@@ -1203,7 +1201,7 @@ CLASS lcl_unit_test_log_previous DEFINITION FINAL FOR TESTING.
 
     METHODS get_actual_result
       IMPORTING
-        VALUE(i_index)  TYPE int4
+        i_index         TYPE int4
       RETURNING
         VALUE(r_result) TYPE /usi/bal_data_cont_classnames.
 
@@ -1680,7 +1678,7 @@ CLASS lcl_unit_test_callback IMPLEMENTATION.
                             i_free_text     = `Just a test...`
                             i_details       = data_container_collection ).
 
-        logged_message = private_data->get_message( i_index = 1 ).
+        logged_message = private_data->get_message( 1 ).
         cl_aunit_assert=>assert_not_initial( act = logged_message-params-callback-userexitf
                                              msg = `Callback function is not set!` ).
 
@@ -1709,7 +1707,7 @@ CLASS lcl_unit_test_callback IMPLEMENTATION.
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = `Just a test...` ).
 
-        logged_message = private_data->get_message( i_index = 1 ).
+        logged_message = private_data->get_message( 1 ).
         cl_aunit_assert=>assert_initial( act = logged_message-params-callback-userexitf
                                          msg = `Callback function is set!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
@@ -1773,7 +1771,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
           given_exception      TYPE REF TO /usi/cx_bal_root,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+    test_objects = prepare_test( 1 ).
 
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
@@ -1800,7 +1798,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
     DATA: test_objects         TYPE ty_test_objects,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+    test_objects = prepare_test( 1 ).
 
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
@@ -1820,7 +1818,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
     DATA: test_objects         TYPE ty_test_objects,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    test_objects = prepare_test( i_auto_save_pckg_size = 1 ).
+    test_objects = prepare_test( 1 ).
 
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
@@ -1842,7 +1840,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
     DATA: test_objects         TYPE ty_test_objects,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    test_objects = prepare_test( i_auto_save_pckg_size = 2 ).
+    test_objects = prepare_test( 2 ).
 
     TRY.
         test_objects-cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1947,10 +1945,11 @@ CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
   METHOD get_last_message_number.
     DATA: method_calls   TYPE /usi/cl_bal_aunit_method_calls=>ty_method_calls,
           message_number TYPE /usi/bal_message_number.
-    FIELD-SYMBOLS: <method_call> TYPE /usi/cl_bal_aunit_method_calls=>ty_method_call.
+
+    FIELD-SYMBOLS <method_call> TYPE /usi/cl_bal_aunit_method_calls=>ty_method_call.
 
     method_calls = dc_coll_dao_spy->method_calls->get_method_calls(
-                     i_method_name = dc_coll_dao_spy->method_names-insert_collection_into_buffer ).
+                        dc_coll_dao_spy->method_names-insert_collection_into_buffer ).
     cl_aunit_assert=>assert_not_initial( act = method_calls
                                          msg = 'Method was not called!' ).
 
@@ -2032,7 +2031,7 @@ CLASS lcl_unit_test_consistency IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_message_wo_msgno_accepted.
-    CONSTANTS message_number_zero TYPE symsgno VALUE 000.
+    CONSTANTS message_number_zero TYPE symsgno VALUE 0.
 
     DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 

@@ -107,9 +107,10 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD constructor.
-    FIELD-SYMBOLS: <last_task> TYPE /usi/bal_demo_to_do_task.
     DATA: tasks              TYPE /usi/bal_demo_to_do_tasks,
           index_of_last_task TYPE i.
+
+    FIELD-SYMBOLS <last_task> TYPE /usi/bal_demo_to_do_task.
 
     to_do_list-dao_object = /usi/cl_bal_demo_task_dao_fake=>get_instance( ).
 
@@ -123,7 +124,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD create_itab_container.
-    DATA: title_text_container TYPE REF TO /usi/cl_bal_tc_report_text_c40.
+    DATA title_text_container TYPE REF TO /usi/cl_bal_tc_report_text_c40.
 
     title_text_container = /usi/cl_bal_tc_report_text_c40=>create( i_text_key = i_title_text_key
                                                                    i_text     = i_title_text ).
@@ -143,7 +144,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
           no_duplicates_exception TYPE REF TO /usi/cx_bal_demo_root,
           propagated_exception    TYPE REF TO cx_root.
 
-    start_log( i_sub_object = 'CREATE_TASK' ).
+    start_log( 'CREATE_TASK' ).
 
     TRY.
         duplicates = get_tasks_by_text( i_task_text ).
@@ -208,7 +209,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
           message_variable_1   TYPE symsgv,
           propagated_exception TYPE REF TO cx_root.
 
-    FIELD-SYMBOLS: <task> TYPE /usi/bal_demo_to_do_task.
+    FIELD-SYMBOLS <task> TYPE /usi/bal_demo_to_do_task.
 
     tasks = to_do_list-dao_object->read_tasks( ).
     LOOP AT tasks ASSIGNING <task> WHERE text EQ i_task_text.
@@ -246,7 +247,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD read_task.
-    start_log( i_sub_object = 'READ_TASK' ).
+    start_log( 'READ_TASK' ).
 
     r_result = to_do_list-dao_object->read_task( i_task_id ).
 
@@ -260,7 +261,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
           propagated_exception TYPE REF TO cx_root,
           table_container      TYPE REF TO /usi/cl_bal_dc_itab.
 
-    start_log( i_sub_object = 'READ_TASKS' ).
+    start_log( 'READ_TASKS' ).
 
     r_result = to_do_list-dao_object->read_tasks( ).
     IF r_result IS NOT INITIAL.
@@ -302,7 +303,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD start_log.
-    DATA: factory TYPE REF TO /usi/if_bal_factory.
+    DATA factory TYPE REF TO /usi/if_bal_factory.
 
     factory    = /usi/cl_bal_factory=>get_instance( ).
     log-logger = factory->create_new_logger( i_log_object  = '/USI/BAL_DEMO_02'
@@ -313,7 +314,7 @@ CLASS /usi/cl_bal_demo_to_do_list IMPLEMENTATION.
 
 
   METHOD update_task.
-    start_log( i_sub_object = 'UPDATE_TASK' ).
+    start_log( 'UPDATE_TASK' ).
 
     to_do_list-dao_object->update_task( i_task ).
 

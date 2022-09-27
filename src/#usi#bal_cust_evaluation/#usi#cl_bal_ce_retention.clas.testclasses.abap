@@ -17,7 +17,7 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
         i_retention_params TYPE /usi/bal_retention_parameters.
 
   PRIVATE SECTION.
-    DATA: mock_data TYPE /usi/if_bal_cd_retention=>ty_records.
+    DATA mock_data TYPE /usi/if_bal_cd_retention=>ty_records.
 ENDCLASS.
 
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
@@ -25,9 +25,9 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
     FIELD-SYMBOLS <mock_data_line> TYPE LINE OF /usi/if_bal_cd_retention=>ty_records.
 
     LOOP AT mock_data ASSIGNING <mock_data_line>
-      WHERE log_object IN i_log_object_range
-        AND sub_object IN i_sub_object_range
-        AND log_level  EQ i_log_level.
+        WHERE log_object IN i_log_object_range
+          AND sub_object IN i_sub_object_range
+          AND log_level  EQ i_log_level.
       INSERT <mock_data_line> INTO TABLE r_result.
     ENDLOOP.
 
@@ -196,11 +196,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
         r_result-retention_time = r_result-retention_time + 32769.
     ENDTRY.
 
-    IF r_result-no_early_delete EQ abap_true.
-      r_result-no_early_delete = abap_false.
-    ELSE.
-      r_result-no_early_delete = abap_true.
-    ENDIF.
+    r_result-no_early_delete = boolc( r_result-no_early_delete EQ abap_false ).
   ENDMETHOD.
 
   METHOD assert_expected_result.

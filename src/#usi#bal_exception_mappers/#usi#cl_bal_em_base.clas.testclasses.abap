@@ -7,7 +7,6 @@ CLASS lcl_cut_subclass DEFINITION FINAL INHERITING FROM /usi/cl_bal_em_base FOR 
   PUBLIC SECTION.
     METHODS /usi/if_bal_exception_mapper~get_t100_message REDEFINITION.
 
-    ALIASES get_data_containers FOR /usi/if_bal_exception_mapper~get_data_containers.
 ENDCLASS.
 
 CLASS lcl_cut_subclass IMPLEMENTATION.
@@ -79,7 +78,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
     CREATE OBJECT data_container_collection TYPE /usi/cl_bal_dc_collection.
-    cut->get_data_containers( data_container_collection ).
+    cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
 
     assert_container_in_collection( i_data_container_collection = data_container_collection
                                     i_data_container            = data_container ).
@@ -106,7 +105,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
     ENDTRY.
     CLEAR data_container_collection.
     CREATE OBJECT data_container_collection TYPE /usi/cl_bal_dc_collection.
-    cut->get_data_containers( data_container_collection ).
+    cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
 
     assert_container_in_collection( i_data_container_collection = data_container_collection
                                     i_data_container            = data_container ).
@@ -130,7 +129,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
     ENDTRY.
 
     CREATE OBJECT data_container_collection.
-    cut->get_data_containers( data_container_collection ).
+    cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
   ENDMETHOD.
 
   METHOD get_data_container.

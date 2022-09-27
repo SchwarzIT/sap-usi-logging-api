@@ -203,11 +203,7 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
           /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
       ENDTRY.
 
-      IF log_level BETWEEN i_relevant_from AND i_relevant_to.
-        expected_result = abap_true.
-      ELSE.
-        expected_result = abap_false.
-      ENDIF.
+      expected_result = boolc( log_level BETWEEN i_relevant_from AND i_relevant_to ).
       actual_result = cut->is_problem_class_relevant( i_problem_class ).
 
       cl_aunit_assert=>assert_equals( exp = expected_result

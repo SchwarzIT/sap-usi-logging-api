@@ -147,7 +147,8 @@ CLASS /usi/cl_bal_tc_report_text_c40 IMPLEMENTATION.
 
   METHOD get_name_of_calling_program.
     DATA callstack TYPE abap_callstack.
-    FIELD-SYMBOLS: <callstack_line> TYPE abap_callstack_line.
+
+    FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
     CALL FUNCTION 'SYSTEM_CALLSTACK'
       EXPORTING

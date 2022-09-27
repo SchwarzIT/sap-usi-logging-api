@@ -38,23 +38,20 @@ CLASS /usi/cl_bal_dc_src_pos_caller IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: exception            TYPE REF TO cx_transformation_error,
+    DATA: deserializer         TYPE REF TO /usi/cl_bal_serializer,
           source_code_position TYPE /usi/bal_source_code_position.
 
-    TRY.
-        CALL TRANSFORMATION id
-          SOURCE XML i_serialized_data_container
-          RESULT source_code_position = source_code_position.
+    CREATE OBJECT deserializer.
+    deserializer->deserialize_field(
+      EXPORTING
+        i_serialized_data = i_serialized_data_container
+        i_name            = 'SOURCE_CODE_POSITION'
+      CHANGING
+        c_data            = source_code_position ).
 
-        CREATE OBJECT r_result TYPE /usi/cl_bal_dc_src_pos_caller
-          EXPORTING
-            i_source_code_position = source_code_position.
-      CATCH cx_transformation_error INTO exception.
-        RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
-    ENDTRY.
+    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_src_pos_caller
+      EXPORTING
+        i_source_code_position = source_code_position.
   ENDMETHOD.
 
 
@@ -74,9 +71,11 @@ CLASS /usi/cl_bal_dc_src_pos_caller IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~serialize.
-    CALL TRANSFORMATION id
-      SOURCE source_code_position = source_code_position
-      RESULT XML r_result.
+    DATA serializer TYPE REF TO /usi/cl_bal_serializer.
+
+    CREATE OBJECT serializer.
+    r_result = serializer->serialize_field_as_json( i_data = source_code_position
+                                                    i_name = 'SOURCE_CODE_POSITION' ).
   ENDMETHOD.
 
 

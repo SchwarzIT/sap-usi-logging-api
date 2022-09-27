@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------*
 CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
-    INTERFACES: /usi/if_bal_cd_log_lv_by_clnt.
+    INTERFACES /usi/if_bal_cd_log_lv_by_clnt.
 
     METHODS clear_mock_data.
 
@@ -60,7 +60,7 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
   PRIVATE SECTION.
-    TYPES: ty_log_level_enums TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
+    TYPES ty_log_level_enums TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
                                        WITH NON-UNIQUE DEFAULT KEY.
 
     METHODS setup.
@@ -156,7 +156,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     test_double_cust_dao->insert_mock_data_line( i_log_object = 'CUST_LOG_OBJECT'
                                                  i_log_level  = expected_result ).
-    test_double_cust_dao->insert_mock_data_line( i_log_level = wrong_result ).
+    test_double_cust_dao->insert_mock_data_line( wrong_result ).
 
     actual_result = cut->/usi/if_bal_ce_log_lv_by_clnt~get_log_level( i_log_object = 'CUST_LOG_OBJECT' ).
 
@@ -187,14 +187,17 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_non_fallback_log_levels.
-    DATA: log_level       TYPE REF TO /usi/cl_bal_enum_log_level,
-          log_level_value TYPE /usi/bal_log_level.
+    DATA: fallback_log_level TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level          TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level_value    TYPE /usi/bal_log_level.
+
+    fallback_log_level = cut->get_fallback_log_level( ).
 
     log_level_value = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE lines( r_result ) LT i_amount.
       TRY.
           log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level NE cut->get_fallback_log_level( ).
+          IF log_level NE fallback_log_level.
             INSERT log_level INTO TABLE r_result.
           ENDIF.
           log_level_value = log_level_value + 1.

@@ -1,5 +1,5 @@
 INTERFACE /usi/if_bal_text_container_c40 PUBLIC.
-  TYPES: ty_text TYPE c LENGTH 40.
+  TYPES ty_text TYPE c LENGTH 40.
 
   "! <h1>Re-Create Text-Container from XML-String</h1>
   "!

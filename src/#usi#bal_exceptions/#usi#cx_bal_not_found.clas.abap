@@ -32,6 +32,15 @@ public section.
       attr3 type scx_attrname value 'PARAM3',
       attr4 type scx_attrname value 'PARAM4',
     end of TEXT_NOT_FOUND_IN_TEXTPOOL .
+  constants:
+    begin of GENERIC_NOT_FOUND,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '007',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of GENERIC_NOT_FOUND .
 
   "! <h1>Constructor</h1>
   "!

@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_lstate_invalidated DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
-
     INTERFACES /usi/if_bal_logger_state.
 
   PROTECTED SECTION.

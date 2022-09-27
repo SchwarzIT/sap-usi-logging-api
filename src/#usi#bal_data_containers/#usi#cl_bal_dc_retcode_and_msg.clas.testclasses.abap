@@ -16,7 +16,8 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    DATA: cut TYPE REF TO /usi/cl_bal_dc_retcode_and_msg.
+    DATA cut TYPE REF TO /usi/cl_bal_dc_retcode_and_msg.
+
     TRY.
         cut ?= /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize( `Invalid garbage` ).
         cl_aunit_assert=>fail( msg = 'Input was garbage! Exception expected!' ).

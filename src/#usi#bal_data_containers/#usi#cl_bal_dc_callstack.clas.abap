@@ -68,23 +68,20 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: callstack TYPE abap_callstack,
-          exception TYPE REF TO cx_transformation_error.
+    DATA: callstack    TYPE abap_callstack,
+          deserializer TYPE REF TO /usi/cl_bal_serializer.
 
-    TRY.
-        CALL TRANSFORMATION id
-          SOURCE XML i_serialized_data_container
-          RESULT callstack = callstack.
+    CREATE OBJECT deserializer.
+    deserializer->deserialize_field(
+      EXPORTING
+        i_serialized_data = i_serialized_data_container
+        i_name            = 'CALLSTACK'
+      CHANGING
+        c_data            = callstack ).
 
-        CREATE OBJECT r_result TYPE /usi/cl_bal_dc_callstack
-          EXPORTING
-            i_callstack = callstack.
-      CATCH cx_transformation_error INTO exception.
-        RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
-    ENDTRY.
+    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_callstack
+      EXPORTING
+        i_callstack = callstack.
   ENDMETHOD.
 
 
@@ -104,9 +101,11 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~serialize.
-    CALL TRANSFORMATION id
-      SOURCE callstack = callstack
-      RESULT XML r_result.
+    DATA serializer TYPE REF TO /usi/cl_bal_serializer.
+
+    CREATE OBJECT serializer.
+    r_result = serializer->serialize_field_as_json( i_data = callstack
+                                                    i_name = 'CALLSTACK' ).
   ENDMETHOD.
 
 
@@ -127,7 +126,7 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
 
 
   METHOD get_fieldcatalog.
-    FIELD-SYMBOLS: <fieldcatalog_line> TYPE lvc_s_fcat.
+    FIELD-SYMBOLS <fieldcatalog_line> TYPE lvc_s_fcat.
 
     IF fieldcatalog IS NOT INITIAL.
       r_result = fieldcatalog.
@@ -171,7 +170,7 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
 
 
   METHOD on_double_click.
-    FIELD-SYMBOLS: <callstack_line> TYPE abap_callstack_line.
+    FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
     READ TABLE callstack ASSIGNING <callstack_line> INDEX es_row_no-row_id.
     IF sy-subrc EQ 0.

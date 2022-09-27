@@ -1,10 +1,9 @@
-"! <h1>Data container (Contains details of a log message)</h1>
 INTERFACE /usi/if_bal_data_container PUBLIC.
 
   INTERFACES /usi/if_bal_message_details.
   INTERFACES /usi/if_exception_details.
 
-  "! <h1>Re-Create Data-Container from XML-String</h1>
+  "! <h1>Deserialize Data-Container (String -> ABAP)</h1>
   "!
   "! <p>Users of the API will not need this method.
   "! It is used internally when displaying data containers of logs in SLG1.</p>
@@ -14,7 +13,7 @@ INTERFACE /usi/if_bal_data_container PUBLIC.
   "! @raising /usi/cx_bal_root | Invalid input
   CLASS-METHODS deserialize
     IMPORTING
-      i_serialized_data_container TYPE /usi/bal_xml_string
+      i_serialized_data_container TYPE /usi/bal_serialized_data
     RETURNING
       VALUE(r_result)             TYPE REF TO /usi/if_bal_data_container
     RAISING
@@ -84,7 +83,7 @@ INTERFACE /usi/if_bal_data_container PUBLIC.
     RETURNING
       VALUE(r_result) TYPE /usi/bal_data_cont_description.
 
-  "! <h1>Convert Data-Container into XML-String</h1>
+  "! <h1>Serialize Data-Container (ABAP -> String)</h1>
   "!
   "! <p>Users of the API will not need this method.
   "! It is used internally when saving data containers.</p>
@@ -93,7 +92,7 @@ INTERFACE /usi/if_bal_data_container PUBLIC.
   "! @raising /usi/cx_bal_root | Error during serialization; Container will be skipped
   METHODS serialize
     RETURNING
-      VALUE(r_result) TYPE /usi/bal_xml_string
+      VALUE(r_result) TYPE /usi/bal_serialized_data
     RAISING
       /usi/cx_bal_root.
 

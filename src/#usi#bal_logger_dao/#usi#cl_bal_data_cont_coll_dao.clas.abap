@@ -54,7 +54,7 @@ CLASS /usi/cl_bal_data_cont_coll_dao IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_cont_coll_dao~get_collection.
-    DATA: db_records TYPE ty_db_records.
+    DATA db_records TYPE ty_db_records.
 
     SELECT mandt
            lognumber
@@ -119,10 +119,9 @@ CLASS /usi/cl_bal_data_cont_coll_dao IMPLEMENTATION.
       CONNECTION (db_connection)
       FROM TABLE db_records.
     IF sy-subrc EQ 0.
-      CLEAR db_records.
       COMMIT CONNECTION (db_connection).
-    ELSE.
       CLEAR db_records.
+    ELSE.
       WRITE sy-subrc TO message_parameter_1 LEFT-JUSTIFIED NO-ZERO.
       RAISE EXCEPTION TYPE /usi/cx_bal_db_error
         EXPORTING
@@ -151,7 +150,7 @@ CLASS /usi/cl_bal_data_cont_coll_dao IMPLEMENTATION.
 
     bytes_per_record = xstrlen( db_record-data ).
 
-    EXPORT serialized_data_cont_coll FROM i_serialized_data_cont_coll TO DATA BUFFER binary_data.
+    EXPORT serialized_data_cont_coll FROM i_serialized_data_cont_coll TO DATA BUFFER binary_data COMPRESSION ON.
     WHILE binary_data IS NOT INITIAL.
       db_record-record_number = sy-index.
       db_record-lognumber     = i_log_number.

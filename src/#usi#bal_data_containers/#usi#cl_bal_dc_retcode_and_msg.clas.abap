@@ -19,8 +19,7 @@ CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PROTECTED SECTION.
 
   PRIVATE SECTION.
-    TYPES: ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value
-                                       WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH NON-UNIQUE DEFAULT KEY.
 
     DATA: BEGIN OF alv_data,
             fieldcat TYPE lvc_t_fcat,
@@ -73,26 +72,28 @@ CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: exception   TYPE REF TO cx_transformation_error,
-          message     TYPE symsg,
-          return_code TYPE sysubrc.
+    DATA: parameter    TYPE abap_trans_resbind,
+          parameters   TYPE abap_trans_resbind_tab,
+          deserializer TYPE REF TO /usi/cl_bal_serializer,
+          message      TYPE symsg,
+          return_code  TYPE sysubrc.
 
-    TRY.
-        CALL TRANSFORMATION id
-          SOURCE XML i_serialized_data_container
-          RESULT message     = message
-                 return_code = return_code.
+    parameter-name = 'MESSAGE'.
+    GET REFERENCE OF message INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
 
-        CREATE OBJECT r_result TYPE /usi/cl_bal_dc_retcode_and_msg
-          EXPORTING
-            i_message     = message
-            i_return_code = return_code.
-      CATCH cx_transformation_error INTO exception.
-        RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
-    ENDTRY.
+    parameter-name = 'RETURN_CODE'.
+    GET REFERENCE OF return_code INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    CREATE OBJECT deserializer.
+    deserializer->deserialize_fields( i_serialized_data = i_serialized_data_container
+                                      i_parameters      = parameters ).
+
+    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_retcode_and_msg
+      EXPORTING
+        i_message     = message
+        i_return_code = return_code.
   ENDMETHOD.
 
 
@@ -112,10 +113,20 @@ CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container~serialize.
-    CALL TRANSFORMATION id
-      SOURCE message     = message
-             return_code = return_code
-      RESULT XML r_result.
+    DATA: parameter  TYPE abap_trans_srcbind,
+          parameters TYPE abap_trans_srcbind_tab,
+          serializer TYPE REF TO /usi/cl_bal_serializer.
+
+    parameter-name = 'MESSAGE'.
+    GET REFERENCE OF message INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    parameter-name = 'RETURN_CODE'.
+    GET REFERENCE OF return_code INTO parameter-value.
+    INSERT parameter INTO TABLE parameters.
+
+    CREATE OBJECT serializer.
+    r_result = serializer->serialize_fields_as_json( parameters ).
   ENDMETHOD.
 
 

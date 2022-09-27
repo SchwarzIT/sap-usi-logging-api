@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_lstate_active DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
-
     INTERFACES /usi/if_bal_logger_state.
 
     "! <h1>Constructor</h1>
@@ -182,7 +180,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_logger_state~add_free_text.
-    DATA: target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
+    DATA target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
     IF settings-log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
       RETURN.
@@ -210,7 +208,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_logger_state~add_message.
-    DATA: target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
+    DATA target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
     IF settings-log_level->is_problem_class_relevant( i_problem_class ) NE abap_true.
       RETURN.
@@ -256,7 +254,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_logger_state~save.
-    DATA: log_number TYPE balognr.
+    DATA log_number TYPE balognr.
 
     IF token->is_equal( i_token ) NE abap_true.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_allowed
@@ -275,13 +273,13 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD add_caller_src_pos_container.
-    CONSTANTS: caller_level TYPE i VALUE 4.
+    CONSTANTS caller_level TYPE i VALUE 4.
 
     DATA: source_code_position TYPE /usi/bal_source_code_position,
           new_data_container   TYPE REF TO /usi/cl_bal_dc_src_pos_caller,
           callstack            TYPE abap_callstack.
 
-    FIELD-SYMBOLS: <callstack_line> TYPE abap_callstack_line.
+    FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
     CALL FUNCTION 'SYSTEM_CALLSTACK'
       EXPORTING
@@ -303,7 +301,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
 
   METHOD add_callstack_container.
-    CONSTANTS: number_of_api_internal_calls TYPE i VALUE 3.
+    CONSTANTS number_of_api_internal_calls TYPE i VALUE 3.
 
     DATA: new_data_container TYPE REF TO /usi/cl_bal_dc_callstack,
           callstack          TYPE abap_callstack.
@@ -346,7 +344,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
           data_container            TYPE REF TO /usi/if_bal_data_container,
           data_containers           TYPE /usi/bal_data_containers.
 
-    FIELD-SYMBOLS: <data_container> TYPE REF TO  /usi/if_bal_data_container.
+    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
 
     IF i_source IS BOUND.
       TRY.
@@ -427,8 +425,8 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
     DATA: callback_parameter TYPE bal_s_par,
           message            TYPE ty_message.
 
-    IF i_message_class IS INITIAL OR
-       i_message_type  IS INITIAL.
+    IF i_message_class IS INITIAL
+        OR i_message_type IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
         EXPORTING
           textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
@@ -460,8 +458,8 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
 
     INSERT message INTO TABLE messages-message_buffer.
 
-    IF settings-auto_save_pckg_size GT 0 AND
-       settings-auto_save_pckg_size LE lines( messages-message_buffer ).
+    IF settings-auto_save_pckg_size GT 0
+        AND lines( messages-message_buffer ) GE settings-auto_save_pckg_size.
       TRY.
           /usi/if_bal_logger_state~save( token ).
         CATCH /usi/cx_bal_root.
@@ -488,7 +486,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
           unexpected_exception_text TYPE string,
           unsaved_data_exists       TYPE abap_bool.
 
-    FIELD-SYMBOLS: <message> TYPE ty_message.
+    FIELD-SYMBOLS <message> TYPE ty_message.
 
     LOOP AT messages-message_buffer ASSIGNING <message> WHERE data_container_collection IS BOUND.
       CHECK <message>-data_container_collection->has_data_containers( ) EQ abap_true.
@@ -520,7 +518,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
           unexpected_exception_text TYPE string,
           unsaved_data_exists       TYPE abap_bool.
 
-    FIELD-SYMBOLS: <message> TYPE ty_message.
+    FIELD-SYMBOLS <message> TYPE ty_message.
 
     IF messages-message_buffer IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input

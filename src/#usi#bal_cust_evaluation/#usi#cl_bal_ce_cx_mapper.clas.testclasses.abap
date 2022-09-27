@@ -205,8 +205,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    IF object_description->is_implementing( mapper_interface_name ) NE abap_true OR
-       object_description->is_instantiatable( ) NE abap_true.
+    IF object_description->is_implementing( mapper_interface_name ) NE abap_true
+        OR object_description->is_instantiatable( ) NE abap_true.
       cl_aunit_assert=>fail( 'Invalid fallback for mapper class!' ).
     ENDIF.
   ENDMETHOD.

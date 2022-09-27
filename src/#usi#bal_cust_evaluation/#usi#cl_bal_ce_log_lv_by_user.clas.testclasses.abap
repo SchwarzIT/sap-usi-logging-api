@@ -29,10 +29,10 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
     DATA mock_data_line_dref TYPE REF TO /usi/if_bal_cd_log_lv_by_user=>ty_record.
 
     LOOP AT mock_data
-      REFERENCE INTO mock_data_line_dref
-      WHERE log_object  IN i_log_object_range
-        AND sub_object  IN i_sub_object_range
-        AND uname       EQ i_user_name.
+        REFERENCE INTO mock_data_line_dref
+        WHERE log_object IN i_log_object_range
+          AND sub_object IN i_sub_object_range
+          AND uname      EQ i_user_name.
       INSERT mock_data_line_dref->* INTO TABLE r_result.
     ENDLOOP.
 
@@ -194,7 +194,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     READ TABLE non_fallback_log_levels INTO wrong_result    INDEX 1.
     READ TABLE non_fallback_log_levels INTO expected_result INDEX 2.
 
-    test_double_cust_dao->insert_mock_data_line( i_log_level = wrong_result ).
+    test_double_cust_dao->insert_mock_data_line( wrong_result ).
     test_double_cust_dao->insert_mock_data_line( i_log_object = 'CUST_LOG_OBJECT'
                                                  i_log_level  = expected_result ).
 
@@ -231,14 +231,17 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_non_fallback_log_levels.
-    DATA: log_level       TYPE REF TO /usi/cl_bal_enum_log_level,
-          log_level_value TYPE /usi/bal_log_level.
+    DATA: fallback_log_level TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level          TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level_value    TYPE /usi/bal_log_level.
+
+    fallback_log_level = cut->get_fallback_log_level( ).
 
     log_level_value = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE lines( r_result ) LT i_amount.
       TRY.
           log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level NE cut->get_fallback_log_level( ).
+          IF log_level NE fallback_log_level.
             INSERT log_level INTO TABLE r_result.
           ENDIF.
           log_level_value = log_level_value + 1.

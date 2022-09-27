@@ -1,7 +1,5 @@
 INTERFACE /usi/if_bal_logger_state PUBLIC.
 
-  TYPE-POOLS abap.
-
   TYPES ty_free_text TYPE c LENGTH 200.
 
   "! <h1>Add exception to internal buffer</h1>

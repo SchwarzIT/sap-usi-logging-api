@@ -1,6 +1,6 @@
 CLASS /usi/cl_bal_sub_object_range DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    DATA: range TYPE /usi/bal_sub_object_range READ-ONLY.
+    DATA range TYPE /usi/bal_sub_object_range READ-ONLY.
 
     "! Helper-Method to build ranges
     "!

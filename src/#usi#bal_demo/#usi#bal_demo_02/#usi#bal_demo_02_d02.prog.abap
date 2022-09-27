@@ -13,7 +13,7 @@ CLASS lcl_task_grid DEFINITION FINAL CREATE PUBLIC.
                  delete_tasks TYPE ui_func VALUE 'DELETE_TASKS',
                END   OF user_commands.
 
-    DATA: alv_grid TYPE REF TO cl_gui_alv_grid READ-ONLY.
+    DATA alv_grid TYPE REF TO cl_gui_alv_grid READ-ONLY.
 
     METHODS constructor.
 

@@ -1,10 +1,8 @@
 CLASS /usi/cl_bal_ce_data_containers DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    CLASS cl_aunit_assert DEFINITION LOAD.
-
     INTERFACES /usi/if_bal_ce_data_containers.
 
-    "! Constructor
+    "! <h1>Constructor</h1>
     "!
     "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
@@ -22,7 +20,7 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
   METHOD /usi/if_bal_ce_data_containers~get_relevant_plugin_classnames.
-    CONSTANTS: data_container_interface TYPE seoclsname VALUE '/USI/IF_BAL_DATA_CONTAINER'.
+    CONSTANTS data_container_interface TYPE seoclsname VALUE '/USI/IF_BAL_DATA_CONTAINER'.
 
     DATA: log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
           sub_object_range_helper TYPE REF TO /usi/cl_bal_sub_object_range,
@@ -30,7 +28,7 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
           required_log_level      TYPE REF TO /usi/cl_bal_enum_log_level,
           object_description      TYPE REF TO /usi/cl_bal_object_descr.
 
-    FIELD-SYMBOLS: <customizing_record> TYPE /usi/if_bal_cd_data_containers=>ty_record.
+    FIELD-SYMBOLS <customizing_record> TYPE /usi/if_bal_cd_data_containers=>ty_record.
 
     " Read database
     CREATE OBJECT log_object_range_helper.

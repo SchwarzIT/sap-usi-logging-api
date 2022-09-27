@@ -5,14 +5,14 @@
 *--------------------------------------------------------------------*
 CLASS lcl_single_use_container DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
-    INTERFACES: /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container.
 
     METHODS constructor
       IMPORTING
         i_serialized_data_container TYPE /usi/bal_xml_string.
 
   PRIVATE SECTION.
-    DATA: serialized_data_container TYPE /usi/bal_xml_string.
+    DATA serialized_data_container TYPE /usi/bal_xml_string.
 ENDCLASS.
 
 CLASS lcl_single_use_container IMPLEMENTATION.
@@ -48,7 +48,7 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 CLASS lcl_multi_use_container DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
-    INTERFACES: /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container.
 
     METHODS constructor
       IMPORTING
@@ -91,7 +91,7 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 CLASS lcl_defect_container DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
-    INTERFACES: /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container.
 
     CLASS-METHODS class_constructor.
 

@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_aunit_cut_descr_cl DEFINITION PUBLIC FINAL CREATE PRIVATE FOR TESTING.
   PUBLIC SECTION.
-    CLASS cl_abap_classdescr DEFINITION LOAD.
-
     DATA classname TYPE classname READ-ONLY.
 
     "! <h1>Factory</h1>
@@ -76,7 +74,8 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
 
   METHOD assert_public_attrib_read_only.
     DATA class_description TYPE REF TO cl_abap_classdescr.
-    FIELD-SYMBOLS: <attribute> TYPE abap_attrdescr.
+
+    FIELD-SYMBOLS <attribute> TYPE abap_attrdescr.
 
     class_description = get_rtti_description( ).
 
@@ -122,7 +121,7 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     DATA: callstack        TYPE abap_callstack,
           include_resolver TYPE REF TO if_oo_clif_incl_naming.
 
-    FIELD-SYMBOLS: <callstack_line> TYPE abap_callstack_line.
+    FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
     CALL FUNCTION 'SYSTEM_CALLSTACK'
       EXPORTING

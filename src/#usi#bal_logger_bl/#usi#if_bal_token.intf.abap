@@ -1,7 +1,5 @@
 INTERFACE /usi/if_bal_token PUBLIC.
 
-  TYPE-POOLS abap.
-
   "! <h1>Is same instance?</h1>
   "!
   "! @parameter i_token | Token to compare

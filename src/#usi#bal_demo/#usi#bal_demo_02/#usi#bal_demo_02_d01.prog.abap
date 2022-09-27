@@ -4,7 +4,7 @@
 CLASS lcl_popup_maintain_task DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
 
-    CLASS-DATA: singleton TYPE REF TO lcl_popup_maintain_task READ-ONLY.
+    CLASS-DATA singleton TYPE REF TO lcl_popup_maintain_task READ-ONLY.
 
     DATA: BEGIN OF screen_fields,
             user_command TYPE syucomm,
@@ -32,7 +32,7 @@ CLASS lcl_popup_maintain_task DEFINITION FINAL CREATE PRIVATE.
         VALUE(r_result) TYPE /usi/bal_demo_to_do_task_text.
 
   PRIVATE SECTION.
-    DATA: input_cancelled TYPE abap_bool.
+    DATA input_cancelled TYPE abap_bool.
 
     METHODS hide_useless_fields.
 

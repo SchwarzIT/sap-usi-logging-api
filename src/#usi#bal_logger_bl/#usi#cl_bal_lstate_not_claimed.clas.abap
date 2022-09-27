@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_lstate_not_claimed DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
-
     INTERFACES /usi/if_bal_logger_state.
 
     "! <h1>Constructor</h1>

@@ -1,12 +1,8 @@
 CLASS /usi/cl_bal_ce_cx_mapper DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
-    TYPE-POOLS abap.
-
-    CLASS cl_aunit_assert DEFINITION LOAD.
-
     INTERFACES /usi/if_bal_ce_cx_mapper.
 
-    "! Constructor
+    "! <h1>Constructor</h1>
     "!
     "! @parameter i_customizing_dao | DAO-Object
     METHODS constructor
@@ -55,7 +51,7 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname.
-    CONSTANTS: fallback_mapper_class TYPE /usi/bal_exception_mapper VALUE '/USI/CL_BAL_EM_BASE'.
+    CONSTANTS fallback_mapper_class TYPE /usi/bal_exception_mapper VALUE '/USI/CL_BAL_EM_BASE'.
     r_result = fallback_mapper_class.
   ENDMETHOD.
 
@@ -130,7 +126,7 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
           exception_description TYPE REF TO /usi/cl_bal_object_descr,
           result_line           TYPE ty_customizing_entry.
 
-    FIELD-SYMBOLS: <raw_customizing_entry> TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
+    FIELD-SYMBOLS <raw_customizing_entry> TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
 
     TRY.
         raw_customizing_table = customizing_dao->get_records( ).

@@ -1,7 +1,5 @@
 CLASS /usi/cl_bal_aunit_exception DEFINITION PUBLIC FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
-    CLASS cl_aunit_assert DEFINITION LOAD.
-    CLASS if_aunit_constants DEFINITION LOAD.
 
     "! <h1>Aborts current test</h1>
     "!

@@ -10,6 +10,14 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>IS_EQUAL</CMPNAME>
+     <SCONAME>I_TOKEN</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Proof of log ownership (Needed for critical actions)</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

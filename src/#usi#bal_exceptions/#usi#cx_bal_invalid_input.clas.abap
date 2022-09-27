@@ -15,15 +15,6 @@ public section.
       attr4 type scx_attrname value '',
     end of /USI/CX_BAL_INVALID_INPUT .
   constants:
-    begin of DATA_CONT_USE_DDIC_LINE_TYPE,
-      msgid type symsgid value '/USI/BAL',
-      msgno type symsgno value '006',
-      attr1 type scx_attrname value '',
-      attr2 type scx_attrname value '',
-      attr3 type scx_attrname value '',
-      attr4 type scx_attrname value '',
-    end of DATA_CONT_USE_DDIC_LINE_TYPE .
-  constants:
     begin of DUPLICATE_BUFFER_ENTRY,
       msgid type symsgid value '/USI/BAL',
       msgno type symsgno value '001',
@@ -41,6 +32,33 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of LOG_IS_EMPTY .
+  constants:
+    begin of ITAB_REQUIRED,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '009',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of ITAB_REQUIRED .
+  constants:
+    begin of UNSUPPORTED_LINE_TYPE,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '006',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of UNSUPPORTED_LINE_TYPE .
+  constants:
+    begin of UNSUPPORTED_FIELD_TYPE,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '010',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of UNSUPPORTED_FIELD_TYPE .
 
   "! <h1>Constructor</h1>
   "!

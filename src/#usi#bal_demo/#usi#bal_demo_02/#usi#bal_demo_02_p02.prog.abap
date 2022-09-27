@@ -24,7 +24,7 @@ CLASS lcl_task_grid IMPLEMENTATION.
 
 
   METHOD get_field_catalog.
-    FIELD-SYMBOLS: <field> TYPE lvc_s_fcat.
+    FIELD-SYMBOLS <field> TYPE lvc_s_fcat.
 
     CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
       EXPORTING
@@ -66,7 +66,7 @@ CLASS lcl_task_grid IMPLEMENTATION.
                  separator TYPE tb_btype VALUE 3,
                END   OF button_types.
 
-    DATA: button TYPE stb_button.
+    DATA button TYPE stb_button.
 
     CLEAR button.
     button-function  = user_commands-refresh.
@@ -116,7 +116,8 @@ CLASS lcl_task_grid IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_selected_task_ids.
-    DATA: row_numbers TYPE lvc_t_roid.
+    DATA row_numbers TYPE lvc_t_roid.
+
     FIELD-SYMBOLS: <row_number> TYPE lvc_s_roid,
                    <task>       TYPE /usi/bal_demo_to_do_task.
 

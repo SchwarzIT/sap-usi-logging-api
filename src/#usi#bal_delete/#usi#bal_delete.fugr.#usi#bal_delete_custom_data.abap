@@ -17,7 +17,7 @@ FUNCTION /usi/bal_delete_custom_data.
         log_header_groups TYPE ty_log_header_groups,
         log_header_group  TYPE REF TO ty_log_header_group.
 
-  FIELD-SYMBOLS: <log_header> TYPE balhdr.
+  FIELD-SYMBOLS <log_header> TYPE balhdr.
 
   LOOP AT i_log_headers ASSIGNING <log_header>.
     READ TABLE log_header_groups

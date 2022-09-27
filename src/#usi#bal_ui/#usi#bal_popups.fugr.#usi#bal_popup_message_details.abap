@@ -9,7 +9,8 @@ FUNCTION /usi/bal_popup_message_details.
                line   TYPE int1 VALUE 5,
              END   OF dynpro_start_position.
 
-  DATA: exception TYPE REF TO /usi/cx_bal_root.
+  DATA exception TYPE REF TO /usi/cx_bal_root.
+
   TRY.
       CREATE OBJECT screen_controller TYPE lcl_log_message_detail
         EXPORTING

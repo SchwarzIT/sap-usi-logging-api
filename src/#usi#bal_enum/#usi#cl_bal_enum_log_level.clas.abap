@@ -164,8 +164,8 @@ CLASS /usi/cl_bal_enum_log_level IMPLEMENTATION.
 
 
   METHOD is_higher_than.
-    IF i_log_level        IS BOUND AND
-       i_log_level->value LT value.
+    IF i_log_level IS BOUND
+        AND i_log_level->value LT value.
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.

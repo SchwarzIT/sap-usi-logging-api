@@ -199,7 +199,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD refresh_screen_without_log.
-    DATA: tasks TYPE lcl_task_grid=>ty_unsorted_tasks.
+    DATA tasks TYPE lcl_task_grid=>ty_unsorted_tasks.
 
     TRY.
         tasks = to_do_list->read_tasks( ).
@@ -210,7 +210,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD start_log.
-    DATA: factory TYPE REF TO /usi/if_bal_factory.
+    DATA factory TYPE REF TO /usi/if_bal_factory.
 
     factory    = /usi/cl_bal_factory=>get_instance( ).
     log-logger = factory->create_new_logger( i_log_object  = '/USI/BAL_DEMO_02'

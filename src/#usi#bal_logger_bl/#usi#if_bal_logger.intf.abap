@@ -1,7 +1,5 @@
 INTERFACE /usi/if_bal_logger PUBLIC.
 
-  TYPE-POOLS abap.
-
   EVENTS instance_invalidated.
 
   "! <h1>Add exception to internal buffer</h1>

@@ -1,7 +1,5 @@
 FUNCTION-POOL /usi/bal_popups.
 
-TYPE-POOLS: abap, icon.
-
 INCLUDE /usi/lbal_popupsd01.
 INCLUDE /usi/lbal_popupsd02.
 INCLUDE /usi/lbal_popupsd03.

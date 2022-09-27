@@ -23,7 +23,7 @@ CLASS /usi/cl_bal_dc_collection DEFINITION PUBLIC FINAL CREATE PUBLIC.
            ty_serialized_data_containers TYPE STANDARD TABLE OF ty_serialized_data_container
                                                   WITH NON-UNIQUE DEFAULT KEY.
 
-    DATA: data_cont_coll_items TYPE ty_data_cont_coll_items.
+    DATA data_cont_coll_items TYPE ty_data_cont_coll_items.
 
     METHODS is_cardinality_violation
       IMPORTING
@@ -102,13 +102,13 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
 
 
   METHOD /usi/if_bal_data_container_col~insert.
-    DATA: new_data_cont_coll_item TYPE ty_data_cont_coll_item.
+    DATA new_data_cont_coll_item TYPE ty_data_cont_coll_item.
 
     r_result = me.
 
     TRY.
-        IF is_cardinality_violation( i_data_container ) EQ abap_true OR
-           is_duplicate( i_data_container ) EQ abap_true.
+        IF is_cardinality_violation( i_data_container ) EQ abap_true
+            OR is_duplicate( i_data_container ) EQ abap_true.
           RETURN.
         ENDIF.
       CATCH /usi/cx_bal_root.
@@ -151,7 +151,7 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
 
 
   METHOD is_cardinality_violation.
-    DATA: data_container_classname TYPE /usi/bal_data_cont_classname.
+    DATA data_container_classname TYPE /usi/bal_data_cont_classname.
 
     IF i_data_container->is_multiple_use_allowed( ) EQ abap_true.
       " Not restricted
@@ -172,7 +172,8 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
   METHOD is_duplicate.
     DATA: data_container_classname  TYPE /usi/bal_data_cont_classname,
           serialized_data_container TYPE /usi/bal_xml_string.
-    FIELD-SYMBOLS: <data_cont_coll_item> TYPE ty_data_cont_coll_item.
+
+    FIELD-SYMBOLS <data_cont_coll_item> TYPE ty_data_cont_coll_item.
 
     data_container_classname  = i_data_container->get_classname( ).
     serialized_data_container = i_data_container->serialize( ).

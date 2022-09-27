@@ -106,7 +106,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
           log_handles    TYPE bal_t_logh,
           log_numbers    TYPE bal_t_lgnm.
 
-    FIELD-SYMBOLS: <log_number> TYPE bal_s_lgnm.
+    FIELD-SYMBOLS <log_number> TYPE bal_s_lgnm.
 
     INSERT log_handle INTO TABLE log_handles.
     CALL FUNCTION 'BAL_DB_SAVE'
@@ -152,7 +152,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
 
 
   METHOD create_log.
-    DATA: data_container TYPE REF TO /usi/if_bal_data_container.
+    DATA data_container TYPE REF TO /usi/if_bal_data_container.
 
     CALL FUNCTION 'BAL_LOG_CREATE'
       EXPORTING
@@ -173,7 +173,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
 
 
   METHOD get_data_container_rc_and_msg.
-    DATA: message TYPE symsg.
+    DATA message TYPE symsg.
 
     MOVE-CORRESPONDING sy TO message.
 

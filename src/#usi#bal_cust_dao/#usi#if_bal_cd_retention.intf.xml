@@ -10,6 +10,14 @@
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>
    </VSEOINTERF>
+   <DESCRIPTIONS_SUB>
+    <SEOSUBCOTX>
+     <CMPNAME>GET_CUSTOMIZING_ENTRIES</CMPNAME>
+     <SCONAME>/USI/CX_APPL_LOG_ROOT</SCONAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Root exception class</DESCRIPT>
+    </SEOSUBCOTX>
+   </DESCRIPTIONS_SUB>
   </asx:values>
  </asx:abap>
 </abapGit>

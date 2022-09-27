@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------*
 CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
-    INTERFACES: /usi/if_bal_cd_log_lv_by_obj.
+    INTERFACES /usi/if_bal_cd_log_lv_by_obj.
 
     METHODS clear_mock_data.
 
@@ -17,19 +17,17 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
         i_auto_save_package_size TYPE /usi/bal_auto_save_pckg_size DEFAULT 0.
 
   PRIVATE SECTION.
-    ALIASES: ty_records FOR /usi/if_bal_cd_log_lv_by_obj~ty_records,
-             ty_record  FOR /usi/if_bal_cd_log_lv_by_obj~ty_record.
+    DATA mock_data TYPE /usi/if_bal_cd_log_lv_by_obj~ty_records.
 
-    DATA: mock_data TYPE ty_records.
 ENDCLASS.
 
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   METHOD /usi/if_bal_cd_log_lv_by_obj~get_records.
-    DATA mock_data_line_dref TYPE REF TO ty_record.
+    DATA mock_data_line_dref TYPE REF TO /usi/if_bal_cd_log_lv_by_obj~ty_record.
     LOOP AT mock_data
-      REFERENCE INTO mock_data_line_dref
-      WHERE log_object  IN i_log_object_range
-        AND sub_object  IN i_sub_object_range.
+        REFERENCE INTO mock_data_line_dref
+        WHERE log_object IN i_log_object_range
+          AND sub_object IN i_sub_object_range.
       INSERT mock_data_line_dref->* INTO TABLE r_result.
     ENDLOOP.
 
@@ -45,7 +43,7 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD insert_mock_data_line.
-    DATA mock_data_line TYPE ty_record.
+    DATA mock_data_line TYPE /usi/if_bal_cd_log_lv_by_obj~ty_record.
     mock_data_line-log_object             = i_log_object.
     mock_data_line-sub_object             = i_sub_object.
     mock_data_line-log_level              = i_log_level.
@@ -61,8 +59,8 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
   PRIVATE SECTION.
-    TYPES: ty_non_default_log_levels TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
-                                              WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_non_default_log_levels TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
+                                             WITH NON-UNIQUE DEFAULT KEY.
 
     METHODS setup.
     METHODS test_fallback_auto_save FOR TESTING.
@@ -169,14 +167,17 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_non_fallback_log_levels.
-    DATA: log_level       TYPE REF TO /usi/cl_bal_enum_log_level,
-          log_level_value TYPE /usi/bal_log_level.
+    DATA: fallback_log_level TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level          TYPE REF TO /usi/cl_bal_enum_log_level,
+          log_level_value    TYPE /usi/bal_log_level.
+
+    fallback_log_level = cut->get_fallback_log_level( ).
 
     log_level_value = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE lines( r_result ) LT i_amount.
       TRY.
           log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level NE cut->get_fallback_log_level( ).
+          IF log_level NE fallback_log_level.
             INSERT log_level INTO TABLE r_result.
           ENDIF.
           log_level_value = log_level_value + 1.
