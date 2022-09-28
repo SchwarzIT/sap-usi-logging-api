@@ -5,6 +5,7 @@
 [SYSTEM_SETUP]:   https://github.com/SchwarzIT/sap-usi#getting-started
 [V1.0.0]:         ../../releases/tag/v1.0.0
 [V1.1.0]:         ../../releases/tag/v1.1.0
+[V1.2.0]:         ../../releases/tag/v1.2.0
 
 <!-- Images used on this page (Declaration) -->
 [SLG1]: ../media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
@@ -39,11 +40,11 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ## System requirements
 | Version         | Requirements        |
 | --------------- | ------------------- |
-| >1.1.0          | SAP_BASIS 740 SP 02 |
+| [1.2.0][V1.2.0] | SAP_BASIS 740 SP 02 |
 | [1.1.0][V1.1.0] | SAP_BASIS 731       |
 | [1.0.0][V1.0.0] | SAP_BASIS 700 SP 27 |
 
-Any version **MIGHT(!)** on older releases as well but that has not been tested.
+Any version **MIGHT(!)** run on older releases as well but that has not been tested.
 
 ## Installation Guide
 Before starting, the system must be [set up for USI][SYSTEM_SETUP].   
