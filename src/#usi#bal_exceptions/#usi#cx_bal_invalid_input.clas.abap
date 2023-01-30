@@ -59,6 +59,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of UNSUPPORTED_FIELD_TYPE .
+  constants:
+    begin of TRANSFORMATION_ERROR,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '040',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of TRANSFORMATION_ERROR .
 
   "! <h1>Constructor</h1>
   "!

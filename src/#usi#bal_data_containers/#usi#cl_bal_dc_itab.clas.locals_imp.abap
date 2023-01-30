@@ -962,11 +962,15 @@ CLASS lcl_serializer DEFINITION FINAL CREATE PUBLIC.
 
     METHODS serialize_table_data
       RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+        VALUE(r_result) TYPE abap_trans_srcbind_tab
+      RAISING
+        /usi/cx_bal_root.
 
     METHODS serialize_external_fieldcat
       RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+        VALUE(r_result) TYPE abap_trans_srcbind_tab
+      RAISING
+        /usi/cx_bal_root.
 
     METHODS serialize_title
       RETURNING

@@ -158,6 +158,12 @@
      <MSGNR>030</MSGNR>
      <TEXT>Only the owner of this log may perform this action!</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>040</MSGNR>
+     <TEXT>Transformation error (Check previous exception for details).</TEXT>
+    </T100>
    </T100>
    <I18N_LANGS>
     <LANGU>D</LANGU>
