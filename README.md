@@ -7,6 +7,7 @@
 [V1.1.0]:         ../../releases/tag/v1.1.0
 [V1.2.0]:         ../../releases/tag/v1.2.0
 [V1.3.0]:         ../../releases/tag/v1.3.0
+[V1.4.0]:         ../../releases/tag/v1.4.0
 
 <!-- Images used on this page (Declaration) -->
 [SLG1]: ../media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
@@ -41,6 +42,7 @@ The solution enhances the capabilities of the SAP standard by so-called data con
 ## System requirements
 | Version         | Requirements        |
 | --------------- | ------------------- |
+| [1.4.0][V1.4.0] | SAP_BASIS 740 SP 02 |
 | [1.3.0][V1.3.0] | SAP_BASIS 740 SP 02 |
 | [1.2.0][V1.2.0] | SAP_BASIS 740 SP 02 |
 | [1.1.0][V1.1.0] | SAP_BASIS 731       |
