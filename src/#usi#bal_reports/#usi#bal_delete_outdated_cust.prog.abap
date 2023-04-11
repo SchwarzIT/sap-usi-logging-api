@@ -85,7 +85,6 @@ CLASS lcl_report IMPLEMENTATION.
     DELETE FROM /usi/bal_lv_clnt WHERE endda LT sy-datum.
     IF sy-subrc EQ 0.
       outdated_client_entries = sy-dbcnt.
-      CALL FUNCTION 'ABAP4_COMMIT_WORK'.
     ENDIF.
     MESSAGE s026(/usi/bal) WITH outdated_client_entries c_table_names-client INTO message_text.
     write_and_display_message_text( message_text ).
@@ -93,7 +92,6 @@ CLASS lcl_report IMPLEMENTATION.
     DELETE FROM /usi/bal_lv_user WHERE endda LT sy-datum.
     IF sy-subrc EQ 0.
       outdated_user_entries = sy-dbcnt.
-      CALL FUNCTION 'ABAP4_COMMIT_WORK'.
     ENDIF.
     MESSAGE s026(/usi/bal) WITH outdated_user_entries c_table_names-user INTO message_text.
     write_and_display_message_text( message_text ).
