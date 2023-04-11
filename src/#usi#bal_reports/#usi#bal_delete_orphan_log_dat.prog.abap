@@ -20,17 +20,12 @@
 *         | already deleted logs, you can use this report to delete    *
 *         | the now obsolete data.                                     *
 *         |                                                            *
-*         | CAUTION: As this API is backwards compatible to            *
-*         |          SAP_BASIS 731, new SQL-features, that would have  *
-*         |          improved the performance of this report could not *
-*         |          be used.                                          *
+*         | NOTE: This report is _NOT_ a replacement for the           *
+*         |       enhancements mentioned above!                        *
 *         |                                                            *
-*         |          This report is _NOT_ a replacement for the        *
-*         |          enhancements mentioned above!                     *
-*         |                                                            *
-*         |          It is an inperformant emergency solution in case  *
-*         |          the implementation of the enhancements was        *
-*         |          forgotten.                                        *
+*         |       It is a rather inperformant emergency solution in    *
+*         |       case the implementation of the enhancements was      *
+*         |       forgotten.                                           *
 *----------------------------------------------------------------------*
 REPORT /usi/bal_delete_orphan_log_dat.
 
@@ -99,7 +94,7 @@ CLASS lcl_report IMPLEMENTATION.
     factory    = /usi/cl_bal_logger_dao_factory=>get_instance( ).
     dao_object = factory->get_data_container_collection( ).
     dao_object->delete_collections( i_lognumbers ).
-    CALL FUNCTION 'ABAP4_COMMIT_WORK'.
+    COMMIT WORK.
   ENDMETHOD.
 ENDCLASS.
 
