@@ -39,17 +39,6 @@ The component enhances the capabilities of the SAP standard by so-called data co
 
 ![alt text][SLG1]
 
-## System requirements
-| Version         | Requirements        |
-| --------------- | ------------------- |
-| [1.4.0][V1.4.0] | SAP_BASIS 740 SP 02 |
-| [1.3.0][V1.3.0] | SAP_BASIS 740 SP 02 |
-| [1.2.0][V1.2.0] | SAP_BASIS 740 SP 02 |
-| [1.1.0][V1.1.0] | SAP_BASIS 731       |
-| [1.0.0][V1.0.0] | SAP_BASIS 700 SP 27 |
-
-Any version **MIGHT(!)** run on older releases as well but that has not been tested.
-
 ## Installation Guide
 Before starting, the system must be [set up for USI][SYSTEM_SETUP].   
 After that please refer to the [installation guide][INSTALLATION] in our wiki.
