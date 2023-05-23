@@ -2,7 +2,6 @@
 [WIKI]:           ../../wiki
 [INSTALLATION]:   ../../wiki/Installation-Guide
 [CONTRIBUTING]:   ./docs/CONTRIBUTING.md
-[SYSTEM_SETUP]:   https://github.com/SchwarzIT/sap-usi#getting-started
 [V1.0.0]:         ../../releases/tag/v1.0.0
 [V1.1.0]:         ../../releases/tag/v1.1.0
 [V1.2.0]:         ../../releases/tag/v1.2.0
@@ -40,8 +39,7 @@ The component enhances the capabilities of the SAP standard by so-called data co
 ![alt text][SLG1]
 
 ## Installation Guide
-Before starting, the system must be [set up for USI][SYSTEM_SETUP].   
-After that please refer to the [installation guide][INSTALLATION] in our wiki.
+Please refer to the [installation guide][INSTALLATION] in our wiki.
 
 ## How to contribute
 Please check our [contribution guidelines][CONTRIBUTING] to learn more about this topic.
