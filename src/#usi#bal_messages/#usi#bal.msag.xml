@@ -164,6 +164,12 @@
      <MSGNR>040</MSGNR>
      <TEXT>Transformation error (Check previous exception for details).</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>050</MSGNR>
+     <TEXT>Unsupported structure - no field values could be extracted!</TEXT>
+    </T100>
    </T100>
    <I18N_LANGS>
     <LANGU>D</LANGU>
@@ -300,6 +306,16 @@
      <SPRSL>D</SPRSL>
      <MSGNR>030</MSGNR>
      <TEXT>Nur der Besitzer dieses Logs darf diese Aktion durchführen!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>040</MSGNR>
+     <TEXT>Transformationsfehler ( Siehe vorherige Ausnahme für Details).</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>050</MSGNR>
+     <TEXT>Nicht unterstützte Struktur - Extraktion von Feldwerten nicht möglich!</TEXT>
     </item>
    </T100_TEXTS>
   </asx:values>

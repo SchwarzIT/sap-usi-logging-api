@@ -5,12 +5,10 @@ CLASS /usi/cl_bal_dc_structure DEFINITION PUBLIC FINAL CREATE PUBLIC.
     "! Constructor
     "!
     "! @parameter i_structure | A Structure
+    "! @parameter i_title     | Text container
     METHODS constructor
-      IMPORTING
-        i_structure TYPE any
-        i_title     TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
-
-  PROTECTED SECTION.
+      IMPORTING i_structure TYPE any
+                i_title     TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
 
   PRIVATE SECTION.
     TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH NON-UNIQUE DEFAULT KEY.
@@ -27,11 +25,21 @@ CLASS /usi/cl_bal_dc_structure DEFINITION PUBLIC FINAL CREATE PUBLIC.
           title      TYPE REF TO /usi/if_bal_text_container_c40.
 
     METHODS build_alv_output
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
+
+    METHODS resolve_structure
+      IMPORTING i_structure_ref         TYPE REF TO data
+                i_structure_description TYPE REF TO cl_abap_structdescr
+                i_structure_suffix      TYPE string OPTIONAL
+      RETURNING VALUE(r_result)         TYPE ty_alv_output
+      RAISING   /usi/cx_bal_root.
+
+    METHODS resolve_elementary_field
+      IMPORTING i_structure_ref  TYPE REF TO data
+                i_component_name TYPE string
+      RETURNING VALUE(r_result)  TYPE ty_alv_output.
 
 ENDCLASS.
-
 
 
 CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
@@ -63,16 +71,14 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
     IF deserialized_data-title_classname IS NOT INITIAL.
       TRY.
           CALL METHOD (deserialized_data-title_classname)=>/usi/if_bal_text_container_c40~deserialize
-            EXPORTING
-              i_serialized_text_container = deserialized_data-serialized_title
-            RECEIVING
-              r_result                    = title.
+            EXPORTING i_serialized_text_container = deserialized_data-serialized_title
+            RECEIVING r_result                    = title.
         CATCH cx_sy_dyn_call_error
               /usi/cx_bal_root INTO DATA(exception).
           DATA(exception_text) = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
-            FIELDS exception_text
-            CONDITION exception IS NOT BOUND.
+                 FIELDS exception_text
+                 CONDITION exception IS NOT BOUND.
 
           CLEAR title.
       ENDTRY.
@@ -89,8 +95,11 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD constructor.
-    structure = REF #( i_structure ).
-    title     = i_title.
+    CREATE DATA structure LIKE i_structure.
+    ASSIGN structure->* TO FIELD-SYMBOL(<structure>).
+    <structure> = i_structure.
+
+    title = i_title.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~serialize.
@@ -111,9 +120,6 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD build_alv_output.
-    FIELD-SYMBOLS: <structure> TYPE any,
-                   <field>     TYPE simple.
-
     IF alv_output IS BOUND.
       RETURN.
     ENDIF.
@@ -122,26 +128,68 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
         DATA(structure_description) = CAST cl_abap_structdescr( cl_abap_typedescr=>describe_by_data_ref( structure ) ).
       CATCH cx_sy_move_cast_error INTO DATA(type_mismatch).
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input
-            previous = type_mismatch.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input
+                    previous = type_mismatch.
     ENDTRY.
 
     CREATE DATA alv_output.
-    ASSIGN structure->* TO <structure>.
-    LOOP AT structure_description->get_components( )
-        REFERENCE INTO DATA(component)
-        WHERE type->kind EQ cl_abap_typedescr=>kind_elem.
+    alv_output->* = resolve_structure( i_structure_ref         = structure
+                                       i_structure_description = structure_description ).
 
-      ASSIGN COMPONENT component->name OF STRUCTURE <structure> TO <field>.
-      IF sy-subrc NE 0.
-        CONTINUE.
-      ENDIF.
+    IF alv_output->* IS INITIAL.
+      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+        EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_structure.
+    ENDIF.
+  ENDMETHOD.
 
-      INSERT VALUE #( fieldname = component->name
-                      value     = <field> )
-          INTO TABLE alv_output->*.
+  METHOD resolve_structure.
+    LOOP AT i_structure_description->get_components( ) REFERENCE INTO DATA(component).
+      CASE component->type->kind.
+        WHEN cl_abap_typedescr=>kind_elem.
+          INSERT LINES OF resolve_elementary_field( i_structure_ref  = i_structure_ref
+                                                    i_component_name = |{ component->name }{ i_structure_suffix }| )
+                 INTO TABLE r_result.
+
+        WHEN cl_abap_typedescr=>kind_struct.
+          IF component->as_include = abap_true.
+            INSERT LINES OF resolve_structure( i_structure_ref         = i_structure_ref
+                                               i_structure_description = CAST #( component->type )
+                                               i_structure_suffix      = |{ component->suffix }{ i_structure_suffix }| )
+                   INTO TABLE r_result.
+
+          ELSE.
+            ASSIGN i_structure_ref->* TO FIELD-SYMBOL(<main_structure>).
+            ASSIGN COMPONENT component->name OF STRUCTURE <main_structure> TO FIELD-SYMBOL(<sub_structure>).
+
+            TRY.
+                DATA(structure_description) = CAST cl_abap_structdescr( cl_abap_typedescr=>describe_by_data(
+                                                                            <sub_structure> ) ).
+              CATCH cx_sy_move_cast_error INTO DATA(type_mismatch).
+                RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+                  EXPORTING textid   = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input
+                            previous = type_mismatch.
+            ENDTRY.
+
+            INSERT LINES OF resolve_structure( i_structure_ref         = REF #( <sub_structure> )
+                                               i_structure_description = structure_description )
+                   INTO TABLE r_result.
+
+          ENDIF.
+      ENDCASE.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD resolve_elementary_field.
+    ASSIGN i_structure_ref->* TO FIELD-SYMBOL(<structure>).
+    ASSIGN COMPONENT i_component_name OF STRUCTURE <structure> TO FIELD-SYMBOL(<field>).
+
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    INSERT VALUE #( fieldname = i_component_name
+                    value     = <field> )
+           INTO TABLE r_result.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~get_description.
@@ -159,23 +207,18 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
 
   METHOD /usi/if_bal_data_container_rnd~render.
     CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name = '/USI/BAL_FIELDNAME_AND_VALUE'
-      CHANGING
-        ct_fieldcat      = fieldcat
-      EXCEPTIONS
-        OTHERS           = 0.
+      EXPORTING  i_structure_name = '/USI/BAL_FIELDNAME_AND_VALUE'
+      CHANGING   ct_fieldcat      = fieldcat
+      EXCEPTIONS OTHERS           = 0.
 
     build_alv_output( ).
 
     DATA(alv_grid) = NEW cl_gui_alv_grid( i_container ).
     alv_grid->set_table_for_first_display(
-      EXPORTING
-        is_layout            = VALUE #( cwidth_opt = abap_true
-                                        zebra      = abap_true )
-        it_toolbar_excluding = VALUE #( ( cl_gui_alv_grid=>mc_fc_excl_all ) )
-      CHANGING
-        it_outtab            = alv_output->*
-        it_fieldcatalog      = fieldcat ).
+      EXPORTING is_layout            = VALUE #( cwidth_opt = abap_true
+                                                zebra      = abap_true )
+                it_toolbar_excluding = VALUE #( ( cl_gui_alv_grid=>mc_fc_excl_all ) )
+      CHANGING  it_outtab            = alv_output->*
+                it_fieldcatalog      = fieldcat ).
   ENDMETHOD.
 ENDCLASS.
