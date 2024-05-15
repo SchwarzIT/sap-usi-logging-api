@@ -1,59 +1,63 @@
-*----------------------------------------------------------------------*
-* Title   | Delete orphan log data                                     *
-*----------------------------------------------------------------------*
-* Purpose | The logging API enhances SAPs application log by so-called *
-*         | data containers, that can store virtually any kind of      *
-*         | data.                                                      *
-*         |                                                            *
-*         | The data will be stored in the database table              *
-*         | /USI/BAL_DATA and will no longer be needed, as soon, as    *
-*         | the log gets deleted.                                      *
-*         |                                                            *
-*         | We offer a solution to automatically delete data           *
-*         | containers when the log is deleted. This must be           *
-*         | integrated into the SAP standard deletion logic via an     *
-*         | enhancement. Please refer to the documentation. The        *
-*         | necessary steps are described there.                       *
-*         |                                                            *
-*         | In case you forgot to implement the enhancement and need   *
-*         | to get rid of orphan data containers, that refer to        *
-*         | already deleted logs, you can use this report to delete    *
-*         | the now obsolete data.                                     *
-*         |                                                            *
-*         | NOTE: This report is _NOT_ a replacement for the           *
-*         |       enhancements mentioned above!                        *
-*         |                                                            *
-*         |       It is a rather inperformant emergency solution in    *
-*         |       case the implementation of the enhancements was      *
-*         |       forgotten.                                           *
-*----------------------------------------------------------------------*
+" -----------------------------------------------------------------------
+" Title   | Delete orphan log data                                     -
+" -----------------------------------------------------------------------
+" Purpose | The logging API enhances SAPs application log by so-called -
+"         | data containers, that can store virtually any kind of      -
+"         | data.                                                      -
+"         |                                                            -
+"         | The data will be stored in the database table              -
+"         | /USI/BAL_DATA and will no longer be needed, as soon, as    -
+"         | the log gets deleted.                                      -
+"         |                                                            -
+"         | We offer a solution to automatically delete data           -
+"         | containers when the log is deleted. This must be           -
+"         | integrated into the SAP standard deletion logic via an     -
+"         | enhancement. Please refer to the documentation. The        -
+"         | necessary steps are described there.                       -
+"         |                                                            -
+"         | In case you forgot to implement the enhancement and need   -
+"         | to get rid of orphan data containers, that refer to        -
+"         | already deleted logs, you can use this report to delete    -
+"         | the now obsolete data.                                     -
+"         |                                                            -
+"         | NOTE: This report is _NOT_ a replacement for the           -
+"         |       enhancements mentioned above!                        -
+"         |                                                            -
+"         |       It is a rather inperformant emergency solution in    -
+"         |       case the implementation of the enhancements was      -
+"         |       forgotten.                                           -
+" -----------------------------------------------------------------------
 REPORT /usi/bal_delete_orphan_log_dat.
 
 CLASS lcl_report DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
-    CLASS-METHODS run.
+    CLASS-METHODS run
+      IMPORTING i_package_size TYPE int4.
+
+    METHODS constructor
+      IMPORTING i_package_size TYPE int4.
 
   PRIVATE SECTION.
-    CONSTANTS c_package_size TYPE int4 VALUE 1000000.
+    DATA package_size TYPE int4.
 
     METHODS delete_orphan_log_data.
 
     METHODS get_orphan_log_numbers
-      RETURNING
-        VALUE(r_result) TYPE bal_t_logn.
+      RETURNING VALUE(r_result) TYPE bal_t_logn.
 
     METHODS delete_message_details
-      IMPORTING
-        i_lognumbers TYPE bal_t_logn.
+      IMPORTING i_lognumbers TYPE bal_t_logn.
 
 ENDCLASS.
 
+
 CLASS lcl_report IMPLEMENTATION.
   METHOD run.
-    DATA report_instance TYPE REF TO lcl_report.
+    NEW lcl_report( i_package_size )->delete_orphan_log_data( ).
+  ENDMETHOD.
 
-    CREATE OBJECT report_instance.
-    report_instance->delete_orphan_log_data( ).
+  METHOD constructor.
+    package_size = i_package_size.
   ENDMETHOD.
 
   METHOD delete_orphan_log_data.
@@ -66,7 +70,7 @@ CLASS lcl_report IMPLEMENTATION.
 
       total_entries_deleted = total_entries_deleted + lines( orphan_log_numbers ).
 
-      IF lines( orphan_log_numbers ) LT c_package_size.
+      IF lines( orphan_log_numbers ) < package_size.
         EXIT.
       ENDIF.
     ENDDO.
@@ -78,8 +82,8 @@ CLASS lcl_report IMPLEMENTATION.
     SELECT DISTINCT lognumber
       FROM /usi/bal_data
       INTO TABLE r_result
-      UP TO c_package_size ROWS
-      WHERE NOT EXISTS ( SELECT * FROM balhdr WHERE lognumber EQ /usi/bal_data~lognumber )
+      UP TO package_size ROWS
+      WHERE NOT EXISTS ( SELECT * FROM balhdr WHERE lognumber = /usi/bal_data~lognumber )
       ORDER BY lognumber.
   ENDMETHOD.
 
@@ -98,6 +102,8 @@ CLASS lcl_report IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+PARAMETERS pckgsize TYPE int4 DEFAULT 1000000.
+
 START-OF-SELECTION.
   /usi/cl_auth=>check_tcode( ).
-  lcl_report=>run( ).
+  lcl_report=>run( pckgsize ).
