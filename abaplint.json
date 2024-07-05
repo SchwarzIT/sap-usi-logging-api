@@ -588,12 +588,13 @@
       "exclude": [],
       "severity": "Error",
       "badOperators": [
+        "EQ",
         "><",
-        "<>",
-        ">=",
-        ">",
-        "<",
-        "<="
+        "NE",
+        "GE",
+        "GT",
+        "LT",
+        "LE"
       ]
     },
     "prefix_is_current_class": {
