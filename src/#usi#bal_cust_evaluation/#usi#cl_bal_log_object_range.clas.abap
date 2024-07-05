@@ -25,13 +25,9 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_log_object_range IMPLEMENTATION.
   METHOD insert_line.
-    DATA range_line TYPE /usi/bal_log_object_range_line.
-
-    range_line-sign   = i_sign.
-    range_line-option = i_option.
-    range_line-low    = i_low.
-    range_line-high   = i_high.
-
-    INSERT range_line INTO TABLE range.
+    INSERT VALUE #( sign   = i_sign
+                    option = i_option
+                    low    = i_low
+                    high   = i_high ) INTO TABLE range.
   ENDMETHOD.
 ENDCLASS.

@@ -66,7 +66,7 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
           CONTINUE.
       ENDTRY.
 
-      IF    required_log_level->is_higher_than( i_log_level )               = abap_true
+      IF    required_log_level->is_higher_than( i_log_level ) = abap_true
          OR object_description->is_instantiatable( ) = abap_false
          OR object_description->is_implementing( data_container_interface ) = abap_false.
         CONTINUE.
