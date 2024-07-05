@@ -662,10 +662,7 @@
       "ignoreGlobalDefinition": true,
       "ignoreExceptions": true
     },
-    "sql_escape_host_variables": {
-      "exclude": [],
-      "severity": "Error"
-    },
+    "sql_escape_host_variables": false,
     "start_at_tab": {
       "exclude": [],
       "severity": "Error"
