@@ -21,10 +21,9 @@ CLASS /usi/cl_bal_cd_data_containers IMPLEMENTATION.
       WHERE log_object IN i_log_object_range
         AND sub_object IN i_sub_object_range.
 
-    IF sy-subrc NE 0.
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

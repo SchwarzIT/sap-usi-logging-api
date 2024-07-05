@@ -31,11 +31,11 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
     FIELD-SYMBOLS <customizing_record> TYPE /usi/if_bal_cd_data_containers=>ty_record.
 
     " Read database
-    CREATE OBJECT log_object_range_helper.
+    log_object_range_helper = NEW #( ).
     log_object_range_helper->insert_line( i_log_object ).
     log_object_range_helper->insert_line( space ).
 
-    CREATE OBJECT sub_object_range_helper.
+    sub_object_range_helper = NEW #( ).
     sub_object_range_helper->insert_line( i_sub_object ).
     sub_object_range_helper->insert_line( space ).
 
@@ -48,29 +48,29 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
 
     " Delete rules of lower priority (Priority: log_object > sub_object)
     SORT customizing_records
-      BY classname  ASCENDING
-         log_object DESCENDING
-         sub_object DESCENDING.
+         BY classname  ASCENDING
+            log_object DESCENDING
+            sub_object DESCENDING.
 
     DELETE ADJACENT DUPLICATES
-      FROM customizing_records
-      COMPARING classname.
+           FROM customizing_records
+           COMPARING classname.
 
     " Process rules of highest priority
     LOOP AT customizing_records ASSIGNING <customizing_record>.
       TRY.
           required_log_level = /usi/cl_bal_enum_log_level=>get_by_value( <customizing_record>-min_log_level ).
 
-          CREATE OBJECT object_description
-            EXPORTING
-              i_object_type_name = <customizing_record>-classname.
+          object_description = NEW #( i_object_type_name = <customizing_record>-classname ).
         CATCH /usi/cx_bal_root.
           CONTINUE.
       ENDTRY.
 
-      CHECK required_log_level->is_higher_than( i_log_level ) EQ abap_false
-        AND object_description->is_instantiatable( ) EQ abap_true
-        AND object_description->is_implementing( data_container_interface ) EQ abap_true.
+      IF    required_log_level->is_higher_than( i_log_level )               = abap_true
+         OR object_description->is_instantiatable( ) = abap_false
+         OR object_description->is_implementing( data_container_interface ) = abap_false.
+        CONTINUE.
+      ENDIF.
 
       INSERT <customizing_record>-classname INTO TABLE r_result.
     ENDLOOP.

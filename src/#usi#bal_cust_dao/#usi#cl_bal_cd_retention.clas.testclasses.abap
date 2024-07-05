@@ -27,7 +27,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     DATA range_line TYPE /usi/bal_log_object_range_line.
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_cd_retention.
+    cut = NEW /usi/cl_bal_cd_retention( ).
 
     range_line-sign   = 'E'.
     range_line-option = 'CP'.

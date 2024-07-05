@@ -7,7 +7,7 @@ INTERFACE /usi/if_bal_cd_retention PUBLIC.
   INCLUDE TYPE /usi/bal_retention_parameters AS retention_parameters.
   TYPES END OF ty_record.
 
-  TYPES ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
+  TYPES ty_records TYPE STANDARD TABLE OF ty_record WITH EMPTY KEY.
 
   "! <h1>Read table /usi/bal_lv_rtim (Retention time per Log-Level)</h1>
   "!

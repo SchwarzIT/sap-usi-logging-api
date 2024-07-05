@@ -86,7 +86,6 @@ CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
     customizing_dao = i_customizing_dao.
   ENDMETHOD.
 
-
   METHOD get_customizing_record.
     DATA: customizing_entries     TYPE /usi/if_bal_cd_log_lv_by_user=>ty_records,
           log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
@@ -94,13 +93,11 @@ CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
           endda_range             TYPE /usi/bal_date_range,
           endda_range_line        TYPE /usi/bal_date_range_line.
 
-    FIELD-SYMBOLS <customizing_entry> TYPE /usi/if_bal_cd_log_lv_by_user=>ty_record.
-
-    CREATE OBJECT log_object_range_helper.
+    log_object_range_helper = NEW #( ).
     log_object_range_helper->insert_line( i_log_object ).
     log_object_range_helper->insert_line( space ).
 
-    CREATE OBJECT sub_object_range_helper.
+    sub_object_range_helper = NEW #( ).
     sub_object_range_helper->insert_line( i_sub_object ).
     sub_object_range_helper->insert_line( space ).
 
@@ -109,11 +106,10 @@ CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
     endda_range_line-low    = sy-datum.
     INSERT endda_range_line INTO TABLE endda_range.
 
-    customizing_entries = customizing_dao->get_records(
-                            i_user_name        = i_user_name
-                            i_endda_range      = endda_range
-                            i_log_object_range = log_object_range_helper->range
-                            i_sub_object_range = sub_object_range_helper->range ).
+    customizing_entries = customizing_dao->get_records( i_user_name        = i_user_name
+                                                        i_endda_range      = endda_range
+                                                        i_log_object_range = log_object_range_helper->range
+                                                        i_sub_object_range = sub_object_range_helper->range ).
 
     SORT customizing_entries BY log_object DESCENDING
                                 sub_object DESCENDING

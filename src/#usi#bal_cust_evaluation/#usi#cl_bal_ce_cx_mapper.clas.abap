@@ -116,7 +116,6 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
     INSERT customizing_entry INTO TABLE customizing_entries.
   ENDMETHOD.
 
-
   METHOD get_validated_customizing.
     CONSTANTS: mapper_interface_name TYPE seoclsname VALUE '/USI/IF_BAL_EXCEPTION_MAPPER',
                exception_root_class  TYPE seoclsname VALUE 'CX_ROOT'.
@@ -136,24 +135,24 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     LOOP AT raw_customizing_table ASSIGNING <raw_customizing_entry>.
       TRY.
-          CREATE OBJECT mapper_description
-            EXPORTING
-              i_object_type_name = <raw_customizing_entry>-mapper_class.
+          mapper_description = NEW #( i_object_type_name = <raw_customizing_entry>-mapper_class ).
 
-          CREATE OBJECT exception_description
-            EXPORTING
-              i_object_type_name = <raw_customizing_entry>-exception_class.
+          exception_description = NEW #( i_object_type_name = <raw_customizing_entry>-exception_class ).
         CATCH /usi/cx_bal_root.
           CONTINUE.
       ENDTRY.
 
-      CHECK mapper_description->is_instantiatable( ) EQ abap_true
-        AND mapper_description->is_implementing( mapper_interface_name ) EQ abap_true.
+      IF NOT (     mapper_description->is_instantiatable( ) = abap_true
+               AND mapper_description->is_implementing( mapper_interface_name ) = abap_true ).
+        CONTINUE.
+      ENDIF.
 
-      CHECK exception_description->is_interface( ) EQ abap_true
-         OR exception_description->is_inheriting_from( exception_root_class ) EQ abap_true.
+      IF NOT (    exception_description->is_interface( ) = abap_true
+               OR exception_description->is_inheriting_from( exception_root_class ) = abap_true ).
+        CONTINUE.
+      ENDIF.
 
-      IF exception_description->is_interface( ) EQ abap_true.
+      IF exception_description->is_interface( ) = abap_true.
         result_line-exception_class_type = class_type-interface.
       ELSE.
         result_line-exception_class_type = class_type-class.

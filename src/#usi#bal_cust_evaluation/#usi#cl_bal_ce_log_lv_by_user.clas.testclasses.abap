@@ -67,7 +67,7 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
   "#AU Duration   Short
   PRIVATE SECTION.
     TYPES ty_log_level_enums TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
-                                       WITH NON-UNIQUE DEFAULT KEY.
+                                       WITH EMPTY KEY.
 
     METHODS setup.
     METHODS test_fallback_auto_save       FOR TESTING.
@@ -91,11 +91,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    CREATE OBJECT test_double_cust_dao.
+    test_double_cust_dao = NEW #( ).
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_customizing_dao = test_double_cust_dao.
+        cut = NEW #( i_customizing_dao = test_double_cust_dao ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( i_exception = unexpected_exception
                                                                    i_quit      = if_aunit_constants=>class ).

@@ -67,16 +67,15 @@ ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
-    CREATE OBJECT test_double_cust_dao.
+    test_double_cust_dao = NEW #( ).
     reset_cut( cl_aunit_assert=>class ).
   ENDMETHOD.
 
   METHOD reset_cut.
     DATA exception TYPE REF TO /usi/cx_bal_root.
+
     TRY.
-        CREATE OBJECT cut TYPE /usi/cl_bal_ce_cx_mapper
-          EXPORTING
-            i_customizing_dao = test_double_cust_dao.
+        cut = NEW /usi/cl_bal_ce_cx_mapper( i_customizing_dao = test_double_cust_dao ).
       CATCH /usi/cx_bal_root INTO exception.
         /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = exception
                                                                     i_quit      = i_quit ).
@@ -198,15 +197,13 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     fallback = cut->get_fallback_mapper_classname( ).
 
     TRY.
-        CREATE OBJECT object_description
-          EXPORTING
-            i_object_type_name = fallback.
+        object_description = NEW #( i_object_type_name = fallback ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    IF object_description->is_implementing( mapper_interface_name ) NE abap_true
-        OR object_description->is_instantiatable( ) NE abap_true.
+    IF    object_description->is_implementing( mapper_interface_name ) <> abap_true
+       OR object_description->is_instantiatable( ) <> abap_true.
       cl_aunit_assert=>fail( 'Invalid fallback for mapper class!' ).
     ENDIF.
   ENDMETHOD.
