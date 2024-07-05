@@ -17,7 +17,7 @@
     }
   ],
   "syntax": {
-    "version": "740sp02",
+    "version": "v740sp02",
     "errorNamespace": "^(/USI/|LCL_|TY_|LIF_)",
     "globalConstants": [],
     "globalMacros": []
