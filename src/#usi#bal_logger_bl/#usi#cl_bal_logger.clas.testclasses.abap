@@ -1,12 +1,13 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* DAO-Mock: Log data (Does nothing)
-*--------------------------------------------------------------------*
-CLASS lcl_log_writer_dao_mock DEFINITION FINAL FOR TESTING CREATE PUBLIC.
+" ---------------------------------------------------------------------
+" DAO-Mock: Log data (Does nothing)
+" ---------------------------------------------------------------------
+CLASS lcl_log_writer_dao_mock DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_log_dao.
 ENDCLASS.
+
 
 CLASS lcl_log_writer_dao_mock IMPLEMENTATION.
   METHOD /usi/if_bal_log_dao~add_message.
@@ -26,13 +27,15 @@ CLASS lcl_log_writer_dao_mock IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* DAO-Mock: Data container collection (Does nothing)
-*--------------------------------------------------------------------*
-CLASS lcl_data_cont_coll_dao_mock DEFINITION FINAL FOR TESTING CREATE PUBLIC.
+
+" ---------------------------------------------------------------------
+" DAO-Mock: Data container collection (Does nothing)
+" ---------------------------------------------------------------------
+CLASS lcl_data_cont_coll_dao_mock DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_data_cont_coll_dao.
 ENDCLASS.
+
 
 CLASS lcl_data_cont_coll_dao_mock IMPLEMENTATION.
   METHOD /usi/if_bal_data_cont_coll_dao~delete_collections.
@@ -52,13 +55,13 @@ CLASS lcl_data_cont_coll_dao_mock IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* State-Double
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" State-Double
+" ---------------------------------------------------------------------
 CLASS lcl_log_writer_state_double DEFINITION DEFERRED.
 CLASS /usi/cl_bal_logger DEFINITION LOCAL FRIENDS lcl_log_writer_state_double.
 
-CLASS lcl_log_writer_state_double DEFINITION FINAL FOR TESTING CREATE PUBLIC.
+CLASS lcl_log_writer_state_double DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_logger_state.
 
@@ -72,31 +75,29 @@ CLASS lcl_log_writer_state_double DEFINITION FINAL FOR TESTING CREATE PUBLIC.
           END   OF called_methods.
 
     CLASS-METHODS inject_into
-      IMPORTING
-        i_log_writer    TYPE REF TO /usi/if_bal_logger
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_log_writer_state_double.
+      IMPORTING i_log_writer    TYPE REF TO /usi/if_bal_logger
+      RETURNING VALUE(r_result) TYPE REF TO lcl_log_writer_state_double.
 
     METHODS make_next_call_fail.
 
     METHODS set_token
-      IMPORTING
-        i_token TYPE REF TO /usi/if_bal_token.
+      IMPORTING i_token TYPE REF TO /usi/if_bal_token.
 
   PRIVATE SECTION.
     DATA: is_failure_requested TYPE abap_bool,
           token                TYPE REF TO /usi/if_bal_token.
 
     METHODS fail_if_requested
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
 ENDCLASS.
+
 
 CLASS lcl_log_writer_state_double IMPLEMENTATION.
   METHOD inject_into.
     DATA log_writer TYPE REF TO /usi/cl_bal_logger.
+
     log_writer ?= i_log_writer.
-    CREATE OBJECT r_result.
+    r_result = NEW #( ).
     log_writer->state = r_result.
   ENDMETHOD.
 
@@ -136,11 +137,10 @@ CLASS lcl_log_writer_state_double IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD fail_if_requested.
-    IF is_failure_requested EQ abap_true.
+    IF is_failure_requested = abap_true.
       CLEAR is_failure_requested.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_allowed
-        EXPORTING
-          textid = /usi/cx_bal_not_allowed=>wrong_logger_state.
+        EXPORTING textid = /usi/cx_bal_not_allowed=>wrong_logger_state.
     ENDIF.
   ENDMETHOD.
 
@@ -149,12 +149,14 @@ CLASS lcl_log_writer_state_double IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Delegation
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Delegation
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_delegation DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA: cut              TYPE REF TO /usi/if_bal_logger,
           dao_mock         TYPE REF TO lcl_log_writer_dao_mock,
@@ -170,25 +172,24 @@ CLASS lcl_unit_test_delegation DEFINITION FINAL CREATE PUBLIC FOR TESTING.
     METHODS test_save            FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_delegation IMPLEMENTATION.
   METHOD setup.
     DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
           logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
           relevant_data_containers TYPE /usi/bal_data_cont_classnames.
 
-    CREATE OBJECT dao_mock.
-    CREATE OBJECT dc_coll_dao_mock.
-    cust_eval_factory   = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+    dao_mock = NEW #( ).
+    dc_coll_dao_mock = NEW #( ).
+    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_logger
-      EXPORTING
-        i_factory                  = logger_bl_factory
-        i_relevant_data_containers = relevant_data_containers
-        i_log_level                = /usi/cl_bal_enum_log_level=>everything
-        i_auto_save_pckg_size      = 0
-        i_log_dao                  = dao_mock
-        i_data_cont_coll_dao       = dc_coll_dao_mock.
+    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
+                                  i_relevant_data_containers = relevant_data_containers
+                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                  i_auto_save_pckg_size      = 0
+                                  i_log_dao                  = dao_mock
+                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
 
     state_double = lcl_log_writer_state_double=>inject_into( cut ).
   ENDMETHOD.
@@ -249,12 +250,14 @@ CLASS lcl_unit_test_delegation IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Events
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Events
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_events DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA: cut          TYPE REF TO /usi/if_bal_logger,
           event_raised TYPE abap_bool,
@@ -268,6 +271,7 @@ CLASS lcl_unit_test_events DEFINITION FINAL CREATE PUBLIC FOR TESTING.
     METHODS on_free FOR EVENT instance_invalidated OF /usi/if_bal_logger.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_events IMPLEMENTATION.
   METHOD setup.
     DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
@@ -276,20 +280,18 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
           logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
           relevant_data_containers TYPE /usi/bal_data_cont_classnames.
 
-    CREATE OBJECT dao_mock.
-    CREATE OBJECT dc_coll_dao_mock.
+    dao_mock = NEW #( ).
+    dc_coll_dao_mock = NEW #( ).
 
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_logger
-      EXPORTING
-        i_factory                  = logger_bl_factory
-        i_relevant_data_containers = relevant_data_containers
-        i_log_level                = /usi/cl_bal_enum_log_level=>everything
-        i_auto_save_pckg_size      = 0
-        i_log_dao                  = dao_mock
-        i_data_cont_coll_dao       = dc_coll_dao_mock.
+    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
+                                  i_relevant_data_containers = relevant_data_containers
+                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                  i_auto_save_pckg_size      = 0
+                                  i_log_dao                  = dao_mock
+                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
     SET HANDLER on_free FOR cut.
 
     state_double = lcl_log_writer_state_double=>inject_into( cut ).
@@ -318,43 +320,45 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: State transitions
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" Unit test: State transitions
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_state_transition DEFINITION DEFERRED.
 CLASS /usi/cl_bal_logger DEFINITION LOCAL FRIENDS lcl_unit_test_state_transition.
 
 CLASS lcl_unit_test_state_transition DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_logger.
 
-    METHODS test_initial_state              FOR TESTING.
+    METHODS test_initial_state             FOR TESTING.
 
-    METHODS test_state_trans_add_exception  FOR TESTING.
-    METHODS test_state_trans_add_free_text  FOR TESTING.
-    METHODS test_state_trans_add_message    FOR TESTING.
-    METHODS test_state_trans_free           FOR TESTING.
-    METHODS test_claim_ownership            FOR TESTING.
-    METHODS test_state_trans_save           FOR TESTING.
+    METHODS test_state_trans_add_exception FOR TESTING.
+    METHODS test_state_trans_add_free_text FOR TESTING.
+    METHODS test_state_trans_add_message   FOR TESTING.
+    METHODS test_state_trans_free          FOR TESTING.
+    METHODS test_claim_ownership           FOR TESTING.
+    METHODS test_state_trans_save          FOR TESTING.
 
-    METHODS test_state_trans_add_cx_error   FOR TESTING.
-    METHODS test_state_trans_add_txt_error  FOR TESTING.
-    METHODS test_state_trans_add_msg_error  FOR TESTING.
-    METHODS test_state_trans_free_error     FOR TESTING.
-    METHODS test_state_trans_token_error    FOR TESTING.
-    METHODS test_state_trans_save_error     FOR TESTING.
+    METHODS test_state_trans_add_cx_error  FOR TESTING.
+    METHODS test_state_trans_add_txt_error FOR TESTING.
+    METHODS test_state_trans_add_msg_error FOR TESTING.
+    METHODS test_state_trans_free_error    FOR TESTING.
+    METHODS test_state_trans_token_error   FOR TESTING.
+    METHODS test_state_trans_save_error    FOR TESTING.
 
     METHODS setup.
     METHODS assert_state_is_test_double.
     METHODS assert_state_is_not_claimed.
     METHODS assert_state_is_active.
     METHODS assert_state_is_invalidated.
+
     METHODS get_current_state
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/if_bal_logger_state.
+      RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_logger_state.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   METHOD setup.
@@ -364,19 +368,17 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
           logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
           relevant_data_containers TYPE /usi/bal_data_cont_classnames.
 
-    CREATE OBJECT dao_mock.
-    CREATE OBJECT dc_coll_dao_mock.
+    dao_mock = NEW #( ).
+    dc_coll_dao_mock = NEW #( ).
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_logger
-      EXPORTING
-        i_factory                  = logger_bl_factory
-        i_relevant_data_containers = relevant_data_containers
-        i_log_level                = /usi/cl_bal_enum_log_level=>everything
-        i_auto_save_pckg_size      = 0
-        i_log_dao                  = dao_mock
-        i_data_cont_coll_dao       = dc_coll_dao_mock.
+    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
+                                  i_relevant_data_containers = relevant_data_containers
+                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                  i_auto_save_pckg_size      = 0
+                                  i_log_dao                  = dao_mock
+                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
   ENDMETHOD.
 
   METHOD test_initial_state.
@@ -485,6 +487,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_state_is_test_double.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: requested_state      TYPE REF TO lcl_log_writer_state_double,
           unexpected_exception TYPE REF TO cx_sy_move_cast_error.
 
@@ -496,6 +499,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_state_is_not_claimed.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_not_claimed,
           unexpected_exception TYPE REF TO cx_sy_move_cast_error.
 
@@ -507,6 +511,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_state_is_active.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_active,
           unexpected_exception TYPE REF TO cx_sy_move_cast_error.
 
@@ -518,6 +523,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_state_is_invalidated.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_invalidated,
           unexpected_exception TYPE REF TO cx_sy_move_cast_error.
 
@@ -539,12 +545,14 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Tokens
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Tokens
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_token DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA: cut               TYPE REF TO /usi/if_bal_logger,
           logger_bl_factory TYPE REF TO /usi/if_bal_logger_bl_factory,
@@ -556,6 +564,7 @@ CLASS lcl_unit_test_token DEFINITION FINAL CREATE PUBLIC FOR TESTING.
     METHODS test_token_on_state_exception FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_token IMPLEMENTATION.
   METHOD setup.
     DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
@@ -565,17 +574,15 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
 
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    CREATE OBJECT dao_mock.
-    CREATE OBJECT dc_coll_dao_mock.
+    dao_mock = NEW #( ).
+    dc_coll_dao_mock = NEW #( ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_logger
-      EXPORTING
-        i_factory                  = logger_bl_factory
-        i_relevant_data_containers = relevant_data_containers
-        i_log_level                = /usi/cl_bal_enum_log_level=>everything
-        i_auto_save_pckg_size      = 0
-        i_log_dao                  = dao_mock
-        i_data_cont_coll_dao       = dc_coll_dao_mock.
+    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
+                                  i_relevant_data_containers = relevant_data_containers
+                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                  i_auto_save_pckg_size      = 0
+                                  i_log_dao                  = dao_mock
+                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
 
     state_double = lcl_log_writer_state_double=>inject_into( cut ).
   ENDMETHOD.
@@ -592,7 +599,7 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
 
     cl_aunit_assert=>assert_bound( act = actual_result
                                    msg = `Should return dummy token!` ).
-    IF secret_token EQ actual_result.
+    IF secret_token = actual_result.
       cl_aunit_assert=>fail( `Returns real token on failure!!!` ).
     ENDIF.
   ENDMETHOD.
@@ -611,12 +618,14 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Type conversions
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Type conversions
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_type_conversions DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA: cut   TYPE REF TO /usi/if_bal_logger,
           token TYPE REF TO /usi/if_bal_token.
@@ -625,8 +634,9 @@ CLASS lcl_unit_test_type_conversions DEFINITION FINAL CREATE PUBLIC FOR TESTING.
     METHODS teardown.
 
     METHODS test_add_free_text FOR TESTING.
-    METHODS test_add_message FOR TESTING.
+    METHODS test_add_message   FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_type_conversions IMPLEMENTATION.
   METHOD setup.
@@ -638,17 +648,15 @@ CLASS lcl_unit_test_type_conversions IMPLEMENTATION.
 
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    CREATE OBJECT dao_mock.
-    CREATE OBJECT dc_coll_dao_mock.
+    dao_mock = NEW #( ).
+    dc_coll_dao_mock = NEW #( ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_logger
-      EXPORTING
-        i_factory                  = logger_bl_factory
-        i_relevant_data_containers = relevant_data_containers
-        i_log_level                = /usi/cl_bal_enum_log_level=>everything
-        i_auto_save_pckg_size      = 0
-        i_log_dao                  = dao_mock
-        i_data_cont_coll_dao       = dc_coll_dao_mock.
+    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
+                                  i_relevant_data_containers = relevant_data_containers
+                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                  i_auto_save_pckg_size      = 0
+                                  i_log_dao                  = dao_mock
+                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
 
     token = cut->claim_ownership( ).
   ENDMETHOD.

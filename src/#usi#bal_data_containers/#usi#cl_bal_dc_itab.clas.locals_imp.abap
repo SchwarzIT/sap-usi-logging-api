@@ -1384,9 +1384,7 @@ CLASS lcl_fieldcatalog_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD has_fieldcatalog.
-    IF line_exists( fieldcatalogs[ name = i_fieldcatalog_name->value ] ).
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( fieldcatalogs[ name = i_fieldcatalog_name->value ] ) ).
   ENDMETHOD.
 ENDCLASS.
 

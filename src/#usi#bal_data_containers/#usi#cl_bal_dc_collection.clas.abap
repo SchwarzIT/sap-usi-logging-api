@@ -11,7 +11,8 @@ CLASS /usi/cl_bal_dc_collection DEFINITION PUBLIC FINAL CREATE PUBLIC.
              data_container_classname TYPE /usi/bal_data_cont_classname,
              data_container           TYPE REF TO /usi/if_bal_data_container,
            END   OF ty_data_cont_coll_item,
-           ty_data_cont_coll_items TYPE SORTED TABLE OF ty_data_cont_coll_item WITH NON-UNIQUE KEY data_container_classname.
+           ty_data_cont_coll_items TYPE SORTED TABLE OF ty_data_cont_coll_item
+                                     WITH NON-UNIQUE KEY data_container_classname.
 
     TYPES: BEGIN OF ty_serialized_data_container,
              data_container_classname  TYPE /usi/bal_data_cont_classname,
@@ -131,10 +132,9 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
     ENDIF.
 
     data_container_classname = i_data_container->get_classname( ).
-    IF line_exists( data_cont_coll_items[ data_container_classname = data_container_classname ] ).
-      " Would violate Cardinality-Restriction [0-1]
-      r_result = abap_true.
-    ENDIF.
+
+    " Existing line would violate Cardinality-Restriction [0-1]
+    r_result = boolc( line_exists( data_cont_coll_items[ data_container_classname = data_container_classname ] ) ).
   ENDMETHOD.
 
   METHOD is_duplicate.

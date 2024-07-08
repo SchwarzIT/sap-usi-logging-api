@@ -16,7 +16,7 @@ CLASS /usi/cl_bal_dc_html DEFINITION PUBLIC FINAL CREATE PUBLIC.
 
   PRIVATE SECTION.
     TYPES: ty_html_table_line TYPE c LENGTH 1000,
-           ty_html_table      TYPE STANDARD TABLE OF ty_html_table_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_html_table      TYPE STANDARD TABLE OF ty_html_table_line WITH EMPTY KEY.
 
     DATA: html_document  TYPE string,
           document_title TYPE REF TO /usi/if_bal_text_container_c40,

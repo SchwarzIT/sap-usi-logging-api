@@ -29,7 +29,7 @@ CLASS /usi/cl_bal_enum_log_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
 
     "! <h1>Create instances</h1>
     "!
-    "! @parameter i_value |
+    "! @parameter i_value | Technical value
     METHODS constructor
       IMPORTING i_value TYPE /usi/bal_log_level.
 

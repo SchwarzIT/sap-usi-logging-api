@@ -96,13 +96,12 @@ CLASS /usi/cl_bal_em_base IMPLEMENTATION.
   METHOD get_exceptions_oref_attributes.
     DATA class_description TYPE REF TO cl_abap_classdescr.
 
-    FIELD-SYMBOLS: <attribute> TYPE abap_attrdescr,
-                   <object>    TYPE any.
-
     class_description ?= cl_abap_classdescr=>describe_by_object_ref( exception ).
-    LOOP AT class_description->attributes ASSIGNING <attribute> WHERE     visibility = cl_abap_classdescr=>public
-                                                                      AND type_kind  = cl_abap_classdescr=>typekind_oref.
-      ASSIGN exception->(<attribute>-name) TO <object>.
+    LOOP AT class_description->attributes ASSIGNING FIELD-SYMBOL(<attribute>)
+         WHERE     visibility = cl_abap_classdescr=>public
+               AND type_kind  = cl_abap_classdescr=>typekind_oref.
+
+      ASSIGN exception->(<attribute>-name) TO FIELD-SYMBOL(<object>).
       IF NOT (     sy-subrc  = 0
                AND <object> IS BOUND ).
         CONTINUE.

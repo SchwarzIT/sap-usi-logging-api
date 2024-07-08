@@ -168,7 +168,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
              field3 TYPE n LENGTH 10,
              field4 TYPE p LENGTH 5 DECIMALS 2,
            END   OF ty_line,
-           ty_table TYPE STANDARD TABLE OF ty_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_table TYPE STANDARD TABLE OF ty_line WITH EMPTY KEY.
 
     DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
           input            TYPE ty_input,
@@ -304,7 +304,7 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
     TYPES: BEGIN OF ty_non_ddic_table_line,
              mandt TYPE mandt,
            END   OF ty_non_ddic_table_line,
-           ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH EMPTY KEY.
 
     DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
           input                TYPE ty_non_ddic_table,
@@ -335,7 +335,7 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
 
   METHOD test_rejects_table_of_tables.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE STANDARD TABLE OF bapirettab WITH NON-UNIQUE DEFAULT KEY.
+          input TYPE STANDARD TABLE OF bapirettab WITH EMPTY KEY.
 
     TRY.
         cut = NEW #( i_internal_table = input ).
@@ -351,7 +351,7 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
 
   METHOD test_rejects_table_of_orefs.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE STANDARD TABLE OF REF TO cl_gui_alv_grid WITH NON-UNIQUE DEFAULT KEY.
+          input TYPE STANDARD TABLE OF REF TO cl_gui_alv_grid WITH EMPTY KEY.
 
     TRY.
         cut = NEW #( i_internal_table = input ).

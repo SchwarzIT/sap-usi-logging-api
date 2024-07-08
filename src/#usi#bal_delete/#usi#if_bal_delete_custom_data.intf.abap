@@ -11,7 +11,7 @@ INTERFACE /usi/if_bal_delete_custom_data PUBLIC.
   "! <p><strong>HINT:</strong> The BAdI is called from function module /USI/BAL_DELETE_CUSTOM_DATA and allows
   "! multiple use.</p>
   "!
-  "! @parameter i_log_headers | <p class="shorttext synchronized" lang="en"></p>
+  "! @parameter i_log_headers | <p class="shorttext synchronized" lang="en">Log headers to delete</p>
   METHODS delete_custom_data
     IMPORTING
       i_log_headers TYPE balhdr_t.

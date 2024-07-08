@@ -298,13 +298,9 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD has_container.
-    DATA data_containers TYPE /usi/bal_data_containers.
+    DATA(data_containers) = cut->get_data_containers( ).
 
-    data_containers = cut->get_data_containers( ).
-
-    IF line_exists( data_containers[ table_line = i_data_container ] ).
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( data_containers[ table_line = i_data_container ] ) ).
   ENDMETHOD.
 ENDCLASS.
 
