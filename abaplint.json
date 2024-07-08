@@ -197,14 +197,7 @@
       "exclude": [],
       "severity": "Error"
     },
-    "double_space": {
-      "exclude": [],
-      "severity": "Error",
-      "keywords": true,
-      "startParen": true,
-      "endParen": true,
-      "afterColon": true
-    },
+    "double_space": false,
     "downport": {
       "exclude": [],
       "severity": "Error"
