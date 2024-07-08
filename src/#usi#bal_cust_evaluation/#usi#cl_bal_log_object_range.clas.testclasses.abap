@@ -12,8 +12,7 @@ ENDCLASS.
 
 CLASS lcl_unit_test_read_only IMPLEMENTATION.
   METHOD assert_public_attrib_read_only.
-    DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
-    cut_description = /usi/cl_bal_aunit_cut_descr_cl=>get_instance( ).
+    DATA(cut_description) = /usi/cl_bal_aunit_cut_descr_cl=>get_instance( ).
     cut_description->assert_public_attrib_read_only( ).
   ENDMETHOD.
 ENDCLASS.

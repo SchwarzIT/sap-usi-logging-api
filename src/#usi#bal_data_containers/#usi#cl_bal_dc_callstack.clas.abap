@@ -51,37 +51,26 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
     layout             = get_layout( ).
     fieldcatalog       = get_fieldcatalog( ).
 
-    CREATE OBJECT alv_grid
-      EXPORTING
-        i_parent = i_container.
+    alv_grid = NEW #( i_parent = i_container ).
 
     SET HANDLER on_double_click FOR alv_grid.
 
-    alv_grid->set_table_for_first_display(
-      EXPORTING
-        is_layout            = layout
-        it_toolbar_excluding = excluded_functions
-      CHANGING
-        it_outtab            = callstack
-        it_fieldcatalog      = fieldcatalog ).
+    alv_grid->set_table_for_first_display( EXPORTING is_layout            = layout
+                                                     it_toolbar_excluding = excluded_functions
+                                           CHANGING  it_outtab            = callstack
+                                                     it_fieldcatalog      = fieldcatalog ).
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~deserialize.
     DATA: callstack    TYPE abap_callstack,
           deserializer TYPE REF TO /usi/cl_bal_serializer.
 
-    CREATE OBJECT deserializer.
-    deserializer->deserialize_field(
-      EXPORTING
-        i_serialized_data = i_serialized_data_container
-        i_name            = 'CALLSTACK'
-      CHANGING
-        c_data            = callstack ).
+    deserializer = NEW #( ).
+    deserializer->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
+                                               i_name            = 'CALLSTACK'
+                                     CHANGING  c_data            = callstack ).
 
-    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_callstack
-      EXPORTING
-        i_callstack = callstack.
+    r_result = NEW /usi/cl_bal_dc_callstack( i_callstack = callstack ).
   ENDMETHOD.
 
 
@@ -99,11 +88,10 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
     r_result = abap_false.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~serialize.
     DATA serializer TYPE REF TO /usi/cl_bal_serializer.
 
-    CREATE OBJECT serializer.
+    serializer = NEW #( ).
     r_result = serializer->serialize_field_as_json( i_data = callstack
                                                     i_name = 'CALLSTACK' ).
   ENDMETHOD.
@@ -168,21 +156,18 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
     r_result-cwidth_opt = abap_true.
   ENDMETHOD.
 
-
   METHOD on_double_click.
     FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
-    READ TABLE callstack ASSIGNING <callstack_line> INDEX es_row_no-row_id.
-    IF sy-subrc EQ 0.
+    ASSIGN callstack[ es_row_no-row_id ] TO <callstack_line>.
+    IF sy-subrc = 0.
       CALL FUNCTION 'RS_TOOL_ACCESS'
-        EXPORTING
-          operation   = 'SHOW'
-          object_type = 'PROG'
-          object_name = <callstack_line>-mainprogram
-          include     = <callstack_line>-include
-          position    = <callstack_line>-line
-        EXCEPTIONS
-          OTHERS      = 0.
+        EXPORTING  operation   = 'SHOW'
+                   object_type = 'PROG'
+                   object_name = <callstack_line>-mainprogram
+                   include     = <callstack_line>-include
+                   position    = <callstack_line>-line
+        EXCEPTIONS OTHERS      = 0.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

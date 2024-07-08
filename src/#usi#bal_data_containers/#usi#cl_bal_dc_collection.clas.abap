@@ -20,8 +20,7 @@ CLASS /usi/cl_bal_dc_collection DEFINITION PUBLIC FINAL CREATE PUBLIC.
              data_container_classname  TYPE /usi/bal_data_cont_classname,
              serialized_data_container TYPE /usi/bal_xml_string,
            END   OF ty_serialized_data_container,
-           ty_serialized_data_containers TYPE STANDARD TABLE OF ty_serialized_data_container
-                                                  WITH NON-UNIQUE DEFAULT KEY.
+           ty_serialized_data_containers TYPE STANDARD TABLE OF ty_serialized_data_container WITH EMPTY KEY.
 
     DATA data_cont_coll_items TYPE ty_data_cont_coll_items.
 
@@ -100,15 +99,14 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container_col~insert.
     DATA new_data_cont_coll_item TYPE ty_data_cont_coll_item.
 
     r_result = me.
 
     TRY.
-        IF is_cardinality_violation( i_data_container ) EQ abap_true
-            OR is_duplicate( i_data_container ) EQ abap_true.
+        IF    is_cardinality_violation( i_data_container ) = abap_true
+           OR is_duplicate( i_data_container )             = abap_true.
           RETURN.
         ENDIF.
       CATCH /usi/cx_bal_root.
@@ -149,25 +147,20 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
       RESULT XML r_result.
   ENDMETHOD.
 
-
   METHOD is_cardinality_violation.
     DATA data_container_classname TYPE /usi/bal_data_cont_classname.
 
-    IF i_data_container->is_multiple_use_allowed( ) EQ abap_true.
+    IF i_data_container->is_multiple_use_allowed( ) = abap_true.
       " Not restricted
       RETURN.
     ENDIF.
 
     data_container_classname = i_data_container->get_classname( ).
-    READ TABLE data_cont_coll_items
-      TRANSPORTING NO FIELDS
-      WITH KEY data_container_classname = data_container_classname.
-    IF sy-subrc EQ 0.
+    IF line_exists( data_cont_coll_items[ data_container_classname = data_container_classname ] ).
       " Would violate Cardinality-Restriction [0-1]
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.
-
 
   METHOD is_duplicate.
     DATA: data_container_classname  TYPE /usi/bal_data_cont_classname,
@@ -178,9 +171,11 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
     data_container_classname  = i_data_container->get_classname( ).
     serialized_data_container = i_data_container->serialize( ).
     LOOP AT data_cont_coll_items ASSIGNING <data_cont_coll_item>
-                                 WHERE data_container_classname EQ data_container_classname.
-      CHECK <data_cont_coll_item>-data_container EQ i_data_container
-         OR <data_cont_coll_item>-data_container->serialize( ) EQ serialized_data_container.
+         WHERE data_container_classname = data_container_classname.
+      IF NOT (    <data_cont_coll_item>-data_container               = i_data_container
+               OR <data_cont_coll_item>-data_container->serialize( ) = serialized_data_container ).
+        CONTINUE.
+      ENDIF.
       r_result = abap_true.
       RETURN.
     ENDLOOP.

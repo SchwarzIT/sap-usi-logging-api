@@ -192,10 +192,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     fallback_log_level = cut->get_fallback_log_level( ).
 
     log_level_value = /usi/cl_bal_enum_log_level=>nothing->value.
-    WHILE lines( r_result ) LT i_amount.
+    WHILE lines( r_result ) < i_amount.
       TRY.
           log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level NE fallback_log_level.
+          IF log_level <> fallback_log_level.
             INSERT log_level INTO TABLE r_result.
           ENDIF.
           log_level_value = log_level_value + 1.

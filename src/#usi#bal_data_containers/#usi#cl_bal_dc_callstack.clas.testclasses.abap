@@ -38,9 +38,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     " serialize
     input = get_callstack( ).
-    CREATE OBJECT cut TYPE /usi/cl_bal_dc_callstack
-      EXPORTING
-        i_callstack = input.
+    cut = NEW /usi/cl_bal_dc_callstack( i_callstack = input ).
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.

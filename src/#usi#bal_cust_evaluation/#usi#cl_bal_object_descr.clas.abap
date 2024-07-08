@@ -79,25 +79,16 @@ CLASS /usi/cl_bal_object_descr IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD is_implementing.
-    READ TABLE object_description->interfaces
-      TRANSPORTING NO FIELDS
-      WITH KEY name = i_interface_name.
-    IF sy-subrc EQ 0.
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( object_description->interfaces[ name = i_interface_name ] ) ).
   ENDMETHOD.
-
 
   METHOD is_inheriting_from.
     DATA: super_class_description TYPE REF TO /usi/cl_bal_object_descr,
           own_class_name          TYPE string.
 
     TRY.
-        CREATE OBJECT super_class_description
-          EXPORTING
-            i_object_type_name = i_super_class_name.
+        super_class_description = NEW #( i_object_type_name = i_super_class_name ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -111,9 +102,8 @@ CLASS /usi/cl_bal_object_descr IMPLEMENTATION.
     r_result  = object_description->is_instantiatable( ).
   ENDMETHOD.
 
-
   METHOD is_interface.
-    IF object_description->kind EQ cl_abap_typedescr=>kind_intf.
+    IF object_description->kind = cl_abap_typedescr=>kind_intf.
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.

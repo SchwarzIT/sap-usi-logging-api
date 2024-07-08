@@ -61,7 +61,6 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
     customizing_entries = get_validated_customizing( ).
   ENDMETHOD.
 
-
   METHOD get_mapper_class.
     DATA: customizing_entry      TYPE ty_customizing_entry,
           exception_classname    TYPE /usi/bal_exception_classname,
@@ -72,22 +71,18 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     " Check customizing for the class itself
     exception_classname = i_exception_class_description->get_relative_name( ).
-    READ TABLE customizing_entries
-      ASSIGNING <customizing_entry>
-      WITH KEY exception_class_type = class_type-class
-               exception_class_name = exception_classname.
-    IF sy-subrc EQ 0.
+    ASSIGN customizing_entries[ exception_class_type = class_type-class
+                                exception_class_name = exception_classname ] TO <customizing_entry>.
+    IF sy-subrc = 0.
       r_result = <customizing_entry>-mapper_class_name.
       RETURN.
     ENDIF.
 
     " Check customizing for non-inherited interfaces
-    LOOP AT i_exception_class_description->interfaces ASSIGNING <interface> WHERE is_inherited EQ abap_false.
-      READ TABLE customizing_entries
-        ASSIGNING <customizing_entry>
-        WITH KEY exception_class_type = class_type-interface
-                 exception_class_name = <interface>-name.
-      IF sy-subrc EQ 0.
+    LOOP AT i_exception_class_description->interfaces ASSIGNING <interface> WHERE is_inherited = abap_false.
+      ASSIGN customizing_entries[ exception_class_type = class_type-interface
+                                  exception_class_name = <interface>-name ] TO <customizing_entry>.
+      IF sy-subrc = 0.
         r_result = <customizing_entry>-mapper_class_name.
         EXIT.
       ENDIF.
@@ -95,14 +90,11 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     " Check superclass
     IF r_result IS INITIAL.
-      i_exception_class_description->get_super_class_type(
-        RECEIVING
-          p_descr_ref           = superclass_description
-        EXCEPTIONS
-          super_class_not_found = 1
-          OTHERS                = 2 ).
+      i_exception_class_description->get_super_class_type( RECEIVING  p_descr_ref           = superclass_description
+                                                           EXCEPTIONS super_class_not_found = 1
+                                                                      OTHERS                = 2 ).
 
-      IF sy-subrc EQ 0.
+      IF sy-subrc = 0.
         r_result = get_mapper_class( superclass_description ).
       ELSE.
         r_result = /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname( ).

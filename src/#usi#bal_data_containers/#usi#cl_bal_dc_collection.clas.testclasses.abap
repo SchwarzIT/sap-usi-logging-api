@@ -298,7 +298,7 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_has_container.
     DATA data_container_classname TYPE /usi/bal_data_cont_classname.
 
-    IF has_container( i_data_container ) NE abap_true.
+    IF has_container( i_data_container ) <> abap_true.
       data_container_classname = i_data_container->get_classname( ).
       cl_aunit_assert=>fail( msg    = `Expected container is missing!`
                              detail = data_container_classname ).

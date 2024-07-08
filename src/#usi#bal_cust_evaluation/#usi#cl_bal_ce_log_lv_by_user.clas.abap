@@ -51,7 +51,7 @@ CLASS /usi/cl_bal_ce_log_lv_by_user IMPLEMENTATION.
                                                      i_log_object = i_log_object
                                                      i_sub_object = i_sub_object ).
 
-        IF customizing_record-auto_save EQ abap_true.
+        IF customizing_record-auto_save = abap_true.
           r_result = 1.
         ELSE.
           r_result = 0.
