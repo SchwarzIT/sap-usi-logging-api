@@ -39,14 +39,10 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     " serialize
     document = `<html><head/><body><p>test document</p></body></html>`.
 
-    CREATE OBJECT title TYPE /usi/cl_bal_tc_literal_c40
-      EXPORTING
-        i_text = 'Test document title'.
+    title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Test document title' ).
 
-    CREATE OBJECT cut
-      EXPORTING
-        i_xml_document   = document
-        i_document_title = title.
+    cut = NEW #( i_xml_document   = document
+                 i_document_title = title ).
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.

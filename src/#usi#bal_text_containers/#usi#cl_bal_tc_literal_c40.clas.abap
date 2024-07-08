@@ -25,17 +25,14 @@ CLASS /usi/cl_bal_tc_literal_c40 IMPLEMENTATION.
 
     TRY.
         CALL TRANSFORMATION id
-          SOURCE XML i_serialized_text_container
-          RESULT text = text.
+             SOURCE XML i_serialized_text_container
+             RESULT text = text.
 
-        CREATE OBJECT r_result TYPE /usi/cl_bal_tc_literal_c40
-          EXPORTING
-            i_text = text.
+        r_result = NEW /usi/cl_bal_tc_literal_c40( i_text = text ).
       CATCH cx_transformation_error INTO exception.
         RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
+                    previous = exception.
     ENDTRY.
   ENDMETHOD.
 
@@ -56,8 +53,7 @@ CLASS /usi/cl_bal_tc_literal_c40 IMPLEMENTATION.
       RESULT XML r_result.
   ENDMETHOD.
 
-
   METHOD constructor.
-    me->text = i_text.
+    text = i_text.
   ENDMETHOD.
 ENDCLASS.

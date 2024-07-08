@@ -1,21 +1,24 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Unit test: Serialization
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" Unit test: Serialization
+" ---------------------------------------------------------------------
 CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
 CLASS /usi/cl_bal_dc_json DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
 CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
     METHODS test_deserialize_valid_xml FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA cut TYPE REF TO /usi/cl_bal_dc_json.
 
     TRY.
@@ -38,14 +41,10 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     " serialize
     document = `<html><head/><body><p>test document</p></body></html>`.
 
-    CREATE OBJECT title TYPE /usi/cl_bal_tc_literal_c40
-      EXPORTING
-        i_text = 'Test document title'.
+    title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Test document title' ).
 
-    CREATE OBJECT cut
-      EXPORTING
-        i_json_document  = document
-        i_document_title = title.
+    cut = NEW #( i_json_document  = document
+                 i_document_title = title ).
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
@@ -71,15 +70,18 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Cardinality
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Cardinality
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS assert_is_multi_use FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_is_multi_use.
@@ -91,15 +93,18 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Classname
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Classname
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_classname IMPLEMENTATION.
   METHOD assert_returns_right_classname.

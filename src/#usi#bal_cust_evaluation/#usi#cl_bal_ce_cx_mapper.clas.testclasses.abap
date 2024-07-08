@@ -85,7 +85,6 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD test_ignore_invalid_mappers.
     DATA: test_exception      TYPE REF TO /usi/cx_bal_root,
           customizing_records TYPE /usi/if_bal_cd_cx_mapper=>ty_records,
-          customizing_record  TYPE /usi/if_bal_cd_cx_mapper=>ty_record,
           expected_result     TYPE /usi/bal_exception_mapper.
 
     TRY.
@@ -93,15 +92,12 @@ CLASS lcl_unit_tests IMPLEMENTATION.
       CATCH /usi/cx_bal_root INTO test_exception.
     ENDTRY.
 
-    customizing_record-exception_class = '/USI/CX_BAL_NOT_FOUND'.
-    customizing_record-mapper_class    = 'CL_GUI_ALV_GRID'.
-    INSERT customizing_record INTO TABLE customizing_records.
-    customizing_record-exception_class = '/USI/CX_BAL_ROOT'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
-    INSERT customizing_record INTO TABLE customizing_records.
-    customizing_record-exception_class = '/USI/CX_EXCEPTION'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_UNKNOWN_CLASS'.
-    INSERT customizing_record INTO TABLE customizing_records.
+    customizing_records = VALUE #( ( exception_class = '/USI/CX_BAL_NOT_FOUND'
+                                     mapper_class    = 'CL_GUI_ALV_GRID' )
+                                   ( exception_class = '/USI/CX_BAL_ROOT'
+                                     mapper_class    = '/USI/CL_BAL_EM_BASE' )
+                                   ( exception_class = '/USI/CX_EXCEPTION'
+                                     mapper_class    = '/USI/CL_BAL_UNKNOWN_CLASS' ) ).
 
     expected_result = cut->get_fallback_mapper_classname( ).
 

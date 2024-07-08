@@ -12,8 +12,8 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_token IMPLEMENTATION.
   METHOD /usi/if_bal_token~is_equal.
-    IF i_token IS BOUND
-        AND i_token EQ me.
+    IF     i_token IS BOUND
+       AND i_token  = me.
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.

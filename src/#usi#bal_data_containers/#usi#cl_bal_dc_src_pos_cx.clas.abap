@@ -11,10 +11,7 @@ CLASS /usi/cl_bal_dc_src_pos_cx DEFINITION PUBLIC FINAL CREATE PUBLIC.
     "!
     "! @parameter i_source_code_position | The to-be-logged Source-Code-Position of the exception
     METHODS constructor
-      IMPORTING
-        i_source_code_position TYPE /usi/bal_source_code_position.
-
-  PROTECTED SECTION.
+      IMPORTING i_source_code_position TYPE /usi/bal_source_code_position.
 
   PRIVATE SECTION.
     DATA source_code_position TYPE /usi/bal_source_code_position.
@@ -22,62 +19,43 @@ CLASS /usi/cl_bal_dc_src_pos_cx DEFINITION PUBLIC FINAL CREATE PUBLIC.
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_dc_src_pos_cx IMPLEMENTATION.
   METHOD /usi/if_bal_data_container_nav~navigate.
     CALL FUNCTION 'RS_TOOL_ACCESS'
-      EXPORTING
-        operation   = 'SHOW'
-        object_type = 'PROG'
-        object_name = source_code_position-program_name
-        include     = source_code_position-include_name
-        position    = source_code_position-source_line
-      EXCEPTIONS
-        OTHERS      = 0.
+      EXPORTING  operation   = 'SHOW'
+                 object_type = 'PROG'
+                 object_name = source_code_position-program_name
+                 include     = source_code_position-include_name
+                 position    = source_code_position-source_line
+      EXCEPTIONS OTHERS      = 0.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: deserializer         TYPE REF TO /usi/cl_bal_serializer,
-          source_code_position TYPE /usi/bal_source_code_position.
+    DATA source_code_position TYPE /usi/bal_source_code_position.
 
-    CREATE OBJECT deserializer.
-    deserializer->deserialize_field(
-      EXPORTING
-        i_serialized_data = i_serialized_data_container
-        i_name            = 'SOURCE_CODE_POSITION'
-      CHANGING
-        c_data            = source_code_position ).
+    NEW /usi/cl_bal_serializer( )->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
+                                                                i_name            = 'SOURCE_CODE_POSITION'
+                                                      CHANGING  c_data            = source_code_position ).
 
-    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_src_pos_cx
-      EXPORTING
-        i_source_code_position = source_code_position.
+    r_result = NEW /usi/cl_bal_dc_src_pos_cx( i_source_code_position = source_code_position ).
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~get_classname.
     r_result = '/USI/CL_BAL_DC_SRC_POS_CX'.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~get_description.
     r_result = TEXT-des.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~is_multiple_use_allowed.
     r_result = abap_false.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~serialize.
-    DATA serializer TYPE REF TO /usi/cl_bal_serializer.
-
-    CREATE OBJECT serializer.
-    r_result = serializer->serialize_field_as_json( i_data = source_code_position
-                                                    i_name = 'SOURCE_CODE_POSITION' ).
+    r_result = NEW /usi/cl_bal_serializer( )->serialize_field_as_json( i_data = source_code_position
+                                                                       i_name = 'SOURCE_CODE_POSITION' ).
   ENDMETHOD.
-
 
   METHOD constructor.
     source_code_position = i_source_code_position.

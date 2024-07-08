@@ -5,7 +5,7 @@ CLASS /usi/cl_bal_dc_structure DEFINITION LOCAL FRIENDS lcl_private_attribute_re
 
 CLASS lcl_private_attribute_reader DEFINITION.
   PUBLIC SECTION.
-    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH EMPTY KEY.
 
     CLASS-METHODS get_alv_output
       IMPORTING i_cut           TYPE REF TO /usi/cl_bal_dc_structure

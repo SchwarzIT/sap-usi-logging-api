@@ -1,6 +1,7 @@
 CLASS lcl_data_container_selector IMPLEMENTATION.
   METHOD constructor.
     DATA sorted_data_containers TYPE ty_sorted_data_containers.
+
     sorted_data_containers = sort_data_containers( i_data_container_collection ).
     insert_data_containers( sorted_data_containers ).
   ENDMETHOD.
@@ -13,10 +14,10 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
 
     data_containers = i_data_container_collection->get_data_containers( ).
     LOOP AT data_containers ASSIGNING <data_container>.
-      sorted_data_container-type            = get_data_container_type( <data_container> ).
-      sorted_data_container-classname       = <data_container>->get_classname( ).
-      sorted_data_container-description     = <data_container>->get_description( ).
-      sorted_data_container-data_container  = <data_container>.
+      sorted_data_container-type           = get_data_container_type( <data_container> ).
+      sorted_data_container-classname      = <data_container>->get_classname( ).
+      sorted_data_container-description    = <data_container>->get_description( ).
+      sorted_data_container-data_container = <data_container>.
       INSERT sorted_data_container INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.
@@ -50,17 +51,17 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
 
       CASE <sorted_data_container>-type.
         WHEN data_container_types-renderer.
-          needed_data_container_groups-renderer   = abap_true.
-          icon                                    = icon_select_detail.
-          parent_node                             = node_keys-renderer.
+          needed_data_container_groups-renderer  = abap_true.
+          icon                                   = icon_select_detail.
+          parent_node                            = node_keys-renderer.
         WHEN data_container_types-navigator.
-          needed_data_container_groups-navigator  = abap_true.
-          icon                                    = icon_reference_list.
-          parent_node                             = node_keys-navigator.
+          needed_data_container_groups-navigator = abap_true.
+          icon                                   = icon_reference_list.
+          parent_node                            = node_keys-navigator.
         WHEN OTHERS.
-          needed_data_container_groups-unknown    = abap_true.
-          icon                                    = icon_failure.
-          parent_node                             = node_keys-unknown.
+          needed_data_container_groups-unknown   = abap_true.
+          icon                                   = icon_failure.
+          parent_node                            = node_keys-unknown.
       ENDCASE.
 
       insert_node_and_item_container( i_node_key       = node_container-node_key
@@ -70,19 +71,19 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
     ENDLOOP.
 
     " Create folders for container types
-    IF needed_data_container_groups-unknown EQ abap_true.
+    IF needed_data_container_groups-unknown = abap_true.
       " Node: Unknown
       insert_node_and_item_folder( i_node_key = node_keys-unknown
                                    i_parent   = node_keys-root
                                    i_text     = TEXT-nuk ).
     ENDIF.
-    IF needed_data_container_groups-navigator EQ abap_true.
+    IF needed_data_container_groups-navigator = abap_true.
       " Node: Navigator
       insert_node_and_item_folder( i_node_key = node_keys-navigator
                                    i_parent   = node_keys-root
                                    i_text     = TEXT-nnv ).
     ENDIF.
-    IF needed_data_container_groups-navigator EQ abap_true.
+    IF needed_data_container_groups-navigator = abap_true.
       " Node: Renderer
       insert_node_and_item_folder( i_node_key = node_keys-renderer
                                    i_parent   = node_keys-root
@@ -119,48 +120,40 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
           item TYPE mtreeitm.
 
     CLEAR node.
-    node-node_key   = i_node_key.
-    node-relatkey   = i_parent.
-    node-isfolder   = abap_true.
+    node-node_key = i_node_key.
+    node-relatkey = i_parent.
+    node-isfolder = abap_true.
     INSERT node INTO nodes INDEX 1.
 
     CLEAR item.
-    item-node_key   = i_node_key.
-    item-item_name  = '1'.
-    item-class      = cl_gui_list_tree=>item_class_text.
-    item-alignment  = cl_gui_list_tree=>align_auto.
-    item-font       = cl_gui_list_tree=>item_font_prop.
-    item-text       = i_text.
+    item-node_key  = i_node_key.
+    item-item_name = '1'.
+    item-class     = cl_gui_list_tree=>item_class_text.
+    item-alignment = cl_gui_list_tree=>align_auto.
+    item-font      = cl_gui_list_tree=>item_font_prop.
+    item-text      = i_text.
     INSERT item INTO items INDEX 1.
   ENDMETHOD.
 
   METHOD render.
     CREATE OBJECT tree_control
-      EXPORTING
-        parent              = i_container
-        node_selection_mode = cl_gui_list_tree=>node_sel_mode_single
-        item_selection      = abap_true
-        with_headers        = abap_false
-      EXCEPTIONS
-        OTHERS              = 0.
+      EXPORTING  parent              = i_container
+                 node_selection_mode = cl_gui_list_tree=>node_sel_mode_single
+                 item_selection      = abap_true
+                 with_headers        = abap_false
+      EXCEPTIONS OTHERS              = 0.
 
     register_events( ).
     SET HANDLER on_tree_item_double_click FOR tree_control.
     SET HANDLER on_tree_node_double_click FOR tree_control.
 
-    tree_control->add_nodes_and_items(
-      EXPORTING
-        node_table                = nodes
-        item_table                = items
-        item_table_structure_name = 'MTREEITM'
-      EXCEPTIONS
-        OTHERS                    = 0 ).
+    tree_control->add_nodes_and_items( EXPORTING  node_table                = nodes
+                                                  item_table                = items
+                                                  item_table_structure_name = 'MTREEITM'
+                                       EXCEPTIONS OTHERS                    = 0 ).
 
-    tree_control->expand_root_nodes(
-      EXPORTING
-        expand_subtree = abap_true
-      EXCEPTIONS
-        OTHERS         = 0 ).
+    tree_control->expand_root_nodes( EXPORTING  expand_subtree = abap_true
+                                     EXCEPTIONS OTHERS         = 0 ).
   ENDMETHOD.
 
   METHOD register_events.
@@ -175,24 +168,19 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
     tree_event-appl_event = abap_true.
     INSERT tree_event INTO TABLE tree_events.
 
-    tree_control->set_registered_events(
-      EXPORTING
-        events = tree_events
-      EXCEPTIONS
-        OTHERS = 0 ).
+    tree_control->set_registered_events( EXPORTING  events = tree_events
+                                         EXCEPTIONS OTHERS = 0 ).
   ENDMETHOD.
 
   METHOD on_tree_item_double_click.
     FIELD-SYMBOLS <node_containter> TYPE ty_node_container.
 
-    READ TABLE node_containers
-      ASSIGNING <node_containter>
-      WITH TABLE KEY node_key = node_key.
+    ASSIGN node_containers[ node_key = node_key ] TO <node_containter>.
 
-    IF sy-subrc EQ 0.
+    IF sy-subrc = 0.
       RAISE EVENT select_container
-        EXPORTING
-          container = <node_containter>-data_container.
+            EXPORTING
+              container = <node_containter>-data_container.
     ENDIF.
   ENDMETHOD.
 
@@ -201,7 +189,9 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_data_container_type.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: navigator TYPE REF TO /usi/if_bal_data_container_nav,
+          " TODO: variable is assigned but never used (ABAP cleaner)
           renderer  TYPE REF TO /usi/if_bal_data_container_rnd.
 
     TRY.

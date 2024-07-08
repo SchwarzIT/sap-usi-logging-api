@@ -19,33 +19,29 @@ CLASS /usi/cl_bal_enum_log_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
     "!
     "! <p>This method provides a backwards search and returns the matching instance for the passed value.</p>
     "!
-    "! @parameter i_value | The value to search for
-    "! @parameter r_result | The corresponding instance
-    "! @raising /usi/cx_bal_root | Unsupported value
+    "! @parameter i_value          | The value to search for
+    "! @parameter r_result         | The corresponding instance
+    "! @raising   /usi/cx_bal_root | Unsupported value
     CLASS-METHODS get_by_value
-      IMPORTING
-        i_value         TYPE /usi/bal_log_level
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_value         TYPE /usi/bal_log_level
+      RETURNING VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level
+      RAISING   /usi/cx_bal_root.
 
     "! <h1>Create instances</h1>
+    "!
+    "! @parameter i_value |
     METHODS constructor
-      IMPORTING
-        i_value TYPE /usi/bal_log_level.
+      IMPORTING i_value TYPE /usi/bal_log_level.
 
     "! <h1>Log-Level comparison</h1>
     "!
     "! <p>Will return abap_true, if this instance represents a higher log-level than the one passed for comparison.</p>
     "!
     "! @parameter i_log_level | The log-level to compare with
-    "! @parameter r_result | Flag: Is this log-level higher, than i_log_level?
+    "! @parameter r_result    | Flag: Is this log-level higher, than i_log_level?
     METHODS is_higher_than
-      IMPORTING
-        i_log_level     TYPE REF TO /usi/cl_bal_enum_log_level
-      RETURNING
-        VALUE(r_result) TYPE abap_bool.
+      IMPORTING i_log_level     TYPE REF TO /usi/cl_bal_enum_log_level
+      RETURNING VALUE(r_result) TYPE abap_bool.
 
     "! <h1>Relevance check for problem class</h1>
     "!
@@ -59,14 +55,10 @@ CLASS /usi/cl_bal_enum_log_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
     "! The passed message will be logged or discarded based on the result.</p>
     "!
     "! @parameter i_problem_class | Problem class of the log message
-    "! @parameter r_result | Flag: Relevant for current log-level?
+    "! @parameter r_result        | Flag: Relevant for current log-level?
     METHODS is_problem_class_relevant
-      IMPORTING
-        i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
-      RETURNING
-        VALUE(r_result) TYPE abap_bool.
-
-  PROTECTED SECTION.
+      IMPORTING i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
+      RETURNING VALUE(r_result) TYPE abap_bool.
 
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_buffered_instance,
@@ -78,74 +70,43 @@ CLASS /usi/cl_bal_enum_log_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
     CLASS-DATA buffered_instances TYPE ty_buffered_instances.
 
     METHODS get_min_loglevel_for_probclass
-      IMPORTING
-        i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level.
+      IMPORTING i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
+      RETURNING VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_log_level.
 
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_enum_log_level IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT nothing
-      EXPORTING
-        i_value = 0.
-
-    CREATE OBJECT very_important
-      EXPORTING
-        i_value = 1.
-
-    CREATE OBJECT important
-      EXPORTING
-        i_value = 2.
-
-    CREATE OBJECT medium
-      EXPORTING
-        i_value = 3.
-
-    CREATE OBJECT additional_info
-      EXPORTING
-        i_value = 4.
-
-    CREATE OBJECT other
-      EXPORTING
-        i_value = 5.
-
-    CREATE OBJECT everything
-      EXPORTING
-        i_value = 6.
+    nothing         = NEW #( i_value = 0 ).
+    very_important  = NEW #( i_value = 1 ).
+    important       = NEW #( i_value = 2 ).
+    medium          = NEW #( i_value = 3 ).
+    additional_info = NEW #( i_value = 4 ).
+    other           = NEW #( i_value = 5 ).
+    everything      = NEW #( i_value = 6 ).
   ENDMETHOD.
-
 
   METHOD constructor.
-    DATA buffered_instance TYPE ty_buffered_instance.
-
     value = i_value.
 
-    buffered_instance-value    = me->value.
-    buffered_instance-instance = me.
-    INSERT buffered_instance INTO TABLE buffered_instances.
+    INSERT VALUE #( value    = value
+                    instance = me )
+           INTO TABLE buffered_instances.
   ENDMETHOD.
-
 
   METHOD get_by_value.
     FIELD-SYMBOLS <buffered_instance> TYPE ty_buffered_instance.
 
-    READ TABLE buffered_instances
-      ASSIGNING <buffered_instance>
-      WITH TABLE KEY value = i_value.
+    ASSIGN buffered_instances[ value = i_value ] TO <buffered_instance>.
 
-    IF sy-subrc EQ 0.
+    IF sy-subrc = 0.
       r_result = <buffered_instance>-instance.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING
-          textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
+        EXPORTING textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
     ENDIF.
   ENDMETHOD.
-
 
   METHOD get_min_loglevel_for_probclass.
     CASE i_problem_class.
@@ -162,21 +123,19 @@ CLASS /usi/cl_bal_enum_log_level IMPLEMENTATION.
     ENDCASE.
   ENDMETHOD.
 
-
   METHOD is_higher_than.
-    IF i_log_level IS BOUND
-        AND i_log_level->value LT value.
+    IF     i_log_level        IS BOUND
+       AND i_log_level->value  < value.
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.
-
 
   METHOD is_problem_class_relevant.
     DATA minimum_log_level TYPE REF TO /usi/cl_bal_enum_log_level.
 
     minimum_log_level = get_min_loglevel_for_probclass( i_problem_class ).
 
-    IF minimum_log_level->is_higher_than( me ) EQ abap_false.
+    IF minimum_log_level->is_higher_than( me ) = abap_false.
       r_result = abap_true.
     ENDIF.
   ENDMETHOD.

@@ -6,11 +6,9 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     message_parameters        = get_message_parameters( i_message_parameters ).
     serialized_data_cont_coll = get_serialized_data_cont_coll( message_parameters ).
     data_container_collection = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize(
-                                        serialized_data_cont_coll ).
+                                    serialized_data_cont_coll ).
 
-    CREATE OBJECT data_container_selector
-      EXPORTING
-        i_data_container_collection = data_container_collection.
+    data_container_selector = NEW #( i_data_container_collection = data_container_collection ).
   ENDMETHOD.
 
   METHOD get_message_parameters.
@@ -19,9 +17,9 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     LOOP AT i_message_parameters ASSIGNING <message_parameter>.
       CASE <message_parameter>-parname.
         WHEN /usi/cl_bal_enum_message_param=>log_number->value.
-          r_result-log_number      = <message_parameter>-parvalue.
+          r_result-log_number     = <message_parameter>-parvalue.
         WHEN /usi/cl_bal_enum_message_param=>message_number->value.
-          r_result-message_number  = <message_parameter>-parvalue.
+          r_result-message_number = <message_parameter>-parvalue.
       ENDCASE.
     ENDLOOP.
   ENDMETHOD.
@@ -33,8 +31,8 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     dao_factory                   = /usi/cl_bal_logger_dao_factory=>get_instance( ).
     data_container_collection_dao = dao_factory->get_data_container_collection( ).
     r_result                      = data_container_collection_dao->get_collection(
-                                          i_log_number     = i_message_parameters-log_number
-                                          i_message_number = i_message_parameters-message_number ).
+                                        i_log_number     = i_message_parameters-log_number
+                                        i_message_number = i_message_parameters-message_number ).
   ENDMETHOD.
 
   METHOD lif_screen_controller~set_status.
@@ -64,18 +62,14 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     ENDIF.
 
     CREATE OBJECT main_container
-      EXPORTING
-        container_name = 'CUSTOM_CONTROL_2000'
-      EXCEPTIONS
-        OTHERS         = 0.
+      EXPORTING  container_name = 'CUSTOM_CONTROL_2000'
+      EXCEPTIONS OTHERS         = 0.
 
     CREATE OBJECT splitter_container
-      EXPORTING
-        parent  = main_container
-        rows    = 1
-        columns = 2
-      EXCEPTIONS
-        OTHERS  = 0.
+      EXPORTING  parent  = main_container
+                 rows    = 1
+                 columns = 2
+      EXCEPTIONS OTHERS  = 0.
     splitter_container->set_column_width( id    = 1
                                           width = 25 ).
 
@@ -116,11 +110,11 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
 
     " Broken data container - it is neither a navigator, nor a renderer!
     ASSERT ID /usi/bal_log_writer
-      CONDITION 1 EQ 0.
+           CONDITION 1 = 0.
   ENDMETHOD.
 
   METHOD lif_screen_controller~on_exit_command.
-    IF i_exit_command EQ 'CLOSE'.
+    IF i_exit_command = 'CLOSE'.
       LEAVE TO SCREEN 0.
     ENDIF.
   ENDMETHOD.
@@ -133,9 +127,7 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
   METHOD free_children.
     DATA container TYPE REF TO cl_gui_container.
 
-    FIELD-SYMBOLS <child> TYPE REF TO cl_gui_control.
-
-    LOOP AT i_parent->children ASSIGNING <child>.
+    LOOP AT i_parent->children ASSIGNING FIELD-SYMBOL(<child>).
       TRY.
           container ?= <child>.
           free_children( container ).

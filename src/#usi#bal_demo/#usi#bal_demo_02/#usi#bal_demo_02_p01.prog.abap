@@ -3,7 +3,7 @@
 *&---------------------------------------------------------------------*
 CLASS lcl_popup_maintain_task IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT singleton.
+    singleton = NEW #( ).
   ENDMETHOD.
 
   METHOD display.
@@ -26,7 +26,9 @@ CLASS lcl_popup_maintain_task IMPLEMENTATION.
                false TYPE c LENGTH 1 VALUE '0'.
 
     LOOP AT SCREEN.
-      CHECK screen-group1 EQ 'ID'.
+      IF screen-group1 <> 'ID'.
+        CONTINUE.
+      ENDIF.
 
       IF screen_fields-task-id IS INITIAL.
         screen-active    = false.

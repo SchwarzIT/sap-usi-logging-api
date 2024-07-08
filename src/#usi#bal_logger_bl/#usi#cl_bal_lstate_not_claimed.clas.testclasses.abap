@@ -2,6 +2,7 @@
 CLASS lcl_unit_test DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA: cut   TYPE REF TO /usi/if_bal_logger_state,
           token TYPE REF TO /usi/if_bal_token.
@@ -17,6 +18,7 @@ CLASS lcl_unit_test DEFINITION FINAL FOR TESTING.
     METHODS test_throws_on_save          FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test IMPLEMENTATION.
   METHOD setup.
     DATA: cust_eval_factory TYPE REF TO /usi/if_bal_cust_eval_factory,
@@ -25,9 +27,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
 
-    CREATE OBJECT cut TYPE /usi/cl_bal_lstate_not_claimed
-      EXPORTING
-        i_factory = logger_bl_factory.
+    cut = NEW /usi/cl_bal_lstate_not_claimed( i_factory = logger_bl_factory ).
 
     token = logger_bl_factory->get_token( ).
   ENDMETHOD.
@@ -88,6 +88,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
   METHOD test_returns_token.
     DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root,
           result               TYPE REF TO /usi/if_bal_token.
+
     TRY.
         result = cut->claim_ownership( ).
         cl_aunit_assert=>assert_bound( act = result

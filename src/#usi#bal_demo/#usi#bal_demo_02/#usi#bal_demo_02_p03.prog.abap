@@ -3,11 +3,11 @@
 *&---------------------------------------------------------------------*
 CLASS lcl_main_screen IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT singleton.
+    singleton = NEW #( ).
   ENDMETHOD.
 
   METHOD constructor.
-    CREATE OBJECT to_do_list.
+    to_do_list = NEW #( ).
   ENDMETHOD.
 
   METHOD on_pbo.
@@ -23,7 +23,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
     ENDIF.
 
     /usi/cl_auth=>check_tcode( ).
-    CREATE OBJECT task_grid.
+    task_grid = NEW #( ).
     SET HANDLER on_user_command FOR task_grid->alv_grid.
 
     refresh_screen_without_log( ).
@@ -36,28 +36,28 @@ CLASS lcl_main_screen IMPLEMENTATION.
   METHOD on_user_command.
     CASE e_ucomm.
       WHEN task_grid->user_commands-add_task.
-        IF screen_fields-with_log EQ abap_true.
+        IF screen_fields-with_log = abap_true.
           on_add_task_with_log( ).
         ELSE.
           on_add_task_without_log( ).
         ENDIF.
 
       WHEN task_grid->user_commands-edit_task.
-        IF screen_fields-with_log EQ abap_true.
+        IF screen_fields-with_log = abap_true.
           on_edit_task_with_log( ).
         ELSE.
           on_edit_task_without_log( ).
         ENDIF.
 
       WHEN task_grid->user_commands-delete_tasks.
-        IF screen_fields-with_log EQ abap_true.
+        IF screen_fields-with_log = abap_true.
           on_delete_tasks_with_log( ).
         ELSE.
           on_delete_tasks_without_log( ).
         ENDIF.
 
       WHEN task_grid->user_commands-refresh.
-        IF screen_fields-with_log EQ abap_true.
+        IF screen_fields-with_log = abap_true.
           refresh_screen_with_log( ).
         ELSE.
           refresh_screen_without_log( ).
@@ -73,7 +73,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
     start_log( i_sub_object = 'CREATE_TASK' ).
 
     lcl_popup_maintain_task=>singleton->display( ).
-    IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) EQ abap_false.
+    IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) = abap_false.
       task_text = lcl_popup_maintain_task=>singleton->get_task_text( ).
       TRY.
           to_do_list->create_task( task_text ).
@@ -92,7 +92,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
           create_exception TYPE REF TO /usi/cx_bal_demo_root.
 
     lcl_popup_maintain_task=>singleton->display( ).
-    IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) EQ abap_false.
+    IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) = abap_false.
       task_text = lcl_popup_maintain_task=>singleton->get_task_text( ).
       TRY.
           to_do_list->create_task( task_text ).
@@ -136,7 +136,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
     start_log( i_sub_object = 'UPDATE_TASK' ).
 
     task_ids = task_grid->get_selected_task_ids( ).
-    IF lines( task_ids ) NE 1.
+    IF lines( task_ids ) <> 1.
       log-logger->add_message( i_message_class  = '/USI/BAL_DEMO_02'
                                i_message_number = '020' ).
       save_and_destroy_log( ).
@@ -144,11 +144,11 @@ CLASS lcl_main_screen IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    READ TABLE task_ids INDEX 1 ASSIGNING <task_id>.
+    ASSIGN task_ids[ 1 ] TO <task_id>.
     TRY.
         task = to_do_list->read_task( <task_id> ).
         lcl_popup_maintain_task=>singleton->display( task ).
-        IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) EQ abap_false.
+        IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) = abap_false.
           task-text = lcl_popup_maintain_task=>singleton->get_task_text( ).
           to_do_list->update_task( task ).
         ENDIF.
@@ -172,16 +172,16 @@ CLASS lcl_main_screen IMPLEMENTATION.
     FIELD-SYMBOLS <task_id> TYPE /usi/bal_demo_to_do_task_id.
 
     task_ids = task_grid->get_selected_task_ids( ).
-    IF lines( task_ids ) NE 1.
+    IF lines( task_ids ) <> 1.
       MESSAGE s020(/usi/bal_demo_02) DISPLAY LIKE 'E'.
       RETURN.
     ENDIF.
 
-    READ TABLE task_ids INDEX 1 ASSIGNING <task_id>.
+    ASSIGN task_ids[ 1 ] TO <task_id>.
     TRY.
         task = to_do_list->read_task( <task_id> ).
         lcl_popup_maintain_task=>singleton->display( task ).
-        IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) EQ abap_false.
+        IF lcl_popup_maintain_task=>singleton->was_input_cancelled( ) = abap_false.
           task-text = lcl_popup_maintain_task=>singleton->get_task_text( ).
           to_do_list->update_task( task ).
         ENDIF.
@@ -218,7 +218,7 @@ CLASS lcl_main_screen IMPLEMENTATION.
                                              i_external_id = i_external_id ).
     log-token  = log-logger->claim_ownership( ).
 
-    IF 1 EQ 0.
+    IF 1 = 0.
       MESSAGE i030(/usi/bal_demo_02).
     ENDIF.
     log-logger->add_message( i_message_type   = /usi/cl_bal_enum_message_type=>information

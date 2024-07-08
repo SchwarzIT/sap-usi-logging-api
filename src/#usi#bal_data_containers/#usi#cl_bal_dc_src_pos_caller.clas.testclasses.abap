@@ -37,9 +37,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     input-include_name = 'BAR'.
     input-source_line  = 42.
 
-    CREATE OBJECT cut
-      EXPORTING
-        i_source_code_position = input.
+    cut = NEW #( i_source_code_position = input ).
 
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).

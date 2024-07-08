@@ -11,7 +11,7 @@ CLASS /usi/cl_bal_dc_structure DEFINITION PUBLIC FINAL CREATE PUBLIC.
                 i_title     TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
 
   PRIVATE SECTION.
-    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH EMPTY KEY.
 
     CONSTANTS: BEGIN OF c_parameter_names,
                  title_classname  TYPE fieldname VALUE 'TITLE_CLASSNAME',

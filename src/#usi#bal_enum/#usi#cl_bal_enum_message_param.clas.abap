@@ -23,13 +23,8 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_enum_message_param IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT log_number
-      EXPORTING
-        i_value = '%LOGNUMBER'.
-
-    CREATE OBJECT message_number
-      EXPORTING
-        i_value = 'MSG_NUMBER'.
+    log_number     = NEW #( i_value = '%LOGNUMBER' ).
+    message_number = NEW #( i_value = 'MSG_NUMBER' ).
   ENDMETHOD.
 
   METHOD constructor.

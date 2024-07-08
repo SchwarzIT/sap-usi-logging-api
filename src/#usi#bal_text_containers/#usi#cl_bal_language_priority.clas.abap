@@ -9,13 +9,10 @@ CLASS /usi/cl_bal_language_priority DEFINITION PUBLIC FINAL CREATE PRIVATE.
     "!
     "! @parameter r_result | Singleton
     CLASS-METHODS get_instance
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/if_bal_language_priority.
+      RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_language_priority.
 
     "! <h1>Constructor</h1>
     METHODS constructor.
-
-  PROTECTED SECTION.
 
   PRIVATE SECTION.
     CLASS-DATA instance TYPE REF TO /usi/if_bal_language_priority.
@@ -24,29 +21,24 @@ CLASS /usi/cl_bal_language_priority DEFINITION PUBLIC FINAL CREATE PRIVATE.
           processed_languages   TYPE HASHED TABLE OF sylangu WITH UNIQUE KEY table_line.
 
     METHODS insert_language
-      IMPORTING
-        i_language TYPE sylangu.
+      IMPORTING i_language TYPE sylangu.
 
     METHODS get_fallback_languages.
 
     METHODS get_fallback_language
-      IMPORTING
-        i_primary_language TYPE sylangu
-      RETURNING
-        VALUE(r_result)    TYPE sylangu
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_primary_language TYPE sylangu
+      RETURNING VALUE(r_result)    TYPE sylangu
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_other_languages.
 
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_language_priority IMPLEMENTATION.
   METHOD get_instance.
     IF instance IS NOT BOUND.
-      CREATE OBJECT instance TYPE /usi/cl_bal_language_priority.
+      instance = NEW /usi/cl_bal_language_priority( ).
     ENDIF.
     r_result = instance.
   ENDMETHOD.
@@ -61,7 +53,7 @@ CLASS /usi/cl_bal_language_priority IMPLEMENTATION.
     DATA language TYPE /usi/if_bal_language_priority~ty_language.
 
     INSERT i_language INTO TABLE processed_languages.
-    IF sy-subrc EQ 0.
+    IF sy-subrc = 0.
       language-priority = lines( languages_by_priority ) + 1.
       language-language = i_language.
       INSERT language INTO TABLE languages_by_priority.
@@ -83,15 +75,13 @@ CLASS /usi/cl_bal_language_priority IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_fallback_language.
-    SELECT SINGLE lakett
-      FROM t002c
+    SELECT SINGLE lakett FROM t002c
       INTO r_result
-      WHERE spras  EQ i_primary_language
-        AND lakett NE space.
-    IF sy-subrc NE 0.
+      WHERE spras   = i_primary_language
+        AND lakett <> space.
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>generic_not_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
   ENDMETHOD.
 
@@ -105,8 +95,7 @@ CLASS /usi/cl_bal_language_priority IMPLEMENTATION.
     DATA languages TYPE ty_languages.
     FIELD-SYMBOLS <language> TYPE ty_language.
 
-    SELECT seqen langu
-      FROM t778l
+    SELECT seqen langu FROM t778l
       INTO CORRESPONDING FIELDS OF TABLE languages.
 
     LOOP AT languages ASSIGNING <language>.

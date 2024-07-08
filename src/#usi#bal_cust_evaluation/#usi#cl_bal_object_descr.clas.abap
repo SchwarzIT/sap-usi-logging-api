@@ -103,8 +103,6 @@ CLASS /usi/cl_bal_object_descr IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD is_interface.
-    IF object_description->kind = cl_abap_typedescr=>kind_intf.
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( object_description->kind = cl_abap_typedescr=>kind_intf ).
   ENDMETHOD.
 ENDCLASS.

@@ -7,14 +7,11 @@ CLASS lcl_plugin_interface DEFINITION FINAL CREATE PUBLIC.
            ty_classes TYPE STANDARD TABLE OF ty_class WITH NON-UNIQUE DEFAULT KEY.
 
     METHODS constructor
-      IMPORTING
-        i_interface_name TYPE seoclsname
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_interface_name TYPE seoclsname
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_implementing_classes
-      RETURNING
-        VALUE(r_result) TYPE ty_classes.
+      RETURNING VALUE(r_result) TYPE ty_classes.
 
   PRIVATE SECTION.
     DATA interface TYPE REF TO cl_oo_interface.

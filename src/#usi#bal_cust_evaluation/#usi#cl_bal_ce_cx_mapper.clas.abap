@@ -62,8 +62,7 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_mapper_class.
-    DATA: customizing_entry      TYPE ty_customizing_entry,
-          exception_classname    TYPE /usi/bal_exception_classname,
+    DATA: exception_classname    TYPE /usi/bal_exception_classname,
           superclass_description TYPE REF TO cl_abap_classdescr.
 
     FIELD-SYMBOLS: <customizing_entry> TYPE ty_customizing_entry,
@@ -102,10 +101,10 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
     ENDIF.
 
     " Extend customizing to speed up subsequent calls
-    customizing_entry-exception_class_type = class_type-class.
-    customizing_entry-exception_class_name = i_exception_class_description->get_relative_name( ).
-    customizing_entry-mapper_class_name    = r_result.
-    INSERT customizing_entry INTO TABLE customizing_entries.
+    INSERT VALUE #( exception_class_type = class_type-class
+                    exception_class_name = i_exception_class_description->get_relative_name( )
+                    mapper_class_name    = r_result )
+           INTO TABLE customizing_entries.
   ENDMETHOD.
 
   METHOD get_validated_customizing.

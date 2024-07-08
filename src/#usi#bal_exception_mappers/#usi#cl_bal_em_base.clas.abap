@@ -4,37 +4,31 @@ CLASS /usi/cl_bal_em_base DEFINITION PUBLIC CREATE PUBLIC.
 
     "! <h1>Constructor</h1>
     "!
-    "! @parameter i_exception | The to-be-mapped exception
-    "! @raising /usi/cx_bal_root | Not bound
+    "! @parameter i_exception      | The to-be-mapped exception
+    "! @raising   /usi/cx_bal_root | Not bound
     METHODS constructor
-      IMPORTING
-        i_exception TYPE REF TO cx_root
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_exception TYPE REF TO cx_root
+      RAISING   /usi/cx_bal_root.
 
   PROTECTED SECTION.
-    TYPES ty_object_references TYPE STANDARD TABLE OF REF TO object WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_object_references TYPE STANDARD TABLE OF REF TO object WITH EMPTY KEY.
 
     DATA exception TYPE REF TO cx_root.
 
     METHODS get_exceptions_oref_attributes
-      RETURNING
-        VALUE(r_result) TYPE ty_object_references.
+      RETURNING VALUE(r_result) TYPE ty_object_references.
 
     METHODS get_attached_data_cont_coll
-      IMPORTING
-        i_source_data_cont_coll TYPE REF TO object
-        i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
+      IMPORTING i_source_data_cont_coll TYPE REF TO object
+                i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
     METHODS get_attached_data_container
-      IMPORTING
-        i_source_data_container TYPE REF TO object
-        i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
+      IMPORTING i_source_data_container TYPE REF TO object
+                i_target_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
   PRIVATE SECTION.
 
 ENDCLASS.
-
 
 
 CLASS /usi/cl_bal_em_base IMPLEMENTATION.
@@ -52,27 +46,21 @@ CLASS /usi/cl_bal_em_base IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_exception_mapper~get_t100_message.
     DATA text_getter TYPE REF TO /usi/cl_exception_text_getter.
 
-    CREATE OBJECT text_getter
-      EXPORTING
-        i_exception = exception.
+    text_getter = NEW #( i_exception = exception ).
 
     r_result = text_getter->get_text_as_symsg( ).
   ENDMETHOD.
 
-
   METHOD constructor.
     IF i_exception IS NOT BOUND.
       RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-        EXPORTING
-          textid = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch.
+        EXPORTING textid = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch.
     ENDIF.
     exception = i_exception.
   ENDMETHOD.
-
 
   METHOD get_attached_data_container.
     DATA data_container TYPE REF TO /usi/if_bal_data_container.
@@ -86,7 +74,6 @@ CLASS /usi/cl_bal_em_base IMPLEMENTATION.
 
     i_target_data_cont_coll->insert( data_container ).
   ENDMETHOD.
-
 
   METHOD get_attached_data_cont_coll.
     DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
@@ -106,7 +93,6 @@ CLASS /usi/cl_bal_em_base IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-
   METHOD get_exceptions_oref_attributes.
     DATA class_description TYPE REF TO cl_abap_classdescr.
 
@@ -114,11 +100,13 @@ CLASS /usi/cl_bal_em_base IMPLEMENTATION.
                    <object>    TYPE any.
 
     class_description ?= cl_abap_classdescr=>describe_by_object_ref( exception ).
-    LOOP AT class_description->attributes ASSIGNING <attribute> WHERE visibility EQ cl_abap_classdescr=>public
-                                                                  AND type_kind  EQ cl_abap_classdescr=>typekind_oref.
+    LOOP AT class_description->attributes ASSIGNING <attribute> WHERE     visibility = cl_abap_classdescr=>public
+                                                                      AND type_kind  = cl_abap_classdescr=>typekind_oref.
       ASSIGN exception->(<attribute>-name) TO <object>.
-      CHECK sy-subrc EQ 0
-        AND <object> IS BOUND.
+      IF NOT (     sy-subrc  = 0
+               AND <object> IS BOUND ).
+        CONTINUE.
+      ENDIF.
 
       INSERT <object> INTO TABLE r_result.
     ENDLOOP.

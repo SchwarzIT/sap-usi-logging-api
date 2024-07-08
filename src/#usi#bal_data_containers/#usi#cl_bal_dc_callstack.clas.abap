@@ -62,13 +62,11 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: callstack    TYPE abap_callstack,
-          deserializer TYPE REF TO /usi/cl_bal_serializer.
+    DATA callstack TYPE abap_callstack.
 
-    deserializer = NEW #( ).
-    deserializer->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
-                                               i_name            = 'CALLSTACK'
-                                     CHANGING  c_data            = callstack ).
+    NEW /usi/cl_bal_serializer( )->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
+                                                                i_name            = 'CALLSTACK'
+                                                      CHANGING  c_data            = callstack ).
 
     r_result = NEW /usi/cl_bal_dc_callstack( i_callstack = callstack ).
   ENDMETHOD.
@@ -89,11 +87,8 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~serialize.
-    DATA serializer TYPE REF TO /usi/cl_bal_serializer.
-
-    serializer = NEW #( ).
-    r_result = serializer->serialize_field_as_json( i_data = callstack
-                                                    i_name = 'CALLSTACK' ).
+    r_result = NEW /usi/cl_bal_serializer( )->serialize_field_as_json( i_data = callstack
+                                                                       i_name = 'CALLSTACK' ).
   ENDMETHOD.
 
 
@@ -101,15 +96,14 @@ CLASS /usi/cl_bal_dc_callstack IMPLEMENTATION.
     callstack = i_callstack.
   ENDMETHOD.
 
-
   METHOD get_excluded_grid_functions.
-    INSERT cl_gui_alv_grid=>mc_fc_excl_all        INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_loc_copy        INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_col_optimize    INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_unfix_columns   INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_fix_columns     INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_col_invisible   INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_current_variant INTO TABLE r_result.
+    r_result = VALUE #( ( cl_gui_alv_grid=>mc_fc_excl_all        )
+                        ( cl_gui_alv_grid=>mc_fc_loc_copy        )
+                        ( cl_gui_alv_grid=>mc_fc_col_optimize    )
+                        ( cl_gui_alv_grid=>mc_fc_unfix_columns   )
+                        ( cl_gui_alv_grid=>mc_fc_fix_columns     )
+                        ( cl_gui_alv_grid=>mc_fc_col_invisible   )
+                        ( cl_gui_alv_grid=>mc_fc_current_variant ) ).
   ENDMETHOD.
 
 
