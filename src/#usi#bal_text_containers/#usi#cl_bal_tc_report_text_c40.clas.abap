@@ -8,7 +8,7 @@ CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION PUBLIC FINAL CREATE PRIVATE.
     "!
     "! @parameter i_program  | Program
     "! @parameter i_text_key | Text key
-    "! @parameter i_text     | Text (Dummy - ignored internally, passing the text will avoid ATC-Messages for unused texts)
+    "! @parameter i_text     | Text (Dummy/ignored, passing the text will avoid ATC-Messages for unused texts)
     "! @parameter r_result   | Text container instance
     CLASS-METHODS create_for_program
       IMPORTING i_program       TYPE programm
@@ -19,7 +19,7 @@ CLASS /usi/cl_bal_tc_report_text_c40 DEFINITION PUBLIC FINAL CREATE PRIVATE.
     "! <h1>Create instance for current program</h1>
     "!
     "! @parameter i_text_key | Text key
-    "! @parameter i_text     | Text (Dummy - ignored internally, passing the text will avoid ATC-Messages for unused texts)
+    "! @parameter i_text     | Text (Dummy/ignored, passing the text will avoid ATC-Messages for unused texts)
     "! @parameter r_result   | Text container instance
     CLASS-METHODS create
       IMPORTING i_text_key      TYPE ty_text_key

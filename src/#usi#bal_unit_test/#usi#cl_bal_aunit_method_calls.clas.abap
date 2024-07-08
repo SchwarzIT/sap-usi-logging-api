@@ -95,13 +95,11 @@ CLASS /usi/cl_bal_aunit_method_calls IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD insert_method_call.
-    DATA method_call TYPE ty_method_call.
-
     r_result = NEW #( i_method_name = i_method_name ).
 
-    method_call-method_name = r_result->method_name.
-    method_call-method_call = r_result.
-    INSERT method_call INTO TABLE method_calls.
+    INSERT VALUE #( method_name = r_result->method_name
+                    method_call = r_result )
+           INTO TABLE method_calls.
   ENDMETHOD.
 
   METHOD reset_method_calls.
@@ -109,8 +107,6 @@ CLASS /usi/cl_bal_aunit_method_calls IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD was_method_called.
-    IF line_exists( method_calls[ method_name = i_method_name ] ).
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( method_calls[ method_name = i_method_name ] ) ).
   ENDMETHOD.
 ENDCLASS.

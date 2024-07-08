@@ -12,11 +12,9 @@ ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD assert_equals_same_instance.
-    DATA cut TYPE REF TO /usi/if_bal_token.
+    DATA(cut) = NEW /usi/cl_bal_token( ).
 
-    cut = NEW /usi/cl_bal_token( ).
-
-    DATA(actual_result) = cut->is_equal( cut ).
+    DATA(actual_result) = cut->/usi/if_bal_token~is_equal( cut ).
 
     cl_aunit_assert=>assert_equals( exp = abap_true
                                     act = actual_result
@@ -24,13 +22,10 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_not_equals_others.
-    DATA: cut            TYPE REF TO /usi/if_bal_token,
-          other_instance TYPE REF TO /usi/if_bal_token.
+    DATA(cut)            = NEW /usi/cl_bal_token( ).
+    DATA(other_instance) = NEW /usi/cl_bal_token( ).
 
-    cut = NEW /usi/cl_bal_token( ).
-    other_instance = NEW /usi/cl_bal_token( ).
-
-    DATA(actual_result) = cut->is_equal( other_instance ).
+    DATA(actual_result) = cut->/usi/if_bal_token~is_equal( other_instance ).
 
     cl_aunit_assert=>assert_equals( exp = abap_false
                                     act = actual_result

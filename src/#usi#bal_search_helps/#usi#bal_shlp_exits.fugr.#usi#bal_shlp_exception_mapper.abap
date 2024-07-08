@@ -1,4 +1,4 @@
-FUNCTION /USI/BAL_SHLP_EXCEPTION_MAPPER.
+FUNCTION /usi/bal_shlp_exception_mapper.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  TABLES

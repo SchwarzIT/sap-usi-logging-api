@@ -6,7 +6,7 @@ CLASS /usi/cl_bal_log_dao DEFINITION PUBLIC FINAL CREATE PUBLIC.
     "!
     "! @parameter i_log_object           | Log Object (Defined in SLG0)
     "! @parameter i_sub_object           | Sub Object (Defined in SLG0)
-    "! @parameter i_external_id          | External ID of the log (Filter in SLG1 - use ID of processed object if feasible)
+    "! @parameter i_external_id          | External ID of the log (Filter in SLG1; use processed objects ID if feasible)
     "! @parameter i_retention_parameters | Retention parameters
     "! @parameter i_context              | Context structure
     "! @parameter i_params               | Parameters for standard API

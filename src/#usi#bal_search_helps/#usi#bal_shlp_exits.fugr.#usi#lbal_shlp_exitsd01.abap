@@ -4,7 +4,7 @@ CLASS lcl_plugin_interface DEFINITION FINAL CREATE PUBLIC.
              classname   TYPE seoclsname,
              description TYPE seodescr,
            END   OF ty_class,
-           ty_classes TYPE STANDARD TABLE OF ty_class WITH NON-UNIQUE DEFAULT KEY.
+           ty_classes TYPE STANDARD TABLE OF ty_class WITH EMPTY KEY.
 
     METHODS constructor
       IMPORTING i_interface_name TYPE seoclsname

@@ -57,10 +57,10 @@ CLASS lcl_data_cont_coll_dao_spy DEFINITION FINAL FOR TESTING.
 
     CONSTANTS:
       BEGIN OF method_names,
-        delete_collection             TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'DELETE_COLLECTION',
-        get_collection                TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'GET_COLLECTION',
-        insert_collection_into_buffer TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'INSERT_COLLECTION_INTO_BUFFER',
-        save_buffer_to_db             TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'SAVE_BUFFER_TO_DB',
+        delete_collection  TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'DELETE_COLLECTION',
+        get_collection     TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'GET_COLLECTION',
+        insert_into_buffer TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'INSERT_COLLECTION_INTO_BUFFER',
+        save_buffer_to_db  TYPE /usi/cl_bal_aunit_method_call=>ty_method_name VALUE 'SAVE_BUFFER_TO_DB',
       END   OF method_names.
 
     CONSTANTS:
@@ -102,7 +102,7 @@ CLASS lcl_data_cont_coll_dao_spy IMPLEMENTATION.
   METHOD /usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer.
     DATA method_call TYPE REF TO /usi/cl_bal_aunit_method_call.
 
-    method_call = method_calls->insert_method_call( method_names-insert_collection_into_buffer ).
+    method_call = method_calls->insert_method_call( method_names-insert_into_buffer ).
     method_call->add_parameter( i_parameter_name  = 'I_LOG_NUMBER'
                                 i_parameter_value = i_log_number ).
     method_call->add_parameter( i_parameter_name  = 'I_MESSAGE_NUMBER'
@@ -414,7 +414,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
     log_dao_spy->method_calls->assert_method_was_called( log_dao_spy->method_names-save ).
 
     " Data-Container-Collection-DAO (Saves data container collections)
-    dc_coll_dao_spy->method_calls->assert_method_was_called( dc_coll_dao_spy->method_names-insert_collection_into_buffer ).
+    dc_coll_dao_spy->method_calls->assert_method_was_called( dc_coll_dao_spy->method_names-insert_into_buffer ).
 
     dc_coll_dao_spy->method_calls->assert_method_was_called( dc_coll_dao_spy->method_names-save_buffer_to_db ).
   ENDMETHOD.
@@ -439,8 +439,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
     log_dao_spy->method_calls->assert_method_was_not_called( log_dao_spy->method_names-save ).
 
     " Data-Container-Collection-DAO (Saves data container collections)
-    dc_coll_dao_spy->method_calls->assert_method_was_not_called(
-        dc_coll_dao_spy->method_names-insert_collection_into_buffer ).
+    dc_coll_dao_spy->method_calls->assert_method_was_not_called( dc_coll_dao_spy->method_names-insert_into_buffer ).
 
     dc_coll_dao_spy->method_calls->assert_method_was_not_called( dc_coll_dao_spy->method_names-save_buffer_to_db ).
   ENDMETHOD.
@@ -470,7 +469,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
             i_expected_number_of_calls = 1 ).
 
         dc_coll_dao_spy->method_calls->assert_method_called_n_times(
-            i_method_name              = dc_coll_dao_spy->method_names-insert_collection_into_buffer
+            i_method_name              = dc_coll_dao_spy->method_names-insert_into_buffer
             i_expected_number_of_calls = 1 ).
         dc_coll_dao_spy->method_calls->assert_method_called_n_times(
             i_method_name              = dc_coll_dao_spy->method_names-save_buffer_to_db
@@ -1896,8 +1895,7 @@ CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
 
     FIELD-SYMBOLS <method_call> TYPE /usi/cl_bal_aunit_method_calls=>ty_method_call.
 
-    method_calls = dc_coll_dao_spy->method_calls->get_method_calls(
-                       dc_coll_dao_spy->method_names-insert_collection_into_buffer ).
+    method_calls = dc_coll_dao_spy->method_calls->get_method_calls( dc_coll_dao_spy->method_names-insert_into_buffer ).
     cl_aunit_assert=>assert_not_initial( act = method_calls
                                          msg = 'Method was not called!' ).
 

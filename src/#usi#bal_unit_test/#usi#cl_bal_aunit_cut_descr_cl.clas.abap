@@ -84,9 +84,11 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
 
     class_description = get_rtti_description( ).
 
-    LOOP AT class_description->attributes ASSIGNING <attribute> WHERE     visibility = cl_abap_classdescr=>public
-                                                                      AND is_class   = abap_true
-                                                                      AND type_kind  = cl_abap_classdescr=>typekind_oref.
+    LOOP AT class_description->attributes
+         ASSIGNING <attribute>
+         WHERE     visibility = cl_abap_classdescr=>public
+               AND is_class   = abap_true
+               AND type_kind  = cl_abap_classdescr=>typekind_oref.
       ASSIGN (classname)=>(<attribute>-name) TO <instance>.
       IF sy-subrc <> 0.
         cl_aunit_assert=>fail( msg    = `Could not access public static oref-attribute`

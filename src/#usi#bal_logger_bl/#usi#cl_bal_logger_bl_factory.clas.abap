@@ -38,18 +38,13 @@ CLASS /usi/cl_bal_logger_bl_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_logger_bl_factory~get_exception_mapper.
-    DATA: cust_evaluator TYPE REF TO /usi/if_bal_ce_cx_mapper,
-          classname      TYPE seoclsname,
-          " TODO: variable is assigned but never used (ABAP cleaner)
-          create_error   TYPE REF TO cx_sy_create_error.
-
-    cust_evaluator = cust_eval_factory->get_exception_mapper( ).
-    classname      = cust_evaluator->get_exception_mapper_classname( i_exception ).
+    DATA(cust_evaluator) = cust_eval_factory->get_exception_mapper( ).
+    DATA(classname)      = cust_evaluator->get_exception_mapper_classname( i_exception ).
 
     TRY.
         CREATE OBJECT r_result TYPE (classname)
           EXPORTING i_exception = i_exception.
-      CATCH cx_sy_create_error INTO create_error.
+      CATCH cx_sy_create_error.
         classname = cust_evaluator->get_fallback_mapper_classname( ).
         CREATE OBJECT r_result TYPE (classname)
           EXPORTING i_exception = i_exception.

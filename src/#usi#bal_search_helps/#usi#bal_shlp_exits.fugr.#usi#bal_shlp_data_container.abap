@@ -1,4 +1,4 @@
-FUNCTION /USI/BAL_SHLP_DATA_CONTAINER.
+FUNCTION /usi/bal_shlp_data_container.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  TABLES

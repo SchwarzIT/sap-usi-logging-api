@@ -9,7 +9,7 @@ CLASS /usi/cl_bal_lstate_active DEFINITION PUBLIC FINAL CREATE PUBLIC.
     "! @parameter i_auto_save_pckg_size      | Package size of auto save (Customizing)
     "! @parameter i_log_dao                  | DAO-Instance for messages (Persistency Layer)
     "! @parameter i_data_cont_coll_dao       | DAO-Instance for data-containers (Persistency Layer)
-    "! @parameter i_token                    | Token (Proof of Ownership - will be needed to authorize critical actions later)
+    "! @parameter i_token                    | Token (Proof of Ownership - needed to authorize critical actions later)
     "! @parameter i_relevant_data_containers | Relevant data containers (Customizing)
     METHODS constructor
       IMPORTING i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
@@ -423,9 +423,7 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD is_data_container_relevant.
-    IF line_exists( settings-relevant_data_containers[ table_line = i_data_container_classname ] ).
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( settings-relevant_data_containers[ table_line = i_data_container_classname ] ) ).
   ENDMETHOD.
 
   METHOD save_data_container_colls.
