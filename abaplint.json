@@ -287,12 +287,7 @@
       "severity": "Error"
     },
     "implement_methods": false,
-    "in_statement_indentation": {
-      "exclude": [],
-      "severity": "Error",
-      "blockStatements": 2,
-      "ignoreExceptions": true
-    },
+    "in_statement_indentation": false,
     "indentation": {
       "exclude": [],
       "severity": "Error",
