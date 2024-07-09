@@ -409,9 +409,10 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     DATA: data_description  TYPE REF TO cl_abap_datadescr,
           exception         TYPE REF TO cx_sy_struct_creation,
           exception_text    TYPE string,
+          source_component  TYPE REF TO abap_compdescr,
           target_components TYPE abap_component_tab.
 
-    LOOP AT i_line_type_description->components REFERENCE INTO DATA(source_component).
+    LOOP AT i_line_type_description->components REFERENCE INTO source_component.
       data_description = i_line_type_description->get_component_type( source_component->name ).
       IF data_description->kind <> cl_abap_typedescr=>kind_elem.
         CONTINUE.
