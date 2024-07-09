@@ -407,6 +407,8 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
   METHOD remove_non_elementary_fields.
     DATA: data_description  TYPE REF TO cl_abap_datadescr,
+          exception         TYPE REF TO cx_sy_struct_creation,
+          exception_text    TYPE string,
           target_components TYPE abap_component_tab.
 
     LOOP AT i_line_type_description->components REFERENCE INTO DATA(source_component).
@@ -424,8 +426,8 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     ELSE.
       TRY.
           r_result = cl_abap_structdescr=>get( target_components ).
-        CATCH cx_sy_struct_creation INTO DATA(exception).
-          DATA(exception_text) = exception->get_text( ).
+        CATCH cx_sy_struct_creation INTO exception.
+          exception_text = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
                  FIELDS exception_text
                  CONDITION 1 = 0.
