@@ -101,14 +101,15 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container_col~serialize.
-    DATA serialized_data_containers TYPE ty_serialized_data_containers.
+    DATA: exception                  TYPE REF TO /usi/cx_bal_root,
+          serialized_data_containers TYPE ty_serialized_data_containers.
 
     LOOP AT data_cont_coll_items ASSIGNING FIELD-SYMBOL(<data_cont_coll_item>).
       TRY.
           INSERT VALUE #( data_container_classname  = <data_cont_coll_item>-data_container_classname
                           serialized_data_container = <data_cont_coll_item>-data_container->serialize( ) )
                  INTO TABLE serialized_data_containers.
-        CATCH /usi/cx_bal_root INTO DATA(exception).
+        CATCH /usi/cx_bal_root INTO exception.
           " Corrupt container data? Drop container!
           DATA(exception_text) = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
