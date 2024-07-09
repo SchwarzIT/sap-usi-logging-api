@@ -63,10 +63,7 @@
       "exclude": [],
       "severity": "Error"
     },
-    "begin_single_include": {
-      "exclude": [],
-      "severity": "Error"
-    },
+    "begin_single_include": false,
     "call_transaction_authority_check": {
       "exclude": [],
       "severity": "Error"
