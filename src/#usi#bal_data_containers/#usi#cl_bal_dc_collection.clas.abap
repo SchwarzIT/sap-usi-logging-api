@@ -102,6 +102,7 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
 
   METHOD /usi/if_bal_data_container_col~serialize.
     DATA: exception                  TYPE REF TO /usi/cx_bal_root,
+          exception_text             TYPE string,
           serialized_data_containers TYPE ty_serialized_data_containers.
 
     LOOP AT data_cont_coll_items ASSIGNING FIELD-SYMBOL(<data_cont_coll_item>).
@@ -111,7 +112,7 @@ CLASS /usi/cl_bal_dc_collection IMPLEMENTATION.
                  INTO TABLE serialized_data_containers.
         CATCH /usi/cx_bal_root INTO exception.
           " Corrupt container data? Drop container!
-          DATA(exception_text) = exception->get_text( ).
+          exception_text = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
                  FIELDS exception_text
                  CONDITION exception IS NOT BOUND.
