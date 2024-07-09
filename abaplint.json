@@ -529,10 +529,7 @@
       "exclude": [],
       "severity": "Error"
     },
-    "parser_error": {
-      "exclude": [],
-      "severity": "Error"
-    },
+    "parser_error": false,
     "parser_missing_space": {
       "exclude": [],
       "severity": "Error"
