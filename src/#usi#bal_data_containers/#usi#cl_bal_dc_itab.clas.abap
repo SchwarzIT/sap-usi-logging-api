@@ -21,7 +21,6 @@ CLASS /usi/cl_bal_dc_itab DEFINITION PUBLIC CREATE PUBLIC.
 
   PRIVATE SECTION.
     DATA: internal_table_ref    TYPE REF TO data,
-          table_descriptor      TYPE REF TO lcl_table_descriptor,
           title                 TYPE REF TO /usi/if_bal_text_container_c40,
           external_fieldcatalog TYPE lvc_t_fcat.
 
@@ -67,47 +66,44 @@ CLASS /usi/cl_bal_dc_itab IMPLEMENTATION.
           source_table_ref     TYPE REF TO data,
           table_content_copier TYPE REF TO lcl_table_content_copier.
 
-    TRY.
-        table_descriptor   = lcl_table_descriptor=>get_by_data( i_internal_table ).
-        internal_table_ref = table_descriptor->get_table_type_dref( ).
-
-        GET REFERENCE OF i_internal_table INTO source_table_ref.
-        table_content_copier = NEW #( i_source_table_ref = source_table_ref
-                                      i_target_table_ref = internal_table_ref ).
-        table_content_copier->copy_table_contents( ).
-
-      CATCH /usi/cx_bal_root INTO exception.
-        exception_text = exception->get_text( ).
-
-        ASSERT ID /usi/bal_log_writer
-               FIELDS exception_text
-               CONDITION exception IS NOT BOUND.
-        RETURN.
-    ENDTRY.
+    CREATE DATA internal_table_ref LIKE i_internal_table.
+    ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<table>).
+    <table> = i_internal_table.
 
     title                 = i_title.
     external_fieldcatalog = i_fieldcatalog.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~serialize.
-    DATA serializer TYPE REF TO lif_serializer.
+    " Normalize table format
+    TRY.
+        ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<source_table>).
+        DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( <source_table> ).
 
-    IF internal_table_ref IS NOT BOUND.
-      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
-    ENDIF.
+        DATA(target_table_ref) = table_descriptor->get_table_type_dref( ).
+        DATA(table_content_copier) = NEW lcl_table_content_copier( i_source_table_ref = internal_table_ref
+                                                                   i_target_table_ref = target_table_ref ).
+        table_content_copier->copy_table_contents( ).
+      CATCH /usi/cx_bal_root INTO DATA(exception).
+        RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
+    ENDTRY.
 
-    serializer = NEW lcl_serializer( i_table_reference       = internal_table_ref
-                                     i_table_descriptor      = table_descriptor
-                                     i_external_fieldcatalog = external_fieldcatalog
-                                     i_title                 = title ).
-
+    " Serialize
+    DATA(serializer) = CAST lif_serializer( NEW lcl_serializer( i_table_reference       = target_table_ref
+                                                                i_table_descriptor      = table_descriptor
+                                                                i_external_fieldcatalog = external_fieldcatalog
+                                                                i_title                 = title ) ).
     r_result = serializer->serialize( ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container_rnd~render.
     DATA: fieldcatalog_collection TYPE REF TO lcl_fieldcatalog_collection,
           grid_control            TYPE REF TO lcl_grid_control.
+
+    ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<table>).
+    DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( i_table = <table> ).
 
     fieldcatalog_collection = NEW #( i_table_descriptor      = table_descriptor
                                      i_external_fieldcatalog = external_fieldcatalog ).

@@ -465,6 +465,11 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
           CHANGING   ct_fieldcat      = buffers-fieldcatalog->*
           EXCEPTIONS OTHERS           = 0.
 
+        LOOP AT buffers-fieldcatalog->* REFERENCE INTO DATA(field).
+          CLEAR field->no_out.
+          CLEAR field->tech.
+        ENDLOOP.
+
       ELSE.
         LOOP AT type_descriptions-line->components ASSIGNING FIELD-SYMBOL(<component>).
           type_descriptions-line->get_component_type( EXPORTING  p_name      = <component>-name
@@ -1464,18 +1469,15 @@ CLASS lcl_grid_control IMPLEMENTATION.
   METHOD get_excluded_functions.
     INSERT cl_gui_alv_grid=>mc_fc_col_invisible   INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_col_optimize    INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_current_variant INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_fix_columns     INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_graph           INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_info            INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_loc_copy        INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_print           INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_sort            INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_unfix_columns   INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_paste           INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_subtot          INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_sum             INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_variant         INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_view            INTO TABLE r_result.
   ENDMETHOD.
 
