@@ -9,17 +9,14 @@ CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION PUBLIC FINAL CREATE PUBLIC.
 
     "! Constructor
     "!
-    "! @parameter i_message | The Message
+    "! @parameter i_message     | The Message
     "! @parameter i_return_code | The return code
     METHODS constructor
-      IMPORTING
-        i_message            TYPE symsg
-        VALUE(i_return_code) TYPE sysubrc.
-
-  PROTECTED SECTION.
+      IMPORTING i_message            TYPE symsg
+                VALUE(i_return_code) TYPE sysubrc.
 
   PRIVATE SECTION.
-    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH NON-UNIQUE DEFAULT KEY.
+    TYPES ty_alv_output TYPE STANDARD TABLE OF /usi/bal_fieldname_and_value WITH EMPTY KEY.
 
     DATA: BEGIN OF alv_data,
             fieldcat TYPE lvc_t_fcat,
@@ -29,112 +26,74 @@ CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION PUBLIC FINAL CREATE PUBLIC.
           return_code TYPE sysubrc.
 
     METHODS get_alv_output_table
-      RETURNING
-        VALUE(r_result) TYPE ty_alv_output.
+      RETURNING VALUE(r_result) TYPE ty_alv_output.
 
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
   METHOD /usi/if_bal_data_container_rnd~render.
-    DATA: alv_grid           TYPE REF TO cl_gui_alv_grid,
-          excluded_functions TYPE ui_functions,
-          layout             TYPE lvc_s_layo.
-
-    INSERT cl_gui_alv_grid=>mc_fc_excl_all INTO TABLE excluded_functions.
-
-    layout-zebra      = abap_true.
-    layout-cwidth_opt = abap_true.
-
     CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name = '/USI/BAL_FIELDNAME_AND_VALUE'
-      CHANGING
-        ct_fieldcat      = alv_data-fieldcat
-      EXCEPTIONS
-        OTHERS           = 0.
+      EXPORTING  i_structure_name = '/USI/BAL_FIELDNAME_AND_VALUE'
+      CHANGING   ct_fieldcat      = alv_data-fieldcat
+      EXCEPTIONS OTHERS           = 0.
 
     alv_data-output = get_alv_output_table( ).
 
-    CREATE OBJECT alv_grid
-      EXPORTING
-        i_parent = i_container.
+    DATA(alv_grid) = NEW cl_gui_alv_grid( i_parent = i_container ).
 
     alv_grid->set_table_for_first_display(
-      EXPORTING
-        is_layout            = layout
-        it_toolbar_excluding = excluded_functions
-      CHANGING
-        it_outtab            = alv_data-output
-        it_fieldcatalog      = alv_data-fieldcat ).
+      EXPORTING is_layout            = VALUE #( zebra      = abap_true
+                                                cwidth_opt = abap_true )
+                it_toolbar_excluding = VALUE #( ( cl_gui_alv_grid=>mc_fc_excl_all ) )
+      CHANGING  it_outtab            = alv_data-output
+                it_fieldcatalog      = alv_data-fieldcat ).
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA: parameter    TYPE abap_trans_resbind,
-          parameters   TYPE abap_trans_resbind_tab,
-          deserializer TYPE REF TO /usi/cl_bal_serializer,
-          message      TYPE symsg,
-          return_code  TYPE sysubrc.
+    DATA: parameters  TYPE abap_trans_resbind_tab,
+          message     TYPE symsg,
+          return_code TYPE sysubrc.
 
-    parameter-name = 'MESSAGE'.
-    GET REFERENCE OF message INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
+    parameters = VALUE #( ( name  = 'MESSAGE'
+                            value = REF #( message ) )
+                          ( name  = 'RETURN_CODE'
+                            value = REF #( return_code ) ) ).
 
-    parameter-name = 'RETURN_CODE'.
-    GET REFERENCE OF return_code INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
+    NEW /usi/cl_bal_serializer( )->deserialize_fields( i_serialized_data = i_serialized_data_container
+                                                       i_parameters      = parameters ).
 
-    CREATE OBJECT deserializer.
-    deserializer->deserialize_fields( i_serialized_data = i_serialized_data_container
-                                      i_parameters      = parameters ).
-
-    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_retcode_and_msg
-      EXPORTING
-        i_message     = message
-        i_return_code = return_code.
+    r_result = NEW /usi/cl_bal_dc_retcode_and_msg( i_message     = message
+                                                   i_return_code = return_code ).
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~get_classname.
     r_result = '/USI/CL_BAL_DC_RETCODE_AND_MSG'.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~get_description.
     r_result = TEXT-des.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~is_multiple_use_allowed.
     r_result = abap_false.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~serialize.
-    DATA: parameter  TYPE abap_trans_srcbind,
-          parameters TYPE abap_trans_srcbind_tab,
-          serializer TYPE REF TO /usi/cl_bal_serializer.
+    DATA parameters TYPE abap_trans_srcbind_tab.
 
-    parameter-name = 'MESSAGE'.
-    GET REFERENCE OF message INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
+    parameters = VALUE #( ( name  = 'MESSAGE'
+                            value = REF #( message ) )
+                          ( name  = 'RETURN_CODE'
+                            value = REF #( return_code ) ) ).
 
-    parameter-name = 'RETURN_CODE'.
-    GET REFERENCE OF return_code INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
-
-    CREATE OBJECT serializer.
-    r_result = serializer->serialize_fields_as_json( parameters ).
+    r_result = NEW /usi/cl_bal_serializer( )->serialize_fields_as_json( parameters ).
   ENDMETHOD.
-
 
   METHOD constructor.
     message     = i_message.
     return_code = i_return_code.
   ENDMETHOD.
-
 
   METHOD get_alv_output_table.
     DATA result_line TYPE /usi/bal_fieldname_and_value.
@@ -174,8 +133,8 @@ CLASS /usi/cl_bal_dc_retcode_and_msg IMPLEMENTATION.
     IF message-msgid IS NOT INITIAL.
       result_line-fieldname = 'MESSAGE'.
       MESSAGE ID message-msgid TYPE 'S' NUMBER message-msgno
-         WITH message-msgv1 message-msgv2 message-msgv3 message-msgv4
-         INTO result_line-value.
+              WITH message-msgv1 message-msgv2 message-msgv3 message-msgv4
+              INTO result_line-value.
       INSERT result_line INTO TABLE r_result.
     ENDIF.
   ENDMETHOD.

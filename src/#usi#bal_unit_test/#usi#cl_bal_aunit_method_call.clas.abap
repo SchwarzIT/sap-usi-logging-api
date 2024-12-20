@@ -16,33 +16,26 @@ CLASS /usi/cl_bal_aunit_method_call DEFINITION PUBLIC FINAL CREATE PUBLIC FOR TE
     "!
     "! @parameter i_method_name | Method name
     METHODS constructor
-      IMPORTING
-        i_method_name TYPE ty_method_name.
+      IMPORTING i_method_name TYPE ty_method_name.
 
     "! <h1>Add parameter</h1>
     "!
-    "! @parameter i_parameter_name | Name
+    "! @parameter i_parameter_name  | Name
     "! @parameter i_parameter_value | Value
     METHODS add_parameter
-      IMPORTING
-        i_parameter_name  TYPE ty_parameter_name
-        i_parameter_value TYPE any.
+      IMPORTING i_parameter_name  TYPE ty_parameter_name
+                i_parameter_value TYPE any.
 
     "! <h1>Get parameter</h1>
     "!
-    "! @parameter i_parameter_name | Name
+    "! @parameter i_parameter_name  | Name
     "! @parameter e_parameter_value | Value
     METHODS get_parameter
-      IMPORTING
-        i_parameter_name         TYPE ty_parameter_name
-      EXPORTING
-        VALUE(e_parameter_value) TYPE any.
-
-  PROTECTED SECTION.
-
-  PRIVATE SECTION.
+      IMPORTING i_parameter_name         TYPE ty_parameter_name
+      EXPORTING VALUE(e_parameter_value) TYPE any.
 
 ENDCLASS.
+
 
 CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
   METHOD constructor.
@@ -60,7 +53,7 @@ CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
     <parameter_value> = i_parameter_value.
 
     INSERT parameter INTO TABLE parameters.
-    IF sy-subrc NE 0.
+    IF sy-subrc <> 0.
       cl_aunit_assert=>fail( `Duplicate call! Test is broken!` ).
     ENDIF.
   ENDMETHOD.
@@ -71,10 +64,8 @@ CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
 
     CLEAR e_parameter_value.
 
-    READ TABLE parameters
-      ASSIGNING <parameter>
-      WITH KEY parameter_name = i_parameter_name.
-    IF sy-subrc NE 0.
+    ASSIGN parameters[ parameter_name = i_parameter_name ] TO <parameter>.
+    IF sy-subrc <> 0.
       cl_aunit_assert=>fail( msg    = `Parameter not found!`
                              detail = i_parameter_name ).
     ENDIF.

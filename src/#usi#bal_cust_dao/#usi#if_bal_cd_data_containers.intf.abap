@@ -6,7 +6,7 @@ INTERFACE /usi/if_bal_cd_data_containers PUBLIC.
            sub_object    TYPE balsubobj,
            min_log_level TYPE /usi/bal_log_level,
          END   OF ty_record,
-         ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
+         ty_records TYPE STANDARD TABLE OF ty_record WITH EMPTY KEY.
 
   "! Read table /usi/bal_lv_data (Minimum Log-Level for Data-Container-Classes)
   "!

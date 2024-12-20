@@ -16,57 +16,26 @@ CLASS /usi/cl_bal_enum_detail_level DEFINITION PUBLIC FINAL CREATE PRIVATE.
     CLASS-METHODS class_constructor.
 
     "! <h1>Create instances</h1>
+    "!
+    "! @parameter i_detail_level | Detail level
     METHODS constructor
-      IMPORTING
-        i_detail_level TYPE ballevel.
-
-  PROTECTED SECTION.
-
-  PRIVATE SECTION.
+      IMPORTING i_detail_level TYPE ballevel.
 
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_enum_detail_level IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT detail_level_1
-      EXPORTING
-        i_detail_level = '1'.
-
-    CREATE OBJECT detail_level_2
-      EXPORTING
-        i_detail_level = '2'.
-
-    CREATE OBJECT detail_level_3
-      EXPORTING
-        i_detail_level = '3'.
-
-    CREATE OBJECT detail_level_4
-      EXPORTING
-        i_detail_level = '4'.
-
-    CREATE OBJECT detail_level_5
-      EXPORTING
-        i_detail_level = '5'.
-
-    CREATE OBJECT detail_level_6
-      EXPORTING
-        i_detail_level = '6'.
-
-    CREATE OBJECT detail_level_7
-      EXPORTING
-        i_detail_level = '7'.
-
-    CREATE OBJECT detail_level_8
-      EXPORTING
-        i_detail_level = '8'.
-
-    CREATE OBJECT detail_level_9
-      EXPORTING
-        i_detail_level = '9'.
+    detail_level_1 = NEW #( i_detail_level = '1' ).
+    detail_level_2 = NEW #( i_detail_level = '2' ).
+    detail_level_3 = NEW #( i_detail_level = '3' ).
+    detail_level_4 = NEW #( i_detail_level = '4' ).
+    detail_level_5 = NEW #( i_detail_level = '5' ).
+    detail_level_6 = NEW #( i_detail_level = '6' ).
+    detail_level_7 = NEW #( i_detail_level = '7' ).
+    detail_level_8 = NEW #( i_detail_level = '8' ).
+    detail_level_9 = NEW #( i_detail_level = '9' ).
   ENDMETHOD.
-
 
   METHOD constructor.
     value = i_detail_level.

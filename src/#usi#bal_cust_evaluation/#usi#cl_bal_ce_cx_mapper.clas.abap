@@ -61,10 +61,8 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
     customizing_entries = get_validated_customizing( ).
   ENDMETHOD.
 
-
   METHOD get_mapper_class.
-    DATA: customizing_entry      TYPE ty_customizing_entry,
-          exception_classname    TYPE /usi/bal_exception_classname,
+    DATA: exception_classname    TYPE /usi/bal_exception_classname,
           superclass_description TYPE REF TO cl_abap_classdescr.
 
     FIELD-SYMBOLS: <customizing_entry> TYPE ty_customizing_entry,
@@ -72,22 +70,18 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     " Check customizing for the class itself
     exception_classname = i_exception_class_description->get_relative_name( ).
-    READ TABLE customizing_entries
-      ASSIGNING <customizing_entry>
-      WITH KEY exception_class_type = class_type-class
-               exception_class_name = exception_classname.
-    IF sy-subrc EQ 0.
+    ASSIGN customizing_entries[ exception_class_type = class_type-class
+                                exception_class_name = exception_classname ] TO <customizing_entry>.
+    IF sy-subrc = 0.
       r_result = <customizing_entry>-mapper_class_name.
       RETURN.
     ENDIF.
 
     " Check customizing for non-inherited interfaces
-    LOOP AT i_exception_class_description->interfaces ASSIGNING <interface> WHERE is_inherited EQ abap_false.
-      READ TABLE customizing_entries
-        ASSIGNING <customizing_entry>
-        WITH KEY exception_class_type = class_type-interface
-                 exception_class_name = <interface>-name.
-      IF sy-subrc EQ 0.
+    LOOP AT i_exception_class_description->interfaces ASSIGNING <interface> WHERE is_inherited = abap_false.
+      ASSIGN customizing_entries[ exception_class_type = class_type-interface
+                                  exception_class_name = <interface>-name ] TO <customizing_entry>.
+      IF sy-subrc = 0.
         r_result = <customizing_entry>-mapper_class_name.
         EXIT.
       ENDIF.
@@ -95,14 +89,11 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     " Check superclass
     IF r_result IS INITIAL.
-      i_exception_class_description->get_super_class_type(
-        RECEIVING
-          p_descr_ref           = superclass_description
-        EXCEPTIONS
-          super_class_not_found = 1
-          OTHERS                = 2 ).
+      i_exception_class_description->get_super_class_type( RECEIVING  p_descr_ref           = superclass_description
+                                                           EXCEPTIONS super_class_not_found = 1
+                                                                      OTHERS                = 2 ).
 
-      IF sy-subrc EQ 0.
+      IF sy-subrc = 0.
         r_result = get_mapper_class( superclass_description ).
       ELSE.
         r_result = /usi/if_bal_ce_cx_mapper~get_fallback_mapper_classname( ).
@@ -110,12 +101,11 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
     ENDIF.
 
     " Extend customizing to speed up subsequent calls
-    customizing_entry-exception_class_type = class_type-class.
-    customizing_entry-exception_class_name = i_exception_class_description->get_relative_name( ).
-    customizing_entry-mapper_class_name    = r_result.
-    INSERT customizing_entry INTO TABLE customizing_entries.
+    INSERT VALUE #( exception_class_type = class_type-class
+                    exception_class_name = i_exception_class_description->get_relative_name( )
+                    mapper_class_name    = r_result )
+           INTO TABLE customizing_entries.
   ENDMETHOD.
-
 
   METHOD get_validated_customizing.
     CONSTANTS: mapper_interface_name TYPE seoclsname VALUE '/USI/IF_BAL_EXCEPTION_MAPPER',
@@ -136,24 +126,24 @@ CLASS /usi/cl_bal_ce_cx_mapper IMPLEMENTATION.
 
     LOOP AT raw_customizing_table ASSIGNING <raw_customizing_entry>.
       TRY.
-          CREATE OBJECT mapper_description
-            EXPORTING
-              i_object_type_name = <raw_customizing_entry>-mapper_class.
+          mapper_description = NEW #( i_object_type_name = <raw_customizing_entry>-mapper_class ).
 
-          CREATE OBJECT exception_description
-            EXPORTING
-              i_object_type_name = <raw_customizing_entry>-exception_class.
+          exception_description = NEW #( i_object_type_name = <raw_customizing_entry>-exception_class ).
         CATCH /usi/cx_bal_root.
           CONTINUE.
       ENDTRY.
 
-      CHECK mapper_description->is_instantiatable( ) EQ abap_true
-        AND mapper_description->is_implementing( mapper_interface_name ) EQ abap_true.
+      IF NOT (     mapper_description->is_instantiatable( ) = abap_true
+               AND mapper_description->is_implementing( mapper_interface_name ) = abap_true ).
+        CONTINUE.
+      ENDIF.
 
-      CHECK exception_description->is_interface( ) EQ abap_true
-         OR exception_description->is_inheriting_from( exception_root_class ) EQ abap_true.
+      IF NOT (    exception_description->is_interface( ) = abap_true
+               OR exception_description->is_inheriting_from( exception_root_class ) = abap_true ).
+        CONTINUE.
+      ENDIF.
 
-      IF exception_description->is_interface( ) EQ abap_true.
+      IF exception_description->is_interface( ) = abap_true.
         result_line-exception_class_type = class_type-interface.
       ELSE.
         result_line-exception_class_type = class_type-class.

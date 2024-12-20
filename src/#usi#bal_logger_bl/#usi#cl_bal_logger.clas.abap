@@ -4,22 +4,19 @@ CLASS /usi/cl_bal_logger DEFINITION PUBLIC FINAL CREATE PUBLIC.
 
     "! <h1>Constructor</h1>
     "!
-    "! @parameter i_factory | BL-Factory (Internal object creation)
+    "! @parameter i_factory                  | BL-Factory (Internal object creation)
     "! @parameter i_relevant_data_containers | Relevant data containers (Customizing)
-    "! @parameter i_log_level | Current log level (Customizing)
-    "! @parameter i_auto_save_pckg_size | Package size of auto save (Customizing)
-    "! @parameter i_log_dao | DAO-Instance for messages (Persistency Layer)
-    "! @parameter i_data_cont_coll_dao | DAO-Instance for data-containers (Persistency Layer)
+    "! @parameter i_log_level                | Current log level (Customizing)
+    "! @parameter i_auto_save_pckg_size      | Package size of auto save (Customizing)
+    "! @parameter i_log_dao                  | DAO-Instance for messages (Persistency Layer)
+    "! @parameter i_data_cont_coll_dao       | DAO-Instance for data-containers (Persistency Layer)
     METHODS constructor
-      IMPORTING
-        i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
-        i_relevant_data_containers TYPE /usi/bal_data_cont_classnames
-        i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
-        i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
-        i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
-        i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao.
-
-  PROTECTED SECTION.
+      IMPORTING i_factory                  TYPE REF TO /usi/if_bal_logger_bl_factory
+                i_relevant_data_containers TYPE /usi/bal_data_cont_classnames
+                i_log_level                TYPE REF TO /usi/cl_bal_enum_log_level
+                i_auto_save_pckg_size      TYPE /usi/bal_auto_save_pckg_size
+                i_log_dao                  TYPE REF TO /usi/if_bal_log_dao
+                i_data_cont_coll_dao       TYPE REF TO /usi/if_bal_data_cont_coll_dao.
 
   PRIVATE SECTION.
     DATA: factory                       TYPE REF TO /usi/if_bal_logger_bl_factory,
@@ -31,7 +28,6 @@ CLASS /usi/cl_bal_logger DEFINITION PUBLIC FINAL CREATE PUBLIC.
           auto_save_pckg_size           TYPE /usi/bal_auto_save_pckg_size.
 
 ENDCLASS.
-
 
 
 CLASS /usi/cl_bal_logger IMPLEMENTATION.
@@ -51,11 +47,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~add_free_text.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
@@ -75,11 +70,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~add_message.
     DATA: exception          TYPE REF TO /usi/cx_bal_root,
@@ -110,11 +104,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~add_message_from_sy_fields.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
@@ -123,12 +116,12 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
 
     " Check sy-msgty and sy-msgid
     ASSERT ID /usi/bal_log_writer
-      FIELDS sy-msgty
-             sy-msgid
-      CONDITION sy-msgty IS NOT INITIAL
-            AND sy-msgid IS NOT INITIAL.
-    IF sy-msgty IS INITIAL
-        OR sy-msgid IS INITIAL.
+           FIELDS sy-msgty
+                  sy-msgid
+           CONDITION     sy-msgty IS NOT INITIAL
+                     AND sy-msgid IS NOT INITIAL.
+    IF    sy-msgty IS INITIAL
+       OR sy-msgid IS INITIAL.
       RETURN.
     ENDIF.
 
@@ -138,8 +131,8 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " SY-MSGTY contains an invalid message type!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
         RETURN.
     ENDTRY.
 
@@ -160,11 +153,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~claim_ownership.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
@@ -174,27 +166,24 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         r_result = state->claim_ownership( ).
 
         " State transition: 'Not claimed' -> 'Active'
-        CREATE OBJECT state TYPE /usi/cl_bal_lstate_active
-          EXPORTING
-            i_factory                  = factory
-            i_log_level                = log_level
-            i_auto_save_pckg_size      = auto_save_pckg_size
-            i_log_dao                  = log_dao
-            i_data_cont_coll_dao       = data_container_collection_dao
-            i_token                    = r_result
-            i_relevant_data_containers = relevant_data_containers.
+        state = NEW /usi/cl_bal_lstate_active( i_factory                  = factory
+                                               i_log_level                = log_level
+                                               i_auto_save_pckg_size      = auto_save_pckg_size
+                                               i_log_dao                  = log_dao
+                                               i_data_cont_coll_dao       = data_container_collection_dao
+                                               i_token                    = r_result
+                                               i_relevant_data_containers = relevant_data_containers ).
       CATCH /usi/cx_bal_root INTO exception.
         " Not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
 
         " Return dummy-token, that grants no authorizations.
         r_result = factory->get_token( ).
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~free.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
@@ -204,18 +193,17 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         state->free( i_token ).
 
         " State transition: 'Active' -> 'Invalidated'
-        CREATE OBJECT state TYPE /usi/cl_bal_lstate_invalidated.
+        state = NEW /usi/cl_bal_lstate_invalidated( ).
 
         RAISE EVENT /usi/if_bal_logger~instance_invalidated.
       CATCH /usi/cx_bal_root INTO exception.
         " Not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_logger~save.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
@@ -227,11 +215,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
         " Error during operation or not allowed in current state!
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION exception IS NOT BOUND.
+               FIELDS exception_text
+               CONDITION exception IS NOT BOUND.
     ENDTRY.
   ENDMETHOD.
-
 
   METHOD constructor.
     factory                       = i_factory.
@@ -242,8 +229,6 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
     auto_save_pckg_size           = i_auto_save_pckg_size.
 
     " Set initial state: 'Not claimed'
-    CREATE OBJECT state TYPE /usi/cl_bal_lstate_not_claimed
-      EXPORTING
-        i_factory = factory.
+    state = NEW /usi/cl_bal_lstate_not_claimed( i_factory = factory ).
   ENDMETHOD.
 ENDCLASS.

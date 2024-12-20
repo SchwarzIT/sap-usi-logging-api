@@ -83,9 +83,8 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
 ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
-
   METHOD setup.
-    CREATE OBJECT test_double_cust_dao.
+    test_double_cust_dao = NEW #( ).
     reset_cut( ).
   ENDMETHOD.
 
@@ -93,9 +92,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     DATA exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        CREATE OBJECT cut TYPE /usi/cl_bal_ce_data_containers
-          EXPORTING
-            i_customizing_dao = test_double_cust_dao.
+        cut = NEW /usi/cl_bal_ce_data_containers( i_customizing_dao = test_double_cust_dao ).
       CATCH /usi/cx_bal_root INTO exception.
         /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( exception ).
     ENDTRY.

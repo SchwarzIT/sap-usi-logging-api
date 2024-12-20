@@ -8,34 +8,26 @@ CLASS lcl_task_grid IMPLEMENTATION.
     toolbar_excluding = get_toolbar_excluding( ).
 
     CREATE OBJECT custom_container
-      EXPORTING
-        container_name = 'CC_MAIN'
-      EXCEPTIONS
-        OTHERS         = 0.
+      EXPORTING  container_name = 'CC_MAIN'
+      EXCEPTIONS OTHERS         = 0.
 
     CREATE OBJECT alv_grid
-      EXPORTING
-        i_parent = custom_container
-      EXCEPTIONS
-        OTHERS   = 0.
+      EXPORTING  i_parent = custom_container
+      EXCEPTIONS OTHERS   = 0.
 
     SET HANDLER on_toolbar FOR alv_grid.
   ENDMETHOD.
-
 
   METHOD get_field_catalog.
     FIELD-SYMBOLS <field> TYPE lvc_s_fcat.
 
     CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name = '/USI/BAL_DEMO_TO_DO_TASK'
-      CHANGING
-        ct_fieldcat      = r_result
-      EXCEPTIONS
-        OTHERS           = 0.
+      EXPORTING  i_structure_name = '/USI/BAL_DEMO_TO_DO_TASK'
+      CHANGING   ct_fieldcat      = r_result
+      EXCEPTIONS OTHERS           = 0.
 
-    READ TABLE r_result WITH KEY fieldname = 'ID' ASSIGNING <field>.
-    IF sy-subrc EQ 0.
+    ASSIGN r_result[ fieldname = 'ID' ] TO <field>.
+    IF sy-subrc = 0.
       <field>-no_out = abap_true.
     ENDIF.
   ENDMETHOD.
@@ -66,53 +58,42 @@ CLASS lcl_task_grid IMPLEMENTATION.
                  separator TYPE tb_btype VALUE 3,
                END   OF button_types.
 
-    DATA button TYPE stb_button.
+    INSERT VALUE #( function  = user_commands-refresh
+                    butn_type = button_types-button
+                    text      = TEXT-b01
+                    icon      = icon_refresh )
+           INTO TABLE e_object->mt_toolbar.
 
-    CLEAR button.
-    button-function  = user_commands-refresh.
-    button-butn_type = button_types-button.
-    button-text      = TEXT-b01.
-    button-icon      = icon_refresh.
-    INSERT button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( butn_type = button_types-separator )
+           INTO TABLE e_object->mt_toolbar.
 
-    CLEAR button.
-    button-butn_type = button_types-separator.
-    INSERT button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( function  = user_commands-add_task
+                    butn_type = button_types-button
+                    text      = TEXT-b02
+                    icon      = icon_insert_row )
+           INTO TABLE e_object->mt_toolbar.
 
-    CLEAR button.
-    button-function  = user_commands-add_task.
-    button-butn_type = button_types-button.
-    button-text      = TEXT-b02.
-    button-icon      = icon_insert_row.
-    INSERT button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( function  = user_commands-edit_task
+                    butn_type = button_types-button
+                    text      = TEXT-b03
+                    icon      = icon_change_text )
+           INTO TABLE e_object->mt_toolbar.
 
-    CLEAR button.
-    button-function  = user_commands-edit_task.
-    button-butn_type = button_types-button.
-    button-text      = TEXT-b03.
-    button-icon      = icon_change_text.
-    INSERT button INTO TABLE e_object->mt_toolbar.
-
-    CLEAR button.
-    button-function  = user_commands-delete_tasks.
-    button-butn_type = button_types-button.
-    button-text      = TEXT-b04.
-    button-icon      = icon_delete_row.
-    INSERT button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( function  = user_commands-delete_tasks
+                    butn_type = button_types-button
+                    text      = TEXT-b04
+                    icon      = icon_delete_row )
+           INTO TABLE e_object->mt_toolbar.
   ENDMETHOD.
 
   METHOD refresh_alv_grid.
     tasks = i_tasks.
 
-    alv_grid->set_table_for_first_display(
-      EXPORTING
-        is_layout            = layout
-        it_toolbar_excluding = toolbar_excluding
-      CHANGING
-        it_outtab            = tasks
-        it_fieldcatalog      = field_catalog
-      EXCEPTIONS
-        OTHERS               = 0 ).
+    alv_grid->set_table_for_first_display( EXPORTING  is_layout            = layout
+                                                      it_toolbar_excluding = toolbar_excluding
+                                           CHANGING   it_outtab            = tasks
+                                                      it_fieldcatalog      = field_catalog
+                                           EXCEPTIONS OTHERS               = 0 ).
   ENDMETHOD.
 
   METHOD get_selected_task_ids.
@@ -124,7 +105,7 @@ CLASS lcl_task_grid IMPLEMENTATION.
     alv_grid->get_selected_rows( IMPORTING et_row_no = row_numbers ).
 
     LOOP AT row_numbers ASSIGNING <row_number>.
-      READ TABLE tasks ASSIGNING <task> INDEX <row_number>-row_id.
+      ASSIGN tasks[ <row_number>-row_id ] TO <task>.
       INSERT <task>-id INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.

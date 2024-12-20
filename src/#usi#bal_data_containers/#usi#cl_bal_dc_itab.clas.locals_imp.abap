@@ -4,52 +4,36 @@
 CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     CLASS-METHODS get_by_tabname
-      IMPORTING
-        i_tabname       TYPE tabname
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_table_descriptor
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_tabname       TYPE tabname
+      RETURNING VALUE(r_result) TYPE REF TO lcl_table_descriptor
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_by_data
-      IMPORTING
-        i_table         TYPE ANY TABLE
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_table_descriptor
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_table         TYPE ANY TABLE
+      RETURNING VALUE(r_result) TYPE REF TO lcl_table_descriptor
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_by_fieldcatalog
-      IMPORTING
-        i_fieldcatalog  TYPE lvc_t_fcat
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_table_descriptor
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_fieldcatalog  TYPE lvc_t_fcat
+      RETURNING VALUE(r_result) TYPE REF TO lcl_table_descriptor
+      RAISING   /usi/cx_bal_root.
 
     METHODS constructor
-      IMPORTING
-        i_line_type_description TYPE REF TO cl_abap_typedescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_line_type_description TYPE REF TO cl_abap_typedescr
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_line_type_dref
-      RETURNING
-        VALUE(r_result) TYPE REF TO data.
+      RETURNING VALUE(r_result) TYPE REF TO data.
 
     METHODS get_table_type_dref
-      RETURNING
-        VALUE(r_result) TYPE REF TO data.
+      RETURNING VALUE(r_result) TYPE REF TO data.
 
     METHODS get_fieldcatalog
-      RETURNING
-        VALUE(r_result) TYPE lvc_t_fcat.
+      RETURNING VALUE(r_result) TYPE lvc_t_fcat.
 
     METHODS get_tabname
-      RETURNING
-        VALUE(r_result) TYPE tabname
-      RAISING
-        /usi/cx_bal_root.
+      RETURNING VALUE(r_result) TYPE tabname
+      RAISING   /usi/cx_bal_root.
 
   PRIVATE SECTION.
     DATA: BEGIN OF type_descriptions,
@@ -62,83 +46,59 @@ CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
           END   OF buffers.
 
     METHODS get_normalized_line_type_desc
-      IMPORTING
-        i_line_type_description TYPE REF TO cl_abap_typedescr
-      RETURNING
-        VALUE(r_result)         TYPE REF TO cl_abap_structdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_line_type_description TYPE REF TO cl_abap_typedescr
+      RETURNING VALUE(r_result)         TYPE REF TO cl_abap_structdescr
+      RAISING   /usi/cx_bal_root.
 
     METHODS remove_non_elementary_fields
-      IMPORTING
-        i_line_type_description TYPE REF TO cl_abap_structdescr
-      RETURNING
-        VALUE(r_result)         TYPE REF TO cl_abap_structdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_line_type_description TYPE REF TO cl_abap_structdescr
+      RETURNING VALUE(r_result)         TYPE REF TO cl_abap_structdescr
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_type_by_fieldcatalog_line
-      IMPORTING
-        i_fieldcatalog_line TYPE lvc_s_fcat
-      RETURNING
-        VALUE(r_result)     TYPE REF TO cl_abap_elemdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_fieldcatalog_line TYPE lvc_s_fcat
+      RETURNING VALUE(r_result)     TYPE REF TO cl_abap_elemdescr
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_type_by_ddic_reference
-      IMPORTING
-        i_tabname       TYPE tabname
-        i_fieldname     TYPE fieldname
-      RETURNING
-        VALUE(r_result) TYPE REF TO cl_abap_elemdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_tabname       TYPE tabname
+                i_fieldname     TYPE fieldname
+      RETURNING VALUE(r_result) TYPE REF TO cl_abap_elemdescr
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_type_by_name
-      IMPORTING
-        i_type_name     TYPE typename
-      RETURNING
-        VALUE(r_result) TYPE REF TO cl_abap_elemdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_type_name     TYPE typename
+      RETURNING VALUE(r_result) TYPE REF TO cl_abap_elemdescr
+      RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_type_by_properties
-      IMPORTING
-        i_internal_type TYPE inttype
-        i_length        TYPE intlen
-        i_decimals      TYPE decimals
-      RETURNING
-        VALUE(r_result) TYPE REF TO cl_abap_elemdescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_internal_type TYPE inttype
+                i_length        TYPE intlen
+                i_decimals      TYPE decimals
+      RETURNING VALUE(r_result) TYPE REF TO cl_abap_elemdescr
+      RAISING   /usi/cx_bal_root.
 
 ENDCLASS.
+
 
 CLASS lcl_table_descriptor IMPLEMENTATION.
   METHOD get_by_tabname.
     DATA type_description TYPE REF TO cl_abap_typedescr.
 
-    cl_abap_typedescr=>describe_by_name(
-      EXPORTING
-        p_name         = i_tabname
-      RECEIVING
-        p_descr_ref    = type_description
-      EXCEPTIONS
-        type_not_found = 1
-        OTHERS         = 2 ).
-    IF sy-subrc NE 0.
+    cl_abap_typedescr=>describe_by_name( EXPORTING  p_name         = i_tabname
+                                         RECEIVING  p_descr_ref    = type_description
+                                         EXCEPTIONS type_not_found = 1
+                                                    OTHERS         = 2 ).
+    IF sy-subrc <> 0.
       ASSERT ID /usi/bal_log_writer
-        FIELDS sy-subrc
-        CONDITION 1 EQ 0.
+             FIELDS sy-subrc
+             CONDITION 1 = 0.
 
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING
-          textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
+        EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
     ENDIF.
 
-    CREATE OBJECT r_result
-      EXPORTING
-        i_line_type_description = type_description.
+    r_result = NEW #( i_line_type_description = type_description ).
   ENDMETHOD.
 
   METHOD get_by_data.
@@ -155,19 +115,16 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
       CATCH cx_sy_move_cast_error INTO exception.
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
 
     ENDTRY.
 
-    CREATE OBJECT r_result
-      EXPORTING
-        i_line_type_description = type_description.
+    r_result = NEW #( i_line_type_description = type_description ).
   ENDMETHOD.
 
   METHOD get_by_fieldcatalog.
@@ -190,18 +147,15 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
       CATCH cx_sy_struct_creation INTO exception.
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
     ENDTRY.
 
-    CREATE OBJECT r_result
-      EXPORTING
-        i_line_type_description = type_description.
+    r_result = NEW #( i_line_type_description = type_description ).
   ENDMETHOD.
 
   METHOD get_type_by_fieldcatalog_line.
@@ -235,33 +189,24 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
     TRY.
 
-        cl_abap_structdescr=>describe_by_name(
-          EXPORTING
-            p_name      = i_tabname
-          RECEIVING
-            p_descr_ref = type_description
-          EXCEPTIONS
-            OTHERS      = 0 ).
+        cl_abap_structdescr=>describe_by_name( EXPORTING  p_name      = i_tabname
+                                               RECEIVING  p_descr_ref = type_description
+                                               EXCEPTIONS OTHERS      = 0 ).
 
         struc_description ?= type_description.
-        struc_description->get_component_type(
-          EXPORTING
-            p_name      = i_fieldname
-          RECEIVING
-            p_descr_ref = type_description
-          EXCEPTIONS
-            OTHERS      = 0 ).
+        struc_description->get_component_type( EXPORTING  p_name      = i_fieldname
+                                               RECEIVING  p_descr_ref = type_description
+                                               EXCEPTIONS OTHERS      = 0 ).
 
-        IF type_description->kind EQ cl_abap_typedescr=>kind_elem.
+        IF type_description->kind = cl_abap_typedescr=>kind_elem.
           r_result ?= type_description.
         ELSE.
           ASSERT ID /usi/bal_log_writer
-            FIELDS type_description->kind
-            CONDITION 1 EQ 0.
+                 FIELDS type_description->kind
+                 CONDITION 1 = 0.
 
           RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-            EXPORTING
-              textid = /usi/cx_bal_invalid_input=>unsupported_field_type.
+            EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_field_type.
         ENDIF.
 
       CATCH cx_sy_move_cast_error
@@ -269,13 +214,12 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
+                    previous = exception.
 
     ENDTRY.
   ENDMETHOD.
@@ -287,24 +231,19 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
     TRY.
 
-        cl_abap_elemdescr=>describe_by_name(
-          EXPORTING
-            p_name      = i_type_name
-          RECEIVING
-            p_descr_ref = type_description
-          EXCEPTIONS
-            OTHERS      = 0 ).
+        cl_abap_elemdescr=>describe_by_name( EXPORTING  p_name      = i_type_name
+                                             RECEIVING  p_descr_ref = type_description
+                                             EXCEPTIONS OTHERS      = 0 ).
 
-        IF type_description->kind EQ cl_abap_typedescr=>kind_elem.
+        IF type_description->kind = cl_abap_typedescr=>kind_elem.
           r_result ?= type_description.
         ELSE.
           ASSERT ID /usi/bal_log_writer
-            FIELDS type_description->kind
-            CONDITION 1 EQ 0.
+                 FIELDS type_description->kind
+                 CONDITION 1 = 0.
 
           RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-            EXPORTING
-              textid = /usi/cx_bal_invalid_input=>unsupported_field_type.
+            EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_field_type.
         ENDIF.
 
       CATCH cx_sy_move_cast_error
@@ -312,13 +251,12 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
+                    previous = exception.
 
     ENDTRY.
   ENDMETHOD.
@@ -397,13 +335,12 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_field_type
+                    previous = exception.
 
     ENDTRY.
   ENDMETHOD.
@@ -420,87 +357,72 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
       CATCH cx_sy_type_creation INTO exception.
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
 
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_normalized_line_type_desc.
-    DATA: components            TYPE abap_component_tab,
-          component             TYPE abap_componentdescr,
-          exception             TYPE REF TO cx_root,
-          exception_text        TYPE string,
-          structure_description TYPE REF TO cl_abap_structdescr.
-
     TRY.
         CASE i_line_type_description->kind.
           WHEN cl_abap_typedescr=>kind_struct.
-            IF i_line_type_description->type_kind EQ cl_abap_typedescr=>typekind_struct1.
+            IF i_line_type_description->type_kind = cl_abap_typedescr=>typekind_struct1.
               r_result ?= i_line_type_description.
             ELSE.
-              structure_description ?= i_line_type_description.
-              r_result = remove_non_elementary_fields( structure_description ).
+              r_result = remove_non_elementary_fields( CAST #( i_line_type_description ) ).
             ENDIF.
 
           WHEN cl_abap_typedescr=>kind_elem.
-            component-name  = 'COLUMN_1'.
-            component-type ?= i_line_type_description.
-            INSERT component INTO TABLE components.
-            r_result = cl_abap_structdescr=>get( components ).
+            r_result = cl_abap_structdescr=>get( VALUE #( ( name = 'COLUMN_1'
+                                                            type = CAST #( i_line_type_description ) ) ) ).
 
           WHEN OTHERS.
             ASSERT ID /usi/bal_log_writer
-              FIELDS i_line_type_description->kind
-              CONDITION 1 EQ 0.
+                   FIELDS i_line_type_description->kind
+                   CONDITION 1 = 0.
 
             RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-              EXPORTING
-                textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-                previous = exception.
+              EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
         ENDCASE.
 
       CATCH cx_sy_ref_is_initial
             cx_sy_type_creation
-            cx_sy_move_cast_error INTO exception.
+            cx_sy_move_cast_error INTO DATA(exception).
 
-        exception_text = exception->get_text( ).
+        DATA(exception_text) = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
     ENDTRY.
   ENDMETHOD.
 
   METHOD remove_non_elementary_fields.
     DATA: data_description  TYPE REF TO cl_abap_datadescr,
-          exception         TYPE REF TO cx_root,
+          exception         TYPE REF TO cx_sy_struct_creation,
           exception_text    TYPE string,
           source_component  TYPE REF TO abap_compdescr,
-          target_component  TYPE abap_componentdescr,
           target_components TYPE abap_component_tab.
 
     LOOP AT i_line_type_description->components REFERENCE INTO source_component.
       data_description = i_line_type_description->get_component_type( source_component->name ).
+      IF data_description->kind <> cl_abap_typedescr=>kind_elem.
+        CONTINUE.
+      ENDIF.
 
-      CHECK data_description->kind EQ cl_abap_typedescr=>kind_elem.
-
-      CLEAR target_component.
-      target_component-name = source_component->name.
-      target_component-type = data_description.
-      INSERT target_component INTO TABLE target_components.
+      INSERT VALUE #( name = source_component->name
+                      type = data_description ) INTO TABLE target_components.
     ENDLOOP.
 
-    IF lines( i_line_type_description->components ) EQ lines( target_components ).
+    IF lines( i_line_type_description->components ) = lines( target_components ).
       r_result = i_line_type_description.
     ELSE.
       TRY.
@@ -508,13 +430,12 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
         CATCH cx_sy_struct_creation INTO exception.
           exception_text = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
-            FIELDS exception_text
-            CONDITION 1 EQ 0.
+                 FIELDS exception_text
+                 CONDITION 1 = 0.
 
           RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-            EXPORTING
-              textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-              previous = exception.
+            EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                      previous = exception.
       ENDTRY.
     ENDIF.
   ENDMETHOD.
@@ -534,30 +455,26 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
           field_description TYPE lvc_s_fcat,
           ddic_description  TYPE dfies.
 
-    FIELD-SYMBOLS <component> TYPE abap_compdescr.
-
     IF buffers-fieldcatalog IS NOT BOUND.
       CREATE DATA buffers-fieldcatalog.
 
-      IF type_descriptions-line->is_ddic_type( ) EQ abap_true.
+      IF type_descriptions-line->is_ddic_type( ) = abap_true.
         tabname = type_descriptions-line->get_relative_name( ).
         CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
-          EXPORTING
-            i_structure_name = tabname
-          CHANGING
-            ct_fieldcat      = buffers-fieldcatalog->*
-          EXCEPTIONS
-            OTHERS           = 0.
+          EXPORTING  i_structure_name = tabname
+          CHANGING   ct_fieldcat      = buffers-fieldcatalog->*
+          EXCEPTIONS OTHERS           = 0.
+
+        LOOP AT buffers-fieldcatalog->* REFERENCE INTO DATA(field).
+          CLEAR field->no_out.
+          CLEAR field->tech.
+        ENDLOOP.
 
       ELSE.
-        LOOP AT type_descriptions-line->components ASSIGNING <component>.
-          type_descriptions-line->get_component_type(
-            EXPORTING
-              p_name      = <component>-name
-            RECEIVING
-              p_descr_ref = data_description
-            EXCEPTIONS
-              OTHERS      = 0 ).
+        LOOP AT type_descriptions-line->components ASSIGNING FIELD-SYMBOL(<component>).
+          type_descriptions-line->get_component_type( EXPORTING  p_name      = <component>-name
+                                                      RECEIVING  p_descr_ref = data_description
+                                                      EXCEPTIONS OTHERS      = 0 ).
           TRY.
               elem_description ?= data_description.
             CATCH cx_sy_move_cast_error.
@@ -570,12 +487,9 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
           field_description-decimals  = <component>-decimals.
           field_description-outputlen = elem_description->output_length.
 
-          IF elem_description->is_ddic_type( ) EQ abap_true.
-            elem_description->get_ddic_field(
-              RECEIVING
-                p_flddescr = ddic_description
-              EXCEPTIONS
-                OTHERS     = 0 ).
+          IF elem_description->is_ddic_type( ) = abap_true.
+            elem_description->get_ddic_field( RECEIVING  p_flddescr = ddic_description
+                                              EXCEPTIONS OTHERS     = 0 ).
 
             field_description-intlen     = ddic_description-leng.
             field_description-domname    = ddic_description-domname.
@@ -597,11 +511,11 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
           ELSE.
             field_description-coltext = <component>-name.
             field_description-seltext = <component>-name.
-            IF <component>-type_kind EQ cl_abap_typedescr=>typekind_char
-                OR <component>-type_kind EQ cl_abap_typedescr=>typekind_hex
-                OR <component>-type_kind EQ cl_abap_typedescr=>typekind_num
-                OR <component>-type_kind EQ cl_abap_typedescr=>typekind_packed.
-              field_description-intlen  = <component>-length.
+            IF    <component>-type_kind = cl_abap_typedescr=>typekind_char
+               OR <component>-type_kind = cl_abap_typedescr=>typekind_hex
+               OR <component>-type_kind = cl_abap_typedescr=>typekind_num
+               OR <component>-type_kind = cl_abap_typedescr=>typekind_packed.
+              field_description-intlen = <component>-length.
             ENDIF.
 
           ENDIF.
@@ -615,28 +529,25 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_tabname.
-    IF type_descriptions-line->is_ddic_type( ) EQ abap_true.
+    IF type_descriptions-line->is_ddic_type( ) = abap_true.
       r_result = type_descriptions-line->get_relative_name( ).
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>generic_not_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
 
+
 CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     METHODS constructor
-      IMPORTING
-        i_source_table_ref TYPE REF TO data
-        i_target_table_ref TYPE REF TO data
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_source_table_ref TYPE REF TO data
+                i_target_table_ref TYPE REF TO data
+      RAISING   /usi/cx_bal_root.
 
     METHODS copy_table_contents
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
 
   PRIVATE SECTION.
     DATA: BEGIN OF source_table,
@@ -652,21 +563,17 @@ CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
           END   OF target_table.
 
     METHODS get_table_type_description
-      IMPORTING
-        i_table_ref     TYPE REF TO data
-      RETURNING
-        VALUE(r_result) TYPE REF TO cl_abap_tabledescr
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_table_ref     TYPE REF TO data
+      RETURNING VALUE(r_result) TYPE REF TO cl_abap_tabledescr
+      RAISING   /usi/cx_bal_root.
 
     METHODS copy_elementary_to_structured
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
 
     METHODS copy_structured_to_structured
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
 ENDCLASS.
+
 
 CLASS lcl_table_content_copier IMPLEMENTATION.
   METHOD constructor.
@@ -680,34 +587,27 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
         target_table-line_type ?= target_table-table_type->get_table_line_type( ).
       CATCH cx_sy_move_cast_error.
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
+          EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_table_type_description.
     DATA type_description TYPE REF TO cl_abap_typedescr.
 
-    cl_abap_typedescr=>describe_by_data_ref(
-      EXPORTING
-        p_data_ref           = i_table_ref
-      RECEIVING
-        p_descr_ref          = type_description
-      EXCEPTIONS
-        reference_is_initial = 1
-        OTHERS               = 2 ).
-    IF sy-subrc NE 0.
+    cl_abap_typedescr=>describe_by_data_ref( EXPORTING  p_data_ref           = i_table_ref
+                                             RECEIVING  p_descr_ref          = type_description
+                                             EXCEPTIONS reference_is_initial = 1
+                                                        OTHERS               = 2 ).
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING
-          textid = /usi/cx_bal_invalid_input=>itab_required.
+        EXPORTING textid = /usi/cx_bal_invalid_input=>itab_required.
     ENDIF.
 
     TRY.
         r_result ?= type_description.
       CATCH cx_sy_move_cast_error.
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid = /usi/cx_bal_invalid_input=>itab_required.
+          EXPORTING textid = /usi/cx_bal_invalid_input=>itab_required.
     ENDTRY.
   ENDMETHOD.
 
@@ -721,8 +621,7 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
 
       WHEN OTHERS.
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
+          EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
 
     ENDCASE.
   ENDMETHOD.
@@ -740,7 +639,7 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     ASSIGN source_table-content->* TO <source_table>.
     ASSIGN target_table-content->* TO <target_table>.
 
-    READ TABLE target_table-line_type->components INDEX 1 ASSIGNING <target_component>.
+    ASSIGN target_table-line_type->components[ 1 ] TO <target_component>.
     CREATE DATA target_line TYPE HANDLE target_table-line_type.
     ASSIGN target_line->* TO <target_line>.
     ASSIGN COMPONENT <target_component>-name OF STRUCTURE <target_line> TO <target_field>.
@@ -764,7 +663,7 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     ASSIGN target_table-content->* TO <target_table>.
 
     source_line_type ?= source_table-line_type.
-    IF target_table-line_type->components EQ source_line_type->components.
+    IF target_table-line_type->components = source_line_type->components.
       <target_table> = <source_table>.
 
     ELSE.
@@ -780,6 +679,7 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+
 CLASS lcl_persistency_flavor_enum DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     TYPES ty_persistency_flavor TYPE n LENGTH 2.
@@ -794,16 +694,12 @@ CLASS lcl_persistency_flavor_enum DEFINITION FINAL CREATE PRIVATE.
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS get_by_value
-      IMPORTING
-        i_value         TYPE ty_persistency_flavor
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_persistency_flavor_enum
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_value         TYPE ty_persistency_flavor
+      RETURNING VALUE(r_result) TYPE REF TO lcl_persistency_flavor_enum
+      RAISING   /usi/cx_bal_root.
 
     METHODS constructor
-      IMPORTING
-        i_value TYPE ty_persistency_flavor.
+      IMPORTING i_value TYPE ty_persistency_flavor.
 
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_instance,
@@ -815,29 +711,21 @@ CLASS lcl_persistency_flavor_enum DEFINITION FINAL CREATE PRIVATE.
     CLASS-DATA instances TYPE ty_instances.
 
     CLASS-METHODS buffer_instance
-      IMPORTING
-        i_value    TYPE ty_persistency_flavor
-        i_instance TYPE REF TO lcl_persistency_flavor_enum.
+      IMPORTING i_value    TYPE ty_persistency_flavor
+                i_instance TYPE REF TO lcl_persistency_flavor_enum.
 
 ENDCLASS.
 
+
 CLASS lcl_persistency_flavor_enum IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT tabname_xml
-      EXPORTING
-        i_value = 1.
+    tabname_xml = NEW #( i_value = 1 ).
 
-    CREATE OBJECT fieldcatalog_xml
-      EXPORTING
-        i_value = 2.
+    fieldcatalog_xml = NEW #( i_value = 2 ).
 
-    CREATE OBJECT tabname_json
-      EXPORTING
-        i_value = 3.
+    tabname_json = NEW #( i_value = 3 ).
 
-    CREATE OBJECT fieldcatalog_json
-      EXPORTING
-        i_value = 4.
+    fieldcatalog_json = NEW #( i_value = 4 ).
 
     " For the sake of backwards compatibility
     "   (Previous versions used flavor 1, but since they
@@ -866,15 +754,15 @@ CLASS lcl_persistency_flavor_enum IMPLEMENTATION.
     DATA instance TYPE REF TO ty_instance.
 
     READ TABLE instances REFERENCE INTO instance WITH TABLE KEY value = i_value.
-    IF sy-subrc EQ 0.
+    IF sy-subrc = 0.
       r_result = instance->instance.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING
-          textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
+        EXPORTING textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
+
 
 INTERFACE lif_persistency_constants.
   TYPES ty_parameter_name TYPE string.
@@ -893,48 +781,43 @@ INTERFACE lif_persistency_constants.
 
 ENDINTERFACE.
 
+
 INTERFACE lif_serializer.
   INTERFACES lif_persistency_constants.
 
   METHODS serialize
-    RETURNING
-      VALUE(r_result) TYPE /usi/bal_serialized_data
-    RAISING
-      /usi/cx_bal_root.
+    RETURNING VALUE(r_result) TYPE /usi/bal_serialized_data
+    RAISING   /usi/cx_bal_root.
 
 ENDINTERFACE.
+
 
 INTERFACE lif_deserializer.
   INTERFACES lif_persistency_constants.
 
   METHODS get_internal_table
-    RETURNING
-      VALUE(r_result) TYPE REF TO data.
+    RETURNING VALUE(r_result) TYPE REF TO data.
 
   METHODS get_external_fieldcatalog
-    RETURNING
-      VALUE(r_result) TYPE lvc_t_fcat
-    RAISING
-      /usi/cx_bal_root.
+    RETURNING VALUE(r_result) TYPE lvc_t_fcat
+    RAISING   /usi/cx_bal_root.
 
   METHODS get_title
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_text_container_c40
-    RAISING
-      /usi/cx_bal_root.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_text_container_c40
+    RAISING   /usi/cx_bal_root.
 
 ENDINTERFACE.
+
 
 CLASS lcl_serializer DEFINITION FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES lif_serializer.
 
     METHODS constructor
-      IMPORTING
-        i_table_reference       TYPE REF TO data
-        i_table_descriptor      TYPE REF TO lcl_table_descriptor
-        i_external_fieldcatalog TYPE lvc_t_fcat OPTIONAL
-        i_title                 TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
+      IMPORTING i_table_reference       TYPE REF TO data
+                i_table_descriptor      TYPE REF TO lcl_table_descriptor
+                i_external_fieldcatalog TYPE lvc_t_fcat                            OPTIONAL
+                i_title                 TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
 
   PRIVATE SECTION.
     DATA: BEGIN OF input,
@@ -947,32 +830,28 @@ CLASS lcl_serializer DEFINITION FINAL CREATE PUBLIC.
           serializer         TYPE REF TO /usi/cl_bal_serializer.
 
     METHODS get_persistency_flavor
-      RETURNING
-        VALUE(r_result) TYPE REF TO lcl_persistency_flavor_enum.
+      RETURNING VALUE(r_result) TYPE REF TO lcl_persistency_flavor_enum.
 
     METHODS serialize_persistency_flavor
-      RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+      RETURNING VALUE(r_result) TYPE abap_trans_srcbind_tab.
 
     METHODS serialize_table_descriptor
-      RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab
-      RAISING
-        /usi/cx_bal_root.
+      RETURNING VALUE(r_result) TYPE abap_trans_srcbind_tab
+      RAISING   /usi/cx_bal_root.
 
     METHODS serialize_table_data
-      RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+      RETURNING VALUE(r_result) TYPE abap_trans_srcbind_tab
+      RAISING   /usi/cx_bal_root.
 
     METHODS serialize_external_fieldcat
-      RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+      RETURNING VALUE(r_result) TYPE abap_trans_srcbind_tab
+      RAISING   /usi/cx_bal_root.
 
     METHODS serialize_title
-      RETURNING
-        VALUE(r_result) TYPE abap_trans_srcbind_tab.
+      RETURNING VALUE(r_result) TYPE abap_trans_srcbind_tab.
 
 ENDCLASS.
+
 
 CLASS lcl_serializer IMPLEMENTATION.
   METHOD constructor.
@@ -983,7 +862,7 @@ CLASS lcl_serializer IMPLEMENTATION.
 
     persistency_flavor = get_persistency_flavor( ).
 
-    CREATE OBJECT serializer.
+    serializer = NEW #( ).
   ENDMETHOD.
 
   METHOD get_persistency_flavor.
@@ -1058,8 +937,8 @@ CLASS lcl_serializer IMPLEMENTATION.
       WHEN lcl_persistency_flavor_enum=>fieldcatalog_json.
         fieldcatalog = input-table_descriptor->get_fieldcatalog( ).
         serialized_fieldcatalog = serializer->serialize_field_as_json(
-                                        i_data = fieldcatalog
-                                        i_name = lif_persistency_constants~c_parameter_names-internal_fieldcatalog ).
+                                      i_data = fieldcatalog
+                                      i_name = lif_persistency_constants~c_parameter_names-internal_fieldcatalog ).
 
         result_line-name = lif_persistency_constants~c_parameter_names-internal_fieldcatalog.
         CREATE DATA result_line-value TYPE /usi/bal_json_string.
@@ -1082,11 +961,11 @@ CLASS lcl_serializer IMPLEMENTATION.
     CREATE DATA parameter-value TYPE /usi/bal_json_string.
     ASSIGN parameter-value->* TO <internal_table_json>.
 
-    CREATE OBJECT json_converter.
+    json_converter = NEW #( ).
     ASSIGN input-table_reference->* TO <internal_table_data>.
     <internal_table_json> = json_converter->serialize_field_as_json(
-                                  i_name = lif_persistency_constants~c_parameter_names-internal_table
-                                  i_data = <internal_table_data> ).
+                                i_name = lif_persistency_constants~c_parameter_names-internal_table
+                                i_data = <internal_table_data> ).
 
     INSERT parameter INTO TABLE r_result.
   ENDMETHOD.
@@ -1105,10 +984,10 @@ CLASS lcl_serializer IMPLEMENTATION.
     CREATE DATA result_line-value TYPE /usi/bal_json_string.
     ASSIGN result_line-value->* TO <fieldcatalog>.
 
-    CREATE OBJECT json_converter.
+    json_converter = NEW #( ).
     <fieldcatalog> = json_converter->serialize_field_as_json(
-                          i_name = lif_persistency_constants~c_parameter_names-external_fieldcatalog
-                          i_data = input-external_fieldcatalog ).
+                         i_name = lif_persistency_constants~c_parameter_names-external_fieldcatalog
+                         i_data = input-external_fieldcatalog ).
 
     INSERT result_line INTO TABLE r_result.
   ENDMETHOD.
@@ -1119,33 +998,34 @@ CLASS lcl_serializer IMPLEMENTATION.
     FIELD-SYMBOLS: <classname>        TYPE /usi/bal_text_cont_classname,
                    <serialized_title> TYPE /usi/bal_xml_string.
 
-    IF input-title IS BOUND.
-      CLEAR result_line.
-      result_line-name = lif_persistency_constants~c_parameter_names-title_classname.
-      CREATE DATA result_line-value TYPE /usi/bal_text_cont_classname.
-      ASSIGN result_line-value->* TO <classname>.
-      <classname> = input-title->get_classname( ).
-      INSERT result_line INTO TABLE r_result.
-
-      CLEAR result_line.
-      result_line-name = lif_persistency_constants~c_parameter_names-serialized_title.
-      CREATE DATA result_line-value TYPE /usi/bal_xml_string.
-      ASSIGN result_line-value->* TO <serialized_title>.
-      <serialized_title> = input-title->serialize( ).
-      INSERT result_line INTO TABLE r_result.
+    IF input-title IS NOT BOUND.
+      RETURN.
     ENDIF.
+
+    CLEAR result_line.
+    result_line-name = lif_persistency_constants~c_parameter_names-title_classname.
+    CREATE DATA result_line-value TYPE /usi/bal_text_cont_classname.
+    ASSIGN result_line-value->* TO <classname>.
+    <classname> = input-title->get_classname( ).
+    INSERT result_line INTO TABLE r_result.
+
+    CLEAR result_line.
+    result_line-name = lif_persistency_constants~c_parameter_names-serialized_title.
+    CREATE DATA result_line-value TYPE /usi/bal_xml_string.
+    ASSIGN result_line-value->* TO <serialized_title>.
+    <serialized_title> = input-title->serialize( ).
+    INSERT result_line INTO TABLE r_result.
   ENDMETHOD.
 ENDCLASS.
+
 
 CLASS lcl_deserializer DEFINITION FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES lif_deserializer.
 
     METHODS constructor
-      IMPORTING
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_serialized_data_container TYPE /usi/bal_serialized_data
+      RAISING   /usi/cx_bal_root.
 
   PRIVATE SECTION.
     DATA: BEGIN OF deserialized_data,
@@ -1158,54 +1038,40 @@ CLASS lcl_deserializer DEFINITION FINAL CREATE PUBLIC.
           deserializer TYPE REF TO /usi/cl_bal_serializer.
 
     METHODS get_persistency_flavor
-      IMPORTING
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-      RETURNING
-        VALUE(r_result)             TYPE REF TO lcl_persistency_flavor_enum
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_serialized_data_container TYPE /usi/bal_serialized_data
+      RETURNING VALUE(r_result)             TYPE REF TO lcl_persistency_flavor_enum
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_table_descriptor
-      IMPORTING
-        i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-      RETURNING
-        VALUE(r_result)             TYPE REF TO lcl_table_descriptor
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
+                i_serialized_data_container TYPE /usi/bal_serialized_data
+      RETURNING VALUE(r_result)             TYPE REF TO lcl_table_descriptor
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_table_data
-      IMPORTING
-        i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-        i_table_descriptor          TYPE REF TO lcl_table_descriptor
-      RETURNING
-        VALUE(r_result)             TYPE REF TO data
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
+                i_serialized_data_container TYPE /usi/bal_serialized_data
+                i_table_descriptor          TYPE REF TO lcl_table_descriptor
+      RETURNING VALUE(r_result)             TYPE REF TO data
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_external_fieldcatalog
-      IMPORTING
-        i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-      RETURNING
-        VALUE(r_result)             TYPE lvc_t_fcat
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_persistency_flavor        TYPE REF TO lcl_persistency_flavor_enum
+                i_serialized_data_container TYPE /usi/bal_serialized_data
+      RETURNING VALUE(r_result)             TYPE lvc_t_fcat
+      RAISING   /usi/cx_bal_root.
 
     METHODS get_title
-      IMPORTING
-        i_serialized_data_container TYPE /usi/bal_serialized_data
-      RETURNING
-        VALUE(r_result)             TYPE REF TO /usi/if_bal_text_container_c40
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_serialized_data_container TYPE /usi/bal_serialized_data
+      RETURNING VALUE(r_result)             TYPE REF TO /usi/if_bal_text_container_c40
+      RAISING   /usi/cx_bal_root.
 
 ENDCLASS.
 
+
 CLASS lcl_deserializer IMPLEMENTATION.
   METHOD constructor.
-    CREATE OBJECT deserializer.
+    deserializer = NEW #( ).
 
     deserialized_data-persistency_flavor = get_persistency_flavor( i_serialized_data_container ).
     deserialized_data-table_descriptor   = get_table_descriptor(
@@ -1235,11 +1101,9 @@ CLASS lcl_deserializer IMPLEMENTATION.
     DATA persistency_flavor TYPE lcl_persistency_flavor_enum=>ty_persistency_flavor.
 
     deserializer->deserialize_field(
-      EXPORTING
-        i_serialized_data = i_serialized_data_container
-        i_name            = lif_persistency_constants~c_parameter_names-persistency_flavor
-      CHANGING
-        c_data            = persistency_flavor ).
+      EXPORTING i_serialized_data = i_serialized_data_container
+                i_name            = lif_persistency_constants~c_parameter_names-persistency_flavor
+      CHANGING  c_data            = persistency_flavor ).
 
     r_result = lcl_persistency_flavor_enum=>get_by_value( persistency_flavor ).
   ENDMETHOD.
@@ -1254,40 +1118,32 @@ CLASS lcl_deserializer IMPLEMENTATION.
           OR lcl_persistency_flavor_enum=>tabname_json.
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = i_serialized_data_container
-            i_name            = lif_persistency_constants~c_parameter_names-table_name
-          CHANGING
-            c_data            = tabname ).
+          EXPORTING i_serialized_data = i_serialized_data_container
+                    i_name            = lif_persistency_constants~c_parameter_names-table_name
+          CHANGING  c_data            = tabname ).
 
         r_result = lcl_table_descriptor=>get_by_tabname( tabname ).
 
       WHEN lcl_persistency_flavor_enum=>fieldcatalog_xml.
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = i_serialized_data_container
-            i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
-          CHANGING
-            c_data            = fieldcat ).
+          EXPORTING i_serialized_data = i_serialized_data_container
+                    i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
+          CHANGING  c_data            = fieldcat ).
 
         r_result = lcl_table_descriptor=>get_by_fieldcatalog( fieldcat ).
 
       WHEN lcl_persistency_flavor_enum=>fieldcatalog_json.
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = i_serialized_data_container
-            i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
-          CHANGING
-            c_data            = json_string ).
+          EXPORTING i_serialized_data = i_serialized_data_container
+                    i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
+          CHANGING  c_data            = json_string ).
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = json_string
-            i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
-          CHANGING
-            c_data            = fieldcat ).
+          EXPORTING i_serialized_data = json_string
+                    i_name            = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
+          CHANGING  c_data            = fieldcat ).
 
         r_result = lcl_table_descriptor=>get_by_fieldcatalog( fieldcat ).
 
@@ -1311,21 +1167,16 @@ CLASS lcl_deserializer IMPLEMENTATION.
 
     ENDCASE.
 
-    deserializer->deserialize_field(
-      EXPORTING
-        i_serialized_data = i_serialized_data_container
-        i_name            = fieldname
-      CHANGING
-        c_data            = serialized_table_data ).
+    deserializer->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
+                                               i_name            = fieldname
+                                     CHANGING  c_data            = serialized_table_data ).
 
     r_result = i_table_descriptor->get_table_type_dref( ).
     ASSIGN r_result->* TO <internal_table_data>.
     deserializer->deserialize_field(
-      EXPORTING
-        i_name            = lif_persistency_constants~c_parameter_names-internal_table
-        i_serialized_data = serialized_table_data
-      CHANGING
-        c_data            = <internal_table_data> ).
+      EXPORTING i_name            = lif_persistency_constants~c_parameter_names-internal_table
+                i_serialized_data = serialized_table_data
+      CHANGING  c_data            = <internal_table_data> ).
   ENDMETHOD.
 
   METHOD get_external_fieldcatalog.
@@ -1336,30 +1187,24 @@ CLASS lcl_deserializer IMPLEMENTATION.
           OR lcl_persistency_flavor_enum=>tabname_xml.
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = i_serialized_data_container
-            i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
-          CHANGING
-            c_data            = r_result ).
+          EXPORTING i_serialized_data = i_serialized_data_container
+                    i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
+          CHANGING  c_data            = r_result ).
         RETURN.
 
       WHEN lcl_persistency_flavor_enum=>fieldcatalog_json
           OR lcl_persistency_flavor_enum=>tabname_json.
 
         deserializer->deserialize_field(
-          EXPORTING
-            i_serialized_data = i_serialized_data_container
-            i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
-          CHANGING
-            c_data            = serialized_fieldcatalog ).
+          EXPORTING i_serialized_data = i_serialized_data_container
+                    i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
+          CHANGING  c_data            = serialized_fieldcatalog ).
 
         IF serialized_fieldcatalog IS NOT INITIAL.
           deserializer->deserialize_field(
-            EXPORTING
-              i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
-              i_serialized_data = serialized_fieldcatalog
-            CHANGING
-              c_data            = r_result ).
+            EXPORTING i_name            = lif_persistency_constants~c_parameter_names-external_fieldcatalog
+                      i_serialized_data = serialized_fieldcatalog
+            CHANGING  c_data            = r_result ).
         ENDIF.
 
     ENDCASE.
@@ -1386,29 +1231,25 @@ CLASS lcl_deserializer IMPLEMENTATION.
 
     IF classname IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>generic_not_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
 
     TRY.
         CALL METHOD (classname)=>/usi/if_bal_text_container_c40~deserialize
-          EXPORTING
-            i_serialized_text_container = serialized_title
-          RECEIVING
-            r_result                    = r_result.
+          EXPORTING i_serialized_text_container = serialized_title
+          RECEIVING r_result                    = r_result.
 
       CATCH cx_sy_dyn_call_error
             /usi/cx_bal_root INTO exception.
 
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
-          FIELDS exception_text
-          CONDITION 1 EQ 0.
+               FIELDS exception_text
+               CONDITION 1 = 0.
 
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-          EXPORTING
-            textid   = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input
-            previous = exception.
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input
+                    previous = exception.
     ENDTRY.
   ENDMETHOD.
 
@@ -1417,8 +1258,7 @@ CLASS lcl_deserializer IMPLEMENTATION.
       r_result = deserialized_data-external_fieldcatalog.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>generic_not_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
   ENDMETHOD.
 
@@ -1431,11 +1271,11 @@ CLASS lcl_deserializer IMPLEMENTATION.
       r_result = deserialized_data-title.
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>generic_not_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
+
 
 CLASS lcl_fieldcatalog_name_enum DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
@@ -1450,24 +1290,18 @@ CLASS lcl_fieldcatalog_name_enum DEFINITION FINAL CREATE PRIVATE.
     CLASS-METHODS class_constructor.
 
     METHODS constructor
-      IMPORTING
-        i_fieldcatalog_name TYPE ty_fieldcatalog_name.
+      IMPORTING i_fieldcatalog_name TYPE ty_fieldcatalog_name.
 
 ENDCLASS.
 
+
 CLASS lcl_fieldcatalog_name_enum IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT external
-      EXPORTING
-        i_fieldcatalog_name = 'EXTERNAL'.
+    external = NEW #( i_fieldcatalog_name = 'EXTERNAL' ).
 
-    CREATE OBJECT internal
-      EXPORTING
-        i_fieldcatalog_name = 'INTERNAL'.
+    internal = NEW #( i_fieldcatalog_name = 'INTERNAL' ).
 
-    CREATE OBJECT technical
-      EXPORTING
-        i_fieldcatalog_name = 'TECHNICAL'.
+    technical = NEW #( i_fieldcatalog_name = 'TECHNICAL' ).
   ENDMETHOD.
 
   METHOD constructor.
@@ -1475,24 +1309,20 @@ CLASS lcl_fieldcatalog_name_enum IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+
 CLASS lcl_fieldcatalog_collection DEFINITION FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     METHODS constructor
-      IMPORTING
-        i_table_descriptor      TYPE REF TO lcl_table_descriptor
-        i_external_fieldcatalog TYPE lvc_t_fcat OPTIONAL.
+      IMPORTING i_table_descriptor      TYPE REF TO lcl_table_descriptor
+                i_external_fieldcatalog TYPE lvc_t_fcat OPTIONAL.
 
     METHODS get_fieldcatalog
-      IMPORTING
-        i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
-      RETURNING
-        VALUE(r_result)     TYPE lvc_t_fcat.
+      IMPORTING i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
+      RETURNING VALUE(r_result)     TYPE lvc_t_fcat.
 
     METHODS has_fieldcatalog
-      IMPORTING
-        i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
-      RETURNING
-        VALUE(r_result)     TYPE abap_bool.
+      IMPORTING i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
+      RETURNING VALUE(r_result)     TYPE abap_bool.
 
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_fieldcatalog,
@@ -1504,17 +1334,15 @@ CLASS lcl_fieldcatalog_collection DEFINITION FINAL CREATE PUBLIC.
     DATA fieldcatalogs TYPE ty_fieldcatalogs.
 
     METHODS insert_fieldcatalog
-      IMPORTING
-        i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
-        i_fieldcatalog      TYPE lvc_t_fcat.
+      IMPORTING i_fieldcatalog_name TYPE REF TO lcl_fieldcatalog_name_enum
+                i_fieldcatalog      TYPE lvc_t_fcat.
 
     METHODS merge_technical_fieldcatalog
-      IMPORTING
-        i_table_descriptor TYPE REF TO lcl_table_descriptor
-      RETURNING
-        VALUE(r_result)    TYPE lvc_t_fcat.
+      IMPORTING i_table_descriptor TYPE REF TO lcl_table_descriptor
+      RETURNING VALUE(r_result)    TYPE lvc_t_fcat.
 
 ENDCLASS.
+
 
 CLASS lcl_fieldcatalog_collection IMPLEMENTATION.
   METHOD constructor.
@@ -1556,7 +1384,7 @@ CLASS lcl_fieldcatalog_collection IMPLEMENTATION.
     DATA fieldcatalog TYPE REF TO ty_fieldcatalog.
 
     READ TABLE fieldcatalogs WITH TABLE KEY name = i_fieldcatalog_name->value REFERENCE INTO fieldcatalog.
-    IF sy-subrc EQ 0.
+    IF sy-subrc = 0.
       r_result = fieldcatalog->fieldcatalog.
     ELSE.
       r_result = get_fieldcatalog( lcl_fieldcatalog_name_enum=>internal ).
@@ -1564,22 +1392,18 @@ CLASS lcl_fieldcatalog_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD has_fieldcatalog.
-    READ TABLE fieldcatalogs TRANSPORTING NO FIELDS WITH KEY name = i_fieldcatalog_name->value.
-    IF sy-subrc EQ 0.
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( line_exists( fieldcatalogs[ name = i_fieldcatalog_name->value ] ) ).
   ENDMETHOD.
 ENDCLASS.
+
 
 CLASS lcl_grid_control DEFINITION FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     METHODS constructor
-      IMPORTING
-        i_container               TYPE REF TO cl_gui_container
-        i_fieldcatalog_collection TYPE REF TO lcl_fieldcatalog_collection
-        i_internal_table_ref      TYPE REF TO data
-      RAISING
-        /usi/cx_bal_root.
+      IMPORTING i_container               TYPE REF TO cl_gui_container
+                i_fieldcatalog_collection TYPE REF TO lcl_fieldcatalog_collection
+                i_internal_table_ref      TYPE REF TO data
+      RAISING   /usi/cx_bal_root.
 
     METHODS display.
 
@@ -1604,31 +1428,28 @@ CLASS lcl_grid_control DEFINITION FINAL CREATE PUBLIC.
           END   OF grid.
 
     METHODS get_excluded_functions
-      RETURNING
-        VALUE(r_result) TYPE ui_functions.
+      RETURNING VALUE(r_result) TYPE ui_functions.
 
     METHODS get_layout
-      RETURNING
-        VALUE(r_result) TYPE lvc_s_layo.
+      RETURNING VALUE(r_result) TYPE lvc_s_layo.
 
     METHODS on_alv_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
-      IMPORTING
-        e_object.
+      IMPORTING e_object.
 
     METHODS on_alv_user_command FOR EVENT user_command OF cl_gui_alv_grid
-      IMPORTING
-        e_ucomm.
+      IMPORTING e_ucomm.
 
     METHODS refresh_screen.
 
 ENDCLASS.
+
 
 CLASS lcl_grid_control IMPLEMENTATION.
   METHOD constructor.
     input-fieldcatalog_collection = i_fieldcatalog_collection.
     input-internal_table_ref      = i_internal_table_ref.
 
-    IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) EQ abap_true.
+    IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true.
       grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>external.
     ELSE.
       grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>internal.
@@ -1638,10 +1459,8 @@ CLASS lcl_grid_control IMPLEMENTATION.
     grid-layout             = get_layout( ).
 
     CREATE OBJECT grid-instance
-      EXPORTING
-        i_parent = i_container
-      EXCEPTIONS
-        OTHERS   = 0.
+      EXPORTING  i_parent = i_container
+      EXCEPTIONS OTHERS   = 0.
 
     SET HANDLER on_alv_toolbar      FOR grid-instance.
     SET HANDLER on_alv_user_command FOR grid-instance.
@@ -1650,54 +1469,51 @@ CLASS lcl_grid_control IMPLEMENTATION.
   METHOD get_excluded_functions.
     INSERT cl_gui_alv_grid=>mc_fc_col_invisible   INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_col_optimize    INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_current_variant INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_fix_columns     INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_graph           INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_info            INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_loc_copy        INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_print           INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_sort            INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_fc_unfix_columns   INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_paste           INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_subtot          INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_sum             INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_variant         INTO TABLE r_result.
     INSERT cl_gui_alv_grid=>mc_mb_view            INTO TABLE r_result.
   ENDMETHOD.
 
   METHOD get_layout.
-    r_result-zebra       = abap_true.
-    r_result-cwidth_opt  = abap_true.
+    r_result-zebra      = abap_true.
+    r_result-cwidth_opt = abap_true.
   ENDMETHOD.
 
   METHOD on_alv_toolbar.
     DATA toolbar_button TYPE stb_button.
 
-    IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) EQ abap_true.
+    IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true.
       CLEAR toolbar_button.
       toolbar_button-function = c_user_commands-set_external_fcat.
-      IF grid-fieldcatalog_name EQ lcl_fieldcatalog_name_enum=>external.
+      IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>external.
         toolbar_button-disabled = abap_true.
       ENDIF.
-      toolbar_button-text     = 'External fieldcatalog'(b01).
+      toolbar_button-text = 'External fieldcatalog'(b01).
 
       INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
     ENDIF.
 
     CLEAR toolbar_button.
     toolbar_button-function = c_user_commands-set_internal_fcat.
-    IF grid-fieldcatalog_name EQ lcl_fieldcatalog_name_enum=>internal.
+    IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>internal.
       toolbar_button-disabled = abap_true.
     ENDIF.
-    toolbar_button-text     = 'Regular fieldcatalog'(b02).
+    toolbar_button-text = 'Regular fieldcatalog'(b02).
     INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
 
     CLEAR toolbar_button.
     toolbar_button-function = c_user_commands-set_technical_fcat.
-    IF grid-fieldcatalog_name EQ lcl_fieldcatalog_name_enum=>technical.
+    IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>technical.
       toolbar_button-disabled = abap_true.
     ENDIF.
-    toolbar_button-text     = 'Technical fieldnames'(b03).
+    toolbar_button-text = 'Technical fieldnames'(b03).
     INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
   ENDMETHOD.
 

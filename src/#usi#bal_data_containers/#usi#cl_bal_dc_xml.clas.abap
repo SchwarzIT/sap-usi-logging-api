@@ -9,32 +9,25 @@ CLASS /usi/cl_bal_dc_xml DEFINITION PUBLIC FINAL CREATE PUBLIC.
     "! @parameter i_xml_document   | XML-Document as string
     "! @parameter i_document_title | Optional: Document title (Useful, if multiple documents are appended)
     METHODS constructor
-      IMPORTING
-        i_xml_document   TYPE string
-        i_document_title TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
-
-  PROTECTED SECTION.
+      IMPORTING i_xml_document   TYPE string
+                i_document_title TYPE REF TO /usi/if_bal_text_container_c40 OPTIONAL.
 
   PRIVATE SECTION.
     TYPES: ty_xml_table_line TYPE c LENGTH 1000,
-           ty_xml_table      TYPE STANDARD TABLE OF ty_xml_table_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_xml_table      TYPE STANDARD TABLE OF ty_xml_table_line WITH EMPTY KEY.
 
     DATA: xml_document   TYPE string,
           document_title TYPE REF TO /usi/if_bal_text_container_c40,
           xml_table      TYPE ty_xml_table.
 
     METHODS get_xml_table
-      IMPORTING
-        i_xml_document  TYPE string
-      RETURNING
-        VALUE(r_result) TYPE ty_xml_table.
+      IMPORTING i_xml_document  TYPE string
+      RETURNING VALUE(r_result) TYPE ty_xml_table.
 
     METHODS raise_exception_on_subrc
-      RAISING
-        /usi/cx_bal_root.
+      RAISING /usi/cx_bal_root.
 
 ENDCLASS.
-
 
 
 CLASS /usi/cl_bal_dc_xml IMPLEMENTATION.
@@ -61,32 +54,28 @@ CLASS /usi/cl_bal_dc_xml IMPLEMENTATION.
     GET REFERENCE OF serialized_document_title INTO parameter-value.
     INSERT parameter INTO TABLE parameters.
 
-    CREATE OBJECT deserializer.
+    deserializer = NEW #( ).
     deserializer->deserialize_fields( i_serialized_data = i_serialized_data_container
                                       i_parameters      = parameters ).
 
     IF document_title_classname IS NOT INITIAL.
       TRY.
           CALL METHOD (document_title_classname)=>/usi/if_bal_text_container_c40~deserialize
-            EXPORTING
-              i_serialized_text_container = serialized_document_title
-            RECEIVING
-              r_result                    = document_title.
+            EXPORTING i_serialized_text_container = serialized_document_title
+            RECEIVING r_result                    = document_title.
         CATCH cx_sy_dyn_call_error
               /usi/cx_bal_root INTO exception.
           exception_text = exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
-            FIELDS exception_text
-            CONDITION exception IS NOT BOUND.
+                 FIELDS exception_text
+                 CONDITION exception IS NOT BOUND.
 
           CLEAR document_title.
       ENDTRY.
     ENDIF.
 
-    CREATE OBJECT r_result TYPE /usi/cl_bal_dc_xml
-      EXPORTING
-        i_xml_document   = xml_document
-        i_document_title = document_title.
+    r_result = NEW /usi/cl_bal_dc_xml( i_xml_document   = xml_document
+                                       i_document_title = document_title ).
   ENDMETHOD.
 
   METHOD constructor.
@@ -118,7 +107,7 @@ CLASS /usi/cl_bal_dc_xml IMPLEMENTATION.
     GET REFERENCE OF serialized_document_title INTO parameter-value.
     INSERT parameter INTO TABLE parameters.
 
-    CREATE OBJECT serializer.
+    serializer = NEW #( ).
     r_result = serializer->serialize_fields_as_json( parameters ).
   ENDMETHOD.
 
@@ -149,48 +138,38 @@ CLASS /usi/cl_bal_dc_xml IMPLEMENTATION.
           url           TYPE c LENGTH 1024.
 
     CREATE OBJECT xml_viewer
-      EXPORTING
-        parent             = i_container
-      EXCEPTIONS
-        cntl_error         = 1
-        cntl_install_error = 2
-        dp_install_error   = 3
-        dp_error           = 4
-        OTHERS             = 5.
-    IF sy-subrc NE 0.
+      EXPORTING  parent             = i_container
+      EXCEPTIONS cntl_error         = 1
+                 cntl_install_error = 2
+                 dp_install_error   = 3
+                 dp_error           = 4
+                 OTHERS             = 5.
+    IF sy-subrc <> 0.
       raise_exception_on_subrc( ).
     ENDIF.
 
     xml_table     = get_xml_table( xml_document ).
     document_size = strlen( xml_document ).
-    xml_viewer->load_data(
-      EXPORTING
-        subtype                = 'xml'
-        size                   = document_size
-      IMPORTING
-        assigned_url           = url
-      CHANGING
-        data_table             = xml_table
-      EXCEPTIONS
-        dp_invalid_parameter   = 1
-        dp_error_general       = 2
-        cntl_error             = 3
-        html_syntax_notcorrect = 4
-        OTHERS                 = 5 ).
-    IF sy-subrc NE 0.
+    xml_viewer->load_data( EXPORTING  subtype                = 'xml'
+                                      size                   = document_size
+                           IMPORTING  assigned_url           = url
+                           CHANGING   data_table             = xml_table
+                           EXCEPTIONS dp_invalid_parameter   = 1
+                                      dp_error_general       = 2
+                                      cntl_error             = 3
+                                      html_syntax_notcorrect = 4
+                                      OTHERS                 = 5 ).
+    IF sy-subrc <> 0.
       raise_exception_on_subrc( ).
     ENDIF.
 
-    xml_viewer->show_url(
-      EXPORTING
-        url                    = url
-      EXCEPTIONS
-        cntl_error             = 1
-        cnht_error_not_allowed = 2
-        cnht_error_parameter   = 3
-        dp_error_general       = 4
-        OTHERS                 = 5 ).
-    IF sy-subrc NE 0.
+    xml_viewer->show_url( EXPORTING  url                    = url
+                          EXCEPTIONS cntl_error             = 1
+                                     cnht_error_not_allowed = 2
+                                     cnht_error_parameter   = 3
+                                     dp_error_general       = 4
+                                     OTHERS                 = 5 ).
+    IF sy-subrc <> 0.
       raise_exception_on_subrc( ).
     ENDIF.
   ENDMETHOD.
@@ -211,21 +190,16 @@ CLASS /usi/cl_bal_dc_xml IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD raise_exception_on_subrc.
-    DATA textid TYPE scx_t100key.
-
-    textid-msgid = sy-msgid.
-    textid-msgno = sy-msgno.
-    textid-attr1 = 'PARAM1'.
-    textid-attr2 = 'PARAM2'.
-    textid-attr3 = 'PARAM3'.
-    textid-attr4 = 'PARAM4'.
-
     RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-      EXPORTING
-        textid = textid
-        param1 = sy-msgv1
-        param2 = sy-msgv2
-        param3 = sy-msgv3
-        param4 = sy-msgv4.
+      EXPORTING textid = VALUE #( msgid = sy-msgid
+                                  msgno = sy-msgno
+                                  attr1 = 'PARAM1'
+                                  attr2 = 'PARAM2'
+                                  attr3 = 'PARAM3'
+                                  attr4 = 'PARAM4' )
+                param1 = sy-msgv1
+                param2 = sy-msgv2
+                param3 = sy-msgv3
+                param4 = sy-msgv4.
   ENDMETHOD.
 ENDCLASS.

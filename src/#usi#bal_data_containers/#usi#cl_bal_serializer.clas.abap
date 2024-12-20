@@ -17,7 +17,9 @@ CLASS /usi/cl_bal_serializer DEFINITION PUBLIC FINAL CREATE PUBLIC.
         i_data          TYPE data
         i_name          TYPE abap_trans_srcname
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_json_string.
+        VALUE(r_result) TYPE /usi/bal_json_string
+      RAISING
+        /usi/cx_bal_root.
 
     "! <h1>Serialize multiple ABAP-Fields as JSON</h1>
     "!
@@ -34,7 +36,9 @@ CLASS /usi/cl_bal_serializer DEFINITION PUBLIC FINAL CREATE PUBLIC.
       IMPORTING
         i_parameters    TYPE abap_trans_srcbind_tab
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_json_string.
+        VALUE(r_result) TYPE /usi/bal_json_string
+      RAISING
+        /usi/cx_bal_root.
 
     "! <h1>Serialize single ABAP-Field as XML</h1>
     "!
@@ -53,7 +57,9 @@ CLASS /usi/cl_bal_serializer DEFINITION PUBLIC FINAL CREATE PUBLIC.
         i_data          TYPE data
         i_name          TYPE abap_trans_srcname
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_xml_string.
+        VALUE(r_result) TYPE /usi/bal_xml_string
+      RAISING
+        /usi/cx_bal_root.
 
     "! <h1>Serialize multiple ABAP-Fields as XML</h1>
     "!
@@ -70,7 +76,9 @@ CLASS /usi/cl_bal_serializer DEFINITION PUBLIC FINAL CREATE PUBLIC.
       IMPORTING
         i_parameters    TYPE abap_trans_srcbind_tab
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_xml_string.
+        VALUE(r_result) TYPE /usi/bal_xml_string
+      RAISING
+        /usi/cx_bal_root.
 
     "! <h1>Deserialize single ABAP-Field from JSON or XML</h1>
     "!
@@ -123,7 +131,15 @@ CLASS /usi/cl_bal_serializer DEFINITION PUBLIC FINAL CREATE PUBLIC.
         i_parameters    TYPE abap_trans_srcbind_tab
         i_stream_type   TYPE if_sxml=>xml_stream_type
       RETURNING
-        VALUE(r_result) TYPE /usi/bal_serialized_data.
+        VALUE(r_result) TYPE /usi/bal_serialized_data
+      RAISING
+        /usi/cx_bal_root.
+
+    METHODS raise_transformation_error
+      IMPORTING
+        i_previous TYPE REF TO cx_root
+      RAISING
+        /usi/cx_bal_root.
 
 ENDCLASS.
 
@@ -169,9 +185,13 @@ CLASS /usi/cl_bal_serializer IMPLEMENTATION.
 
     string_writer = cl_sxml_string_writer=>create( type     = i_stream_type
                                                    encoding = 'UTF-8' ).
-    CALL TRANSFORMATION id
-      SOURCE (i_parameters)
-      RESULT XML string_writer.
+    TRY.
+        CALL TRANSFORMATION id
+          SOURCE (i_parameters)
+          RESULT XML string_writer.
+      CATCH cx_root INTO DATA(transformation_error).
+        raise_transformation_error( transformation_error ).
+    ENDTRY.
     binary_data = string_writer->get_output( abap_false ).
 
     binary_to_char_converter = cl_abap_conv_in_ce=>create( encoding = 'UTF-8' ).
@@ -197,7 +217,6 @@ CLASS /usi/cl_bal_serializer IMPLEMENTATION.
   METHOD deserialize_fields.
     DATA: binary_data              TYPE xstring,
           char_to_binary_converter TYPE REF TO cl_abap_conv_out_ce,
-          exception                TYPE REF TO cx_transformation_error,
           string_reader            TYPE REF TO if_sxml_reader.
 
     char_to_binary_converter = cl_abap_conv_out_ce=>create( encoding = 'UTF-8' ).
@@ -213,11 +232,21 @@ CLASS /usi/cl_bal_serializer IMPLEMENTATION.
         CALL TRANSFORMATION id
           SOURCE XML string_reader
           RESULT (i_parameters).
-      CATCH cx_transformation_error INTO exception.
-        RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
-          EXPORTING
-            textid   = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch
-            previous = exception.
+      CATCH cx_root INTO DATA(transformation_error).
+        raise_transformation_error( transformation_error ).
     ENDTRY.
+  ENDMETHOD.
+
+  METHOD raise_transformation_error.
+    DATA(error_text) = i_previous->get_text( ).
+
+    ASSERT ID   /usi/bal_log_writer
+      FIELDS    error_text
+      CONDITION i_previous IS NOT BOUND.
+
+    RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+      EXPORTING
+        textid   = /usi/cx_bal_invalid_input=>transformation_error
+        previous = i_previous.
   ENDMETHOD.
 ENDCLASS.

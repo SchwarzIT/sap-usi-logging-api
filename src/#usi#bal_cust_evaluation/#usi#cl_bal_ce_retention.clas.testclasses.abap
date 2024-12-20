@@ -25,16 +25,15 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
     FIELD-SYMBOLS <mock_data_line> TYPE LINE OF /usi/if_bal_cd_retention=>ty_records.
 
     LOOP AT mock_data ASSIGNING <mock_data_line>
-        WHERE log_object IN i_log_object_range
-          AND sub_object IN i_sub_object_range
-          AND log_level  EQ i_log_level.
+         WHERE     log_object IN i_log_object_range
+               AND sub_object IN i_sub_object_range
+               AND log_level   = i_log_level.
       INSERT <mock_data_line> INTO TABLE r_result.
     ENDLOOP.
 
     IF r_result IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 
@@ -86,7 +85,7 @@ ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
-    CREATE OBJECT test_double_cust_dao.
+    test_double_cust_dao = NEW #( ).
     reset_cut( ).
   ENDMETHOD.
 
@@ -94,9 +93,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     DATA exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_customizing_dao = test_double_cust_dao.
+        cut = NEW #( i_customizing_dao = test_double_cust_dao ).
       CATCH /usi/cx_bal_root INTO exception.
         /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = exception
                                                                     i_quit      = if_aunit_constants=>method ).
@@ -196,7 +193,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
         r_result-retention_time = r_result-retention_time + 32769.
     ENDTRY.
 
-    r_result-no_early_delete = boolc( r_result-no_early_delete EQ abap_false ).
+    r_result-no_early_delete = boolc( r_result-no_early_delete = abap_false ).
   ENDMETHOD.
 
   METHOD assert_expected_result.

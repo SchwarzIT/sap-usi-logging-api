@@ -16,6 +16,12 @@
      <ENTRY>Delete orphan data container collections</ENTRY>
      <LENGTH>40</LENGTH>
     </item>
+    <item>
+     <ID>S</ID>
+     <KEY>PCKGSIZE</KEY>
+     <ENTRY>Package size</ENTRY>
+     <LENGTH>20</LENGTH>
+    </item>
    </TPOOL>
    <I18N_TPOOL>
     <item>
@@ -25,6 +31,12 @@
        <ID>R</ID>
        <ENTRY>Verwaiste Datencontainer-Collections löschen</ENTRY>
        <LENGTH>70</LENGTH>
+      </item>
+      <item>
+       <ID>S</ID>
+       <KEY>PCKGSIZE</KEY>
+       <ENTRY>Paketgröße</ENTRY>
+       <LENGTH>38</LENGTH>
       </item>
      </TEXTPOOL>
     </item>

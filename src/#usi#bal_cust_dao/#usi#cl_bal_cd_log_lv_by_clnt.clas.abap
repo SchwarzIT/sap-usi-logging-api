@@ -21,10 +21,9 @@ CLASS /usi/cl_bal_cd_log_lv_by_clnt IMPLEMENTATION.
         AND sub_object IN i_sub_object_range
         AND endda      IN i_endda_range.
 
-    IF sy-subrc NE 0.
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

@@ -24,7 +24,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
     cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
     logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
     token             = logger_bl_factory->get_token( ).
-    CREATE OBJECT cut TYPE /usi/cl_bal_lstate_invalidated.
+    cut = NEW /usi/cl_bal_lstate_invalidated( ).
   ENDMETHOD.
 
   METHOD test_throws_on_add_exception.

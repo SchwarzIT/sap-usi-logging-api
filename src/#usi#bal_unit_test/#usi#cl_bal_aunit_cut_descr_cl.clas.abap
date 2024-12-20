@@ -6,22 +6,19 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl DEFINITION PUBLIC FINAL CREATE PRIVATE FOR 
     "!
     "! @parameter r_result | Helper instance for calling class
     CLASS-METHODS get_instance
-      RETURNING
-        VALUE(r_result) TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
+      RETURNING VALUE(r_result) TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
     "! <h1>Constructor</h1>
     "!
     "! @parameter i_classname | Class name of calling class
     METHODS constructor
-      IMPORTING
-        i_classname TYPE classname.
+      IMPORTING i_classname TYPE classname.
 
     "! <h1>Get Class Description</h1>
     "!
     "! @parameter r_result | Class Description (RTTI API)
     METHODS get_rtti_description
-      RETURNING
-        VALUE(r_result) TYPE REF TO cl_abap_classdescr.
+      RETURNING VALUE(r_result) TYPE REF TO cl_abap_classdescr.
 
     "! <h1>Reusable unit test: Public attributes must be READ-ONLY!</h1>
     "!
@@ -53,15 +50,9 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl DEFINITION PUBLIC FINAL CREATE PRIVATE FOR 
     "!
     "! @parameter i_actual_classname | Actual class name
     METHODS assert_classname_equals
-      IMPORTING
-        i_actual_classname TYPE classname.
-
-  PROTECTED SECTION.
-
-  PRIVATE SECTION.
+      IMPORTING i_actual_classname TYPE classname.
 
 ENDCLASS.
-
 
 
 CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
@@ -71,7 +62,6 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
                                     msg = `Unexpected classname!` ).
   ENDMETHOD.
 
-
   METHOD assert_public_attrib_read_only.
     DATA class_description TYPE REF TO cl_abap_classdescr.
 
@@ -79,16 +69,13 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
 
     class_description = get_rtti_description( ).
 
-    READ TABLE class_description->attributes
-      ASSIGNING <attribute>
-      WITH KEY visibility   = cl_abap_classdescr=>public
-               is_read_only = abap_false.
-    IF sy-subrc EQ 0.
+    ASSIGN class_description->attributes[ visibility   = cl_abap_classdescr=>public
+                                          is_read_only = abap_false ] TO <attribute>.
+    IF sy-subrc = 0.
       cl_aunit_assert=>fail( msg    = `A public attribute is not READ-ONLY!`
                              detail = <attribute>-name ).
     ENDIF.
   ENDMETHOD.
-
 
   METHOD assert_publ_static_orefs_bound.
     DATA class_description TYPE REF TO cl_abap_classdescr.
@@ -97,11 +84,13 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
 
     class_description = get_rtti_description( ).
 
-    LOOP AT class_description->attributes ASSIGNING <attribute> WHERE visibility EQ cl_abap_classdescr=>public
-                                                                  AND is_class   EQ abap_true
-                                                                  AND type_kind  EQ cl_abap_classdescr=>typekind_oref.
+    LOOP AT class_description->attributes
+         ASSIGNING <attribute>
+         WHERE     visibility = cl_abap_classdescr=>public
+               AND is_class   = abap_true
+               AND type_kind  = cl_abap_classdescr=>typekind_oref.
       ASSIGN (classname)=>(<attribute>-name) TO <instance>.
-      IF sy-subrc NE 0.
+      IF sy-subrc <> 0.
         cl_aunit_assert=>fail( msg    = `Could not access public static oref-attribute`
                                detail = <attribute>-name ).
       ELSE.
@@ -111,11 +100,9 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-
   METHOD constructor.
     classname = i_classname.
   ENDMETHOD.
-
 
   METHOD get_instance.
     DATA: callstack        TYPE abap_callstack,
@@ -124,44 +111,31 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
 
     CALL FUNCTION 'SYSTEM_CALLSTACK'
-      EXPORTING
-        max_level = 2
-      IMPORTING
-        callstack = callstack.
-    READ TABLE callstack ASSIGNING <callstack_line> INDEX 2.
+      EXPORTING max_level = 2
+      IMPORTING callstack = callstack.
+    ASSIGN callstack[ 2 ] TO <callstack_line>.
 
-    cl_oo_include_naming=>get_instance_by_include(
-      EXPORTING
-        progname       = <callstack_line>-mainprogram
-      RECEIVING
-        cifref         = include_resolver
-      EXCEPTIONS
-        no_objecttype  = 1
-        internal_error = 2
-        OTHERS         = 3 ).
-    IF sy-subrc NE 0.
+    cl_oo_include_naming=>get_instance_by_include( EXPORTING  progname       = <callstack_line>-mainprogram
+                                                   RECEIVING  cifref         = include_resolver
+                                                   EXCEPTIONS no_objecttype  = 1
+                                                              internal_error = 2
+                                                              OTHERS         = 3 ).
+    IF sy-subrc <> 0.
       cl_aunit_assert=>fail( `Caller is not a class!` ).
     ENDIF.
 
-    CREATE OBJECT r_result
-      EXPORTING
-        i_classname = include_resolver->cifkey-clsname.
+    r_result = NEW #( i_classname = include_resolver->cifkey-clsname ).
   ENDMETHOD.
-
 
   METHOD get_rtti_description.
     DATA: type_description     TYPE REF TO cl_abap_typedescr,
           unexpected_exception TYPE REF TO cx_sy_move_cast_error.
 
-    cl_abap_classdescr=>describe_by_name(
-      EXPORTING
-        p_name         = classname
-      RECEIVING
-        p_descr_ref    = type_description
-      EXCEPTIONS
-        type_not_found = 1
-        OTHERS         = 2 ).
-    IF sy-subrc NE 0.
+    cl_abap_classdescr=>describe_by_name( EXPORTING  p_name         = classname
+                                          RECEIVING  p_descr_ref    = type_description
+                                          EXCEPTIONS type_not_found = 1
+                                                     OTHERS         = 2 ).
+    IF sy-subrc <> 0.
       CLEAR type_description.
     ENDIF.
     cl_aunit_assert=>assert_bound( act = type_description

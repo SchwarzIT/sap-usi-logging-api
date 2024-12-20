@@ -1,13 +1,14 @@
-*"* use this source file for your ABAP unit test classes
-*--------------------------------------------------------------------*
-* Unit test: Serialization
-*--------------------------------------------------------------------*
+" * use this source file for your ABAP unit test classes
+" ---------------------------------------------------------------------
+"  Unit test: Serialization
+" ---------------------------------------------------------------------
 CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
 CLASS /usi/cl_bal_dc_itab DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
 CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_input,
              table        TYPE REF TO data,
@@ -32,14 +33,14 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
     METHODS test_rebuild_from_fieldcatalog FOR TESTING.
 
     METHODS get_deserialized_cut
-      IMPORTING
-        i_input_to_serialize TYPE ty_input
-      RETURNING
-        VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab.
+      IMPORTING i_input_to_serialize TYPE ty_input
+      RETURNING VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab.
 ENDCLASS.
+
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_rejects_invalid_xml.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: cut           TYPE REF TO /usi/cl_bal_dc_itab,
           invalid_input TYPE /usi/bal_xml_string.
 
@@ -57,12 +58,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     CREATE DATA input-table TYPE bapirettab.
     CALL FUNCTION 'LVC_FIELDCATALOG_MERGE'
-      EXPORTING
-        i_structure_name = 'BAPIRET2'
-      CHANGING
-        ct_fieldcat      = input-fieldcatalog
-      EXCEPTIONS
-        OTHERS           = 0.
+      EXPORTING  i_structure_name = 'BAPIRET2'
+      CHANGING   ct_fieldcat      = input-fieldcatalog
+      EXCEPTIONS OTHERS           = 0.
 
     cut = get_deserialized_cut( input ).
 
@@ -80,9 +78,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
           END OF serialized_title.
 
     CREATE DATA input-table TYPE bapirettab.
-    CREATE OBJECT input-title TYPE /usi/cl_bal_tc_literal_c40
-      EXPORTING
-        i_text = 'Callstack'.
+    input-title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Callstack' ).
 
     cut = get_deserialized_cut( input ).
 
@@ -172,7 +168,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
              field3 TYPE n LENGTH 10,
              field4 TYPE p LENGTH 5 DECIMALS 2,
            END   OF ty_line,
-           ty_table TYPE STANDARD TABLE OF ty_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_table TYPE STANDARD TABLE OF ty_line WITH EMPTY KEY.
 
     DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
           input            TYPE ty_input,
@@ -211,11 +207,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     FIELD-SYMBOLS <table> TYPE ANY TABLE.
 
     ASSIGN i_input_to_serialize-table->* TO <table>.
-    CREATE OBJECT cut
-      EXPORTING
-        i_internal_table = <table>
-        i_title          = i_input_to_serialize-title
-        i_fieldcatalog   = i_input_to_serialize-fieldcatalog.
+    cut = NEW #( i_internal_table = <table>
+                 i_title          = i_input_to_serialize-title
+                 i_fieldcatalog   = i_input_to_serialize-fieldcatalog ).
 
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
@@ -228,34 +222,41 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Cardinality
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Cardinality
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS assert_is_multi_use FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_is_multi_use.
     DATA actual_result TYPE abap_bool.
+
     actual_result = /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
     cl_aunit_assert=>assert_equals( exp = abap_true
                                     act = actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Classname
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Classname
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_classname IMPLEMENTATION.
   METHOD assert_returns_right_classname.
@@ -268,12 +269,14 @@ CLASS lcl_unit_test_classname IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Cardinality
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Unit test: Cardinality
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     METHODS test_accepts_ddic_structure  FOR TESTING.
     METHODS test_accepts_non_ddic_struct FOR TESTING.
@@ -282,16 +285,16 @@ CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING.
     METHODS test_rejects_table_of_orefs  FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
   METHOD test_accepts_ddic_structure.
+    " TODO: variable is assigned but never used (ABAP cleaner)
     DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
           input                TYPE abap_callstack,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input.
+        cut = NEW #( i_internal_table = input ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
@@ -301,16 +304,14 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
     TYPES: BEGIN OF ty_non_ddic_table_line,
              mandt TYPE mandt,
            END   OF ty_non_ddic_table_line,
-           ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH NON-UNIQUE DEFAULT KEY.
+           ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH EMPTY KEY.
 
     DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
           input                TYPE ty_non_ddic_table,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input.
+        cut = NEW #( i_internal_table = input ).
 
         cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
@@ -324,25 +325,20 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input.
+        cut = NEW #( i_internal_table = input ).
 
         cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
-
   ENDMETHOD.
 
   METHOD test_rejects_table_of_tables.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE STANDARD TABLE OF bapirettab WITH NON-UNIQUE DEFAULT KEY.
+          input TYPE STANDARD TABLE OF bapirettab WITH EMPTY KEY.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input.
+        cut = NEW #( i_internal_table = input ).
 
         cut->/usi/if_bal_data_container~serialize( ).
 
@@ -355,12 +351,10 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
 
   METHOD test_rejects_table_of_orefs.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
-          input TYPE STANDARD TABLE OF REF TO cl_gui_alv_grid WITH NON-UNIQUE DEFAULT KEY.
+          input TYPE STANDARD TABLE OF REF TO cl_gui_alv_grid WITH EMPTY KEY.
 
     TRY.
-        CREATE OBJECT cut
-          EXPORTING
-            i_internal_table = input.
+        cut = NEW #( i_internal_table = input ).
 
         cut->/usi/if_bal_data_container~serialize( ).
 

@@ -19,14 +19,13 @@ CLASS /USI/CL_BAL_CD_RETENTION IMPLEMENTATION.
            no_early_delete
       FROM /usi/bal_lv_rtim
       INTO TABLE r_result
-      WHERE log_level  EQ i_log_level
+      WHERE log_level   = i_log_level
         AND log_object IN i_log_object_range
         AND sub_object IN i_sub_object_range.
 
-    IF sy-subrc NE 0.
+    IF sy-subrc <> 0.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

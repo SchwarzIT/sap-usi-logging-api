@@ -8,7 +8,7 @@ INTERFACE /usi/if_bal_cd_log_lv_by_user PUBLIC.
            log_level  TYPE /usi/bal_log_level,
            auto_save  TYPE /usi/bal_auto_save_immediately,
          END   OF ty_record,
-         ty_records TYPE STANDARD TABLE OF ty_record WITH NON-UNIQUE DEFAULT KEY.
+         ty_records TYPE STANDARD TABLE OF ty_record WITH EMPTY KEY.
 
   "! Read table /usi/bal_lv_user (Increased Log-Level by User)
   "!

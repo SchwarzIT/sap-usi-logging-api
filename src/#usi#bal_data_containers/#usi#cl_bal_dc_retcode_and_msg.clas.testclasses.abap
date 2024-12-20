@@ -35,16 +35,14 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
           serialized_data_container TYPE /usi/bal_xml_string,
           unexpected_exception      TYPE REF TO /usi/cx_bal_root.
 
-    input-return_code   = 4.
-    input-message-msgty = 'E'.
-    input-message-msgid = '38'.
-    input-message-msgno = '000'.
-    input-message-msgv1 = 'Just a test'.
+    input = VALUE #( return_code = 4
+                     message     = VALUE #( msgty = 'E'
+                                            msgid = '38'
+                                            msgno = '000'
+                                            msgv1 = 'Just a test' ) ).
 
-    CREATE OBJECT cut
-      EXPORTING
-        i_message     = input-message
-        i_return_code = input-return_code.
+    cut = NEW #( i_message     = input-message
+                 i_return_code = input-return_code ).
     TRY.
         serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.

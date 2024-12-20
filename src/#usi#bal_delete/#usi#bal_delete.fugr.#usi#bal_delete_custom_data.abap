@@ -21,11 +21,11 @@ FUNCTION /usi/bal_delete_custom_data.
 
   LOOP AT i_log_headers ASSIGNING <log_header>.
     READ TABLE log_header_groups
-      WITH TABLE KEY object    = <log_header>-object
-                     subobject = <log_header>-subobject
-      REFERENCE INTO log_header_group.
+         WITH TABLE KEY object    = <log_header>-object
+                        subobject = <log_header>-subobject
+         REFERENCE INTO log_header_group.
 
-    IF sy-subrc NE 0.
+    IF sy-subrc <> 0.
       CREATE DATA log_header_group.
       log_header_group->object    = <log_header>-object.
       log_header_group->subobject = <log_header>-subobject.
@@ -37,13 +37,11 @@ FUNCTION /usi/bal_delete_custom_data.
 
   LOOP AT log_header_groups REFERENCE INTO log_header_group.
     GET BADI badi
-      FILTERS
-        object    = log_header_group->object
-        subobject = log_header_group->subobject.
+        FILTERS
+          object    = log_header_group->object
+          subobject = log_header_group->subobject.
 
     CALL BADI badi->delete_custom_data
-      EXPORTING
-        i_log_headers = log_header_group->log_headers.
+      EXPORTING i_log_headers = log_header_group->log_headers.
   ENDLOOP.
-
 ENDFUNCTION.

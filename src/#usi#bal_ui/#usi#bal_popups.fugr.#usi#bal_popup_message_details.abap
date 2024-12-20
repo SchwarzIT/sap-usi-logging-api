@@ -12,9 +12,7 @@ FUNCTION /usi/bal_popup_message_details.
   DATA exception TYPE REF TO /usi/cx_bal_root.
 
   TRY.
-      CREATE OBJECT screen_controller TYPE lcl_log_message_detail
-        EXPORTING
-          i_message_parameters = i_t_params[].
+      screen_controller = NEW lcl_log_message_detail( i_message_parameters = i_t_params[] ).
 
       CALL SCREEN 2000 STARTING AT dynpro_start_position-column
                                    dynpro_start_position-line.

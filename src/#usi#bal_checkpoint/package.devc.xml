@@ -6,7 +6,6 @@
     <CTEXT>Checkpoint groups</CTEXT>
     <COMP_POSID>BC-SRV-BAL</COMP_POSID>
     <COMPONENT>B200000036</COMPONENT>
-    <SRV_CHECK>X</SRV_CHECK>
    </DEVC>
   </asx:values>
  </asx:abap>

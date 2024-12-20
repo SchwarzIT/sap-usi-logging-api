@@ -12,41 +12,22 @@ CLASS /usi/cl_bal_enum_problem_class DEFINITION PUBLIC FINAL CREATE PRIVATE.
     CLASS-METHODS class_constructor.
 
     "! <h1>Create instances</h1>
+    "!
+    "! @parameter i_problem_class | Problem Class
     METHODS constructor
-      IMPORTING
-        i_problem_class TYPE balprobcl.
-
-  PROTECTED SECTION.
-
-  PRIVATE SECTION.
+      IMPORTING i_problem_class TYPE balprobcl.
 
 ENDCLASS.
 
 
-
 CLASS /usi/cl_bal_enum_problem_class IMPLEMENTATION.
   METHOD class_constructor.
-    CREATE OBJECT very_important
-      EXPORTING
-        i_problem_class = '1'.
-
-    CREATE OBJECT important
-      EXPORTING
-        i_problem_class = '2'.
-
-    CREATE OBJECT medium
-      EXPORTING
-        i_problem_class = '3'.
-
-    CREATE OBJECT additional_information
-      EXPORTING
-        i_problem_class = '4'.
-
-    CREATE OBJECT other
-      EXPORTING
-        i_problem_class = ' '.
+    very_important         = NEW #( i_problem_class = '1' ).
+    important              = NEW #( i_problem_class = '2' ).
+    medium                 = NEW #( i_problem_class = '3' ).
+    additional_information = NEW #( i_problem_class = '4' ).
+    other                  = NEW #( i_problem_class = ' ' ).
   ENDMETHOD.
-
 
   METHOD constructor.
     value = i_problem_class.

@@ -78,19 +78,16 @@ CLASS /usi/cl_bal_ce_log_lv_by_obj IMPLEMENTATION.
     customizing_dao = i_customizing_dao.
   ENDMETHOD.
 
-
   METHOD get_customizing_record.
     DATA: customizing_entries     TYPE /usi/if_bal_cd_log_lv_by_obj=>ty_records,
           log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
           sub_object_range_helper TYPE REF TO /usi/cl_bal_sub_object_range.
 
-    FIELD-SYMBOLS <customizing_entry> TYPE /usi/if_bal_cd_log_lv_by_obj=>ty_record.
-
-    CREATE OBJECT log_object_range_helper.
+    log_object_range_helper = NEW #( ).
     log_object_range_helper->insert_line( i_log_object ).
     log_object_range_helper->insert_line( space ).
 
-    CREATE OBJECT sub_object_range_helper.
+    sub_object_range_helper = NEW #( ).
     sub_object_range_helper->insert_line( i_sub_object ).
     sub_object_range_helper->insert_line( space ).
 

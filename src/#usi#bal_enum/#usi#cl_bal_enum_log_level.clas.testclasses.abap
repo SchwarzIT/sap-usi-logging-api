@@ -1,18 +1,20 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Test all public static object references are bound & read-only
-*--------------------------------------------------------------------*
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC.
+" ---------------------------------------------------------------------
+" Test all public static object references are bound & read-only
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
     DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
     METHODS setup.
-    METHODS assert_public_is_read_only FOR TESTING.
+    METHODS assert_public_is_read_only  FOR TESTING.
     METHODS assert_public_statics_bound FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_public_attribs IMPLEMENTATION.
   METHOD setup.
@@ -28,39 +30,38 @@ CLASS lcl_unit_test_public_attribs IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Check the various helper methods of the class
-*--------------------------------------------------------------------*
+
+" ---------------------------------------------------------------------
+" Check the various helper methods of the class
+" ---------------------------------------------------------------------
 CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING.
   "#AU Risk_Level Harmless
   "#AU Duration   Short
+
   PRIVATE SECTION.
-    METHODS test_raise_on_invalid_value     FOR TESTING.
-    METHODS test_get_by_value               FOR TESTING.
-    METHODS test_static_instances           FOR TESTING.
-    METHODS test_is_higher                  FOR TESTING.
-    METHODS test_is_problem_class_relevant  FOR TESTING.
+    METHODS test_raise_on_invalid_value    FOR TESTING.
+    METHODS test_get_by_value              FOR TESTING.
+    METHODS test_static_instances          FOR TESTING.
+    METHODS test_is_higher                 FOR TESTING.
+    METHODS test_is_problem_class_relevant FOR TESTING.
 
     METHODS assert_get_by_value_returns
-      IMPORTING
-        i_value    TYPE /usi/bal_log_level
-        i_expected TYPE REF TO /usi/cl_bal_enum_log_level.
+      IMPORTING i_value    TYPE /usi/bal_log_level
+                i_expected TYPE REF TO /usi/cl_bal_enum_log_level.
 
     METHODS assert_value
-      IMPORTING
-        i_instance TYPE REF TO /usi/cl_bal_enum_log_level
-        i_expected TYPE /usi/bal_log_level.
+      IMPORTING i_instance TYPE REF TO /usi/cl_bal_enum_log_level
+                i_expected TYPE /usi/bal_log_level.
 
     METHODS assert_bound
-      IMPORTING
-        i_instance TYPE REF TO /usi/cl_bal_enum_log_level.
+      IMPORTING i_instance TYPE REF TO /usi/cl_bal_enum_log_level.
 
     METHODS assert_prob_class_relevant_for
-      IMPORTING
-        i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
-        i_relevant_from TYPE /usi/bal_log_level
-        i_relevant_to   TYPE /usi/bal_log_level.
+      IMPORTING i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
+                i_relevant_from TYPE /usi/bal_log_level
+                i_relevant_to   TYPE /usi/bal_log_level.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_behavior IMPLEMENTATION.
   METHOD test_raise_on_invalid_value.
@@ -157,7 +158,7 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
                                     act = actual_result ).
 
     actual_result = /usi/cl_bal_enum_log_level=>very_important->is_higher_than(
-                          /usi/cl_bal_enum_log_level=>very_important ).
+                        /usi/cl_bal_enum_log_level=>very_important ).
     cl_aunit_assert=>assert_equals( exp = abap_false
                                     act = actual_result ).
 
@@ -196,7 +197,7 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     log_level = /usi/cl_bal_enum_log_level=>nothing->value.
-    WHILE log_level LE /usi/cl_bal_enum_log_level=>everything->value.
+    WHILE log_level <= /usi/cl_bal_enum_log_level=>everything->value.
       TRY.
           cut = /usi/cl_bal_enum_log_level=>get_by_value( log_level ).
         CATCH /usi/cx_bal_root INTO unexpected_exception.

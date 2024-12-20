@@ -13,7 +13,7 @@ CLASS lcl_data_container_selector DEFINITION FINAL CREATE PUBLIC.
         VALUE(container) TYPE REF TO /usi/if_bal_data_container.
 
   PRIVATE SECTION.
-    TYPES: ty_tree_items          TYPE STANDARD TABLE OF mtreeitm WITH NON-UNIQUE DEFAULT KEY,
+    TYPES: ty_tree_items          TYPE STANDARD TABLE OF mtreeitm WITH EMPTY KEY,
            ty_data_container_type TYPE c LENGTH 1.
 
     TYPES: BEGIN OF ty_sorted_data_container,
@@ -23,7 +23,7 @@ CLASS lcl_data_container_selector DEFINITION FINAL CREATE PUBLIC.
              data_container TYPE REF TO /usi/if_bal_data_container,
            END   OF ty_sorted_data_container,
            ty_sorted_data_containers TYPE SORTED TABLE OF ty_sorted_data_container
-                                            WITH UNIQUE KEY type classname description.
+                                            WITH NON-UNIQUE KEY type classname description.
 
     TYPES: BEGIN OF ty_node_container,
              node_key       TYPE tv_nodekey,
