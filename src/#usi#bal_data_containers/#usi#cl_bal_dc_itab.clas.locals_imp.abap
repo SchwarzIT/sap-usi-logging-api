@@ -381,6 +381,10 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
             r_result = cl_abap_structdescr=>get( VALUE #( ( name = 'COLUMN_1'
                                                             type = CAST #( i_line_type_description ) ) ) ).
 
+          WHEN cl_abap_typedescr=>kind_ref.
+            r_result = get_normalized_line_type_desc(
+                           CAST cl_abap_refdescr( i_line_type_description )->get_referenced_type( ) ).
+
           WHEN OTHERS.
             ASSERT ID /usi/bal_log_writer
                    FIELDS i_line_type_description->kind
@@ -570,6 +574,9 @@ CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
     METHODS copy_elementary_to_structured
       RAISING /usi/cx_bal_root.
 
+    METHODS copy_reference_to_structured
+      RAISING /usi/cx_bal_root.
+
     METHODS copy_structured_to_structured
       RAISING /usi/cx_bal_root.
 ENDCLASS.
@@ -619,6 +626,9 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
       WHEN cl_abap_typedescr=>kind_struct.
         copy_structured_to_structured( ).
 
+      WHEN cl_abap_typedescr=>kind_ref.
+        copy_reference_to_structured( ).
+
       WHEN OTHERS.
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
           EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
@@ -648,6 +658,51 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
       <target_field> = <source_value>.
       INSERT <target_line> INTO TABLE <target_table>.
     ENDLOOP.
+  ENDMETHOD.
+
+  METHOD copy_reference_to_structured.
+    FIELD-SYMBOLS: <source_table>     TYPE ANY TABLE,
+                   <source_line>      TYPE any,
+                   <source_value>     TYPE any,
+                   <target_component> TYPE abap_compdescr,
+                   <target_table>     TYPE STANDARD TABLE,
+                   <target_line>      TYPE any,
+                   <target_field>     TYPE any.
+
+    DATA target_line TYPE REF TO data.
+
+    ASSIGN source_table-content->* TO <source_table>.
+    ASSIGN target_table-content->* TO <target_table>.
+
+    DATA(referenced_type) = CAST cl_abap_refdescr( source_table-line_type )->get_referenced_type( ).
+    CASE referenced_type->kind.
+      WHEN cl_abap_typedescr=>kind_elem.
+        CREATE DATA target_line TYPE HANDLE target_table-line_type.
+        ASSIGN target_line->* TO <target_line>.
+        ASSIGN target_table-line_type->components[ 1 ] TO <target_component>.
+        ASSIGN COMPONENT <target_component>-name OF STRUCTURE <target_line> TO <target_field>.
+
+        LOOP AT <source_table> ASSIGNING <source_line>.
+          ASSIGN <source_line>->* TO <source_value>.
+          <target_field> = <source_value>.
+          INSERT <target_line> INTO TABLE <target_table>.
+        ENDLOOP.
+
+      WHEN cl_abap_typedescr=>kind_struct.
+        CREATE DATA target_line TYPE HANDLE target_table-line_type.
+        ASSIGN target_line->* TO <target_line>.
+
+        LOOP AT <source_table> ASSIGNING <source_line>.
+          ASSIGN <source_line>->* TO <source_value>.
+          MOVE-CORRESPONDING <source_value> TO <target_line>.
+          INSERT <target_line> INTO TABLE <target_table>.
+        ENDLOOP.
+
+      WHEN OTHERS.
+        RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+          EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_line_type.
+
+    ENDCASE.
   ENDMETHOD.
 
   METHOD copy_structured_to_structured.
