@@ -300,48 +300,34 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
         r_result = SWITCH #( i_internal_type
                              WHEN cl_abap_typedescr=>typekind_char THEN
                                cl_abap_elemdescr=>get_c( field_length )
-
                              WHEN cl_abap_typedescr=>typekind_date THEN
                                cl_abap_elemdescr=>get_d( )
-
                              WHEN cl_abap_typedescr=>typekind_decfloat16 THEN
                                cl_abap_elemdescr=>get_decfloat16( )
-
                              WHEN cl_abap_typedescr=>typekind_decfloat34
                                  OR cl_abap_typedescr=>typekind_decfloat THEN
                                cl_abap_elemdescr=>get_decfloat34( )
-
                              WHEN cl_abap_typedescr=>typekind_float THEN
                                cl_abap_elemdescr=>get_f( )
-
                              WHEN cl_abap_typedescr=>typekind_hex THEN
                                cl_abap_elemdescr=>get_x( field_length )
-
                              WHEN cl_abap_typedescr=>typekind_int THEN
                                cl_abap_elemdescr=>get_i( )
-
                              WHEN cl_abap_typedescr=>typekind_int1 THEN
                                get_type_by_name( c_special_type_names-int1 )
-
                              WHEN cl_abap_typedescr=>typekind_int2 THEN
                                get_type_by_name( c_special_type_names-int2 )
-
                              WHEN c_special_type_kinds-int8 THEN
                                get_type_by_name( c_special_type_names-int8 )
-
                              WHEN cl_abap_typedescr=>typekind_num THEN
                                cl_abap_elemdescr=>get_n( field_length )
-
                              WHEN cl_abap_typedescr=>typekind_packed THEN
                                cl_abap_elemdescr=>get_p( p_length   = field_length
                                                          p_decimals = decimals )
-
                              WHEN cl_abap_typedescr=>typekind_string THEN
                                cl_abap_elemdescr=>get_string( )
-
                              WHEN cl_abap_typedescr=>typekind_time THEN
                                cl_abap_elemdescr=>get_t( )
-
                              WHEN cl_abap_typedescr=>typekind_xstring THEN
                                cl_abap_elemdescr=>get_xstring( ) ).
 
@@ -1074,8 +1060,9 @@ CLASS lcl_serializer IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD serialize_persistency_flavor.
-    r_result = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-persistency_flavor
-                          value = NEW lcl_persistency_flavor_enum=>ty_persistency_flavor( persistency_flavor->value ) ) ).
+    r_result =
+        VALUE #( ( name  = lif_persistency_constants~c_parameter_names-persistency_flavor
+                   value = NEW lcl_persistency_flavor_enum=>ty_persistency_flavor( persistency_flavor->value ) ) ).
   ENDMETHOD.
 
   METHOD serialize_table_descriptor.
@@ -1561,8 +1548,10 @@ CLASS lcl_grid_control IMPLEMENTATION.
     input-fieldcatalog_collection = i_fieldcatalog_collection.
     input-internal_table_ref      = i_internal_table_ref.
 
-    grid-fieldcatalog_name  = COND #( WHEN input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true
-                                      THEN lcl_fieldcatalog_name_enum=>external
+    grid-fieldcatalog_name  = COND #( LET default_fcat = lcl_fieldcatalog_name_enum=>external
+                                      IN
+                                      WHEN input-fieldcatalog_collection->has_fieldcatalog( default_fcat ) = abap_true
+                                      THEN default_fcat
                                       ELSE lcl_fieldcatalog_name_enum=>internal ).
 
     grid-excluded_functions = get_excluded_functions( ).
