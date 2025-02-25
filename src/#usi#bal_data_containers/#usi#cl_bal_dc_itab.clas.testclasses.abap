@@ -291,13 +291,13 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_table_of_ref_to_structure.
     TYPES: BEGIN OF ty_nested_structure_1,
              field_01 TYPE c LENGTH 10,
-           END   OF ty_nested_structure_1,
+           END   OF ty_nested_structure_1.
 
-           BEGIN OF ty_nested_structure_2,
+    TYPES: BEGIN OF ty_nested_structure_2,
              field_01 TYPE c LENGTH 10,
-           END   OF ty_nested_structure_2,
+           END   OF ty_nested_structure_2.
 
-           BEGIN OF ty_line_type,
+    TYPES: BEGIN OF ty_line_type,
              field_01 TYPE c LENGTH 10,
              field_02 TYPE c LENGTH 10,
              struc_01 TYPE ty_nested_structure_1,
@@ -340,9 +340,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_nested_structures.
     TYPES: BEGIN OF ty_nested_structure,
              very_long_fieldname_for_test_9 TYPE c LENGTH 10,
-           END   OF ty_nested_structure,
+           END   OF ty_nested_structure.
 
-           BEGIN OF ty_line_type,
+    TYPES: BEGIN OF ty_line_type,
              field_01 TYPE c LENGTH 10,
              field_02 TYPE c LENGTH 10,
              struc_01 TYPE ty_nested_structure,
@@ -430,9 +430,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_first_fieldname_collision.
     TYPES: BEGIN OF ty_nested_structure,
              field TYPE char10,
-           END   OF ty_nested_structure,
+           END   OF ty_nested_structure.
 
-           BEGIN OF ty_line_type,
+    TYPES: BEGIN OF ty_line_type,
              struc_01 TYPE ty_nested_structure,
              struc_02 TYPE ty_nested_structure,
            END   OF ty_line_type,
