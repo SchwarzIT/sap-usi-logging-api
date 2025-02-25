@@ -170,6 +170,12 @@
      <MSGNR>050</MSGNR>
      <TEXT>Unsupported structure - no field values could be extracted!</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>051</MSGNR>
+     <TEXT>Unsupported duplicate fieldname &amp;1: Valid fieldname cannot be generated!</TEXT>
+    </T100>
    </T100>
    <I18N_LANGS>
     <LANGU>D</LANGU>

@@ -61,11 +61,6 @@ CLASS /usi/cl_bal_dc_itab IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD constructor.
-    DATA: exception            TYPE REF TO /usi/cx_bal_root,
-          exception_text       TYPE string,
-          source_table_ref     TYPE REF TO data,
-          table_content_copier TYPE REF TO lcl_table_content_copier.
-
     CREATE DATA internal_table_ref LIKE i_internal_table.
     ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<table>).
     <table> = i_internal_table.
@@ -78,11 +73,18 @@ CLASS /usi/cl_bal_dc_itab IMPLEMENTATION.
     " Normalize table format
     TRY.
         ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<source_table>).
-        DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( <source_table> ).
 
+        DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( <source_table> ).
         DATA(target_table_ref) = table_descriptor->get_table_type_dref( ).
+        TRY.
+            DATA(field_mapping) = table_descriptor->get_field_mapping( ).
+          CATCH /usi/cx_bal_root.
+            CLEAR field_mapping.
+        ENDTRY.
+
         DATA(table_content_copier) = NEW lcl_table_content_copier( i_source_table_ref = internal_table_ref
-                                                                   i_target_table_ref = target_table_ref ).
+                                                                   i_target_table_ref = target_table_ref
+                                                                   i_field_mapping    = field_mapping ).
         table_content_copier->copy_table_contents( ).
       CATCH /usi/cx_bal_root INTO DATA(exception).
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
@@ -103,7 +105,7 @@ CLASS /usi/cl_bal_dc_itab IMPLEMENTATION.
           grid_control            TYPE REF TO lcl_grid_control.
 
     ASSIGN internal_table_ref->* TO FIELD-SYMBOL(<table>).
-    DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( i_table = <table> ).
+    DATA(table_descriptor) = lcl_table_descriptor=>get_by_data( <table> ).
 
     fieldcatalog_collection = NEW #( i_table_descriptor      = table_descriptor
                                      i_external_fieldcatalog = external_fieldcatalog ).

@@ -77,6 +77,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of UNSUPPORTED_STRUCTURE .
+  constants:
+    begin of UNSUPPORTED_DUPLICATE_FIELD,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '051',
+      attr1 type scx_attrname value 'PARAM1',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of UNSUPPORTED_DUPLICATE_FIELD .
 
   "! <h1>Constructor</h1>
   "!
