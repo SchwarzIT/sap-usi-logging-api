@@ -1,14 +1,54 @@
 " * use this source file for your ABAP unit test classes
-" ---------------------------------------------------------------------
-"  Unit test: Serialization
-" ---------------------------------------------------------------------
-CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
-CLASS /usi/cl_bal_dc_itab DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
-CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_cut_spy DEFINITION DEFERRED.
+CLASS /usi/cl_bal_dc_itab DEFINITION LOCAL FRIENDS lcl_unit_test_cut_spy.
 
+" ---------------------------------------------------------------------
+"  Unit test: Spy to get access to private attributes of CUT
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_cut_spy DEFINITION FINAL CREATE PUBLIC FOR TESTING.
+  PUBLIC SECTION.
+    METHODS constructor
+      IMPORTING i_cut TYPE REF TO /usi/cl_bal_dc_itab.
+
+    METHODS get_internal_table
+      RETURNING VALUE(r_result) TYPE REF TO data.
+
+    METHODS get_external_fieldcatalog
+      RETURNING VALUE(r_result) TYPE lvc_t_fcat.
+
+    METHODS get_title
+      RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_text_container_c40.
+
+  PRIVATE SECTION.
+    DATA cut TYPE REF TO /usi/cl_bal_dc_itab.
+
+ENDCLASS.
+
+
+CLASS lcl_unit_test_cut_spy IMPLEMENTATION.
+  METHOD constructor.
+    cut = i_cut.
+  ENDMETHOD.
+
+  METHOD get_internal_table.
+    r_result = cut->internal_table_ref.
+  ENDMETHOD.
+
+  METHOD get_external_fieldcatalog.
+    r_result = cut->external_fieldcatalog.
+  ENDMETHOD.
+
+  METHOD get_title.
+    r_result = cut->title.
+  ENDMETHOD.
+ENDCLASS.
+
+
+" ---------------------------------------------------------------------
+" Unit test: Serialization
+" ---------------------------------------------------------------------
+CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_input,
              table        TYPE REF TO data,
@@ -18,7 +58,7 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
 
     METHODS test_rejects_invalid_xml       FOR TESTING.
 
-    METHODS test_fieldcat                  FOR TESTING.
+    METHODS test_external_fieldcat         FOR TESTING.
     METHODS test_title                     FOR TESTING.
     METHODS test_table_of_ddic_struc       FOR TESTING.
     METHODS test_table_of_non_ddic_struc   FOR TESTING.
@@ -32,6 +72,26 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
     "! if the fieldcatatlog was incomplete.
     METHODS test_rebuild_from_fieldcatalog FOR TESTING.
 
+    METHODS test_table_of_ref_to_dtel      FOR TESTING.
+    METHODS test_table_of_ref_to_structure FOR TESTING.
+    METHODS test_nested_structures         FOR TESTING.
+    METHODS test_fatal_fieldname_collision FOR TESTING.
+    METHODS test_first_fieldname_collision FOR TESTING.
+
+    "! <h1>Test included structures</h1>
+    "!
+    "! <p>The ITAB container will normalize the line type of the passed
+    "! table and might "flatten" its structure. That means, that structured
+    "! or included types will be resolved into their respective fields which
+    "! alters the structure of the target line type.</p>
+    "!
+    "! <p>Assignments like "&lt;TARGET_TABLE&gt; = &lt;SOURCE_TABLE&gt;" might cause
+    "! short dumps after that since the target line type might not be compatible
+    "! anymore.</p>
+    "!
+    "! <p>This test uses a problematic input line type to test this special case.</p>
+    METHODS test_included_structures       FOR TESTING.
+
     METHODS get_deserialized_cut
       IMPORTING i_input_to_serialize TYPE ty_input
       RETURNING VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab.
@@ -40,19 +100,15 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_rejects_invalid_xml.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: cut           TYPE REF TO /usi/cl_bal_dc_itab,
-          invalid_input TYPE /usi/bal_xml_string.
-
     TRY.
-        cut ?= /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( invalid_input ).
+        /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( |Invalid input! XML expected!| ).
         cl_aunit_assert=>fail( `Input was garbage! Exception expected!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_fieldcat.
+  METHOD test_external_fieldcat.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
           input TYPE ty_input.
 
@@ -65,7 +121,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     cut = get_deserialized_cut( input ).
 
     cl_aunit_assert=>assert_equals( exp = input-fieldcatalog
-                                    act = cut->external_fieldcatalog ).
+                                    act = NEW lcl_unit_test_cut_spy( cut )->get_external_fieldcatalog( ) ).
   ENDMETHOD.
 
   METHOD test_title.
@@ -77,13 +133,13 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
             output TYPE /usi/bal_xml_string,
           END OF serialized_title.
 
-    CREATE DATA input-table TYPE bapirettab.
-    input-title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Callstack' ).
+    input = VALUE #( table = NEW bapirettab( )
+                     title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Callstack' ) ).
 
     cut = get_deserialized_cut( input ).
 
     serialized_title-input  = input-title->serialize( ).
-    serialized_title-output = cut->title->serialize( ).
+    serialized_title-output = NEW lcl_unit_test_cut_spy( cut )->get_title( )->serialize( ).
     cl_aunit_assert=>assert_equals( exp = serialized_title-input
                                     act = serialized_title-output ).
   ENDMETHOD.
@@ -92,20 +148,15 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
           input TYPE ty_input.
 
-    FIELD-SYMBOLS: <input_table>  TYPE bapirettab,
-                   <input_line>   TYPE bapiret2,
-                   <output_table> TYPE STANDARD TABLE.
-
-    CREATE DATA input-table TYPE bapirettab.
-    ASSIGN input-table->* TO <input_table>.
-    INSERT INITIAL LINE INTO TABLE <input_table> ASSIGNING <input_line>.
-    <input_line>-message = `Just a test`.
+    input = VALUE #( table = NEW bapirettab( ( message = `Just a test` ) ) ).
+    ASSIGN input-table->* TO FIELD-SYMBOL(<expected_result>).
 
     cut = get_deserialized_cut( input ).
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
 
-    ASSIGN cut->internal_table_ref->* TO <output_table>.
-    cl_aunit_assert=>assert_equals( exp = <input_table>
-                                    act = <output_table> ).
+    cl_aunit_assert=>assert_equals( exp = <expected_result>
+                                    act = <actual_result> ).
   ENDMETHOD.
 
   METHOD test_table_of_non_ddic_struc.
@@ -115,50 +166,42 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
            END   OF ty_non_ddic_structure,
            ty_non_ddic_itab TYPE HASHED TABLE OF ty_non_ddic_structure WITH UNIQUE KEY field1.
 
-    DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
-          input            TYPE ty_input,
-          input_table_line TYPE ty_non_ddic_structure.
+    DATA: cut   TYPE REF TO /usi/cl_bal_dc_itab,
+          input TYPE ty_input.
 
-    FIELD-SYMBOLS: <input_table>  TYPE ty_non_ddic_itab,
-                   <output_table> TYPE STANDARD TABLE.
-
-    CREATE DATA input-table TYPE ty_non_ddic_itab.
-    ASSIGN input-table->* TO <input_table>.
-    input_table_line-field1 = 'LINE1'.
-    INSERT input_table_line INTO TABLE <input_table>.
+    input = VALUE #( table = NEW ty_non_ddic_itab( ( field1 = 'LINE1' ) ) ).
+    ASSIGN input-table->* TO FIELD-SYMBOL(<expected_result>).
 
     cut = get_deserialized_cut( input ).
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
 
-    ASSIGN cut->internal_table_ref->* TO <output_table>.
-    cl_aunit_assert=>assert_equals( exp = <input_table>
-                                    act = <output_table> ).
+    cl_aunit_assert=>assert_equals( exp = <expected_result>
+                                    act = <actual_result> ).
   ENDMETHOD.
 
   METHOD test_table_of_ddic_elem.
-    DATA: cut          TYPE REF TO /usi/cl_bal_dc_itab,
-          input        TYPE ty_input,
-          output_table TYPE string_table.
+    DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
+          input            TYPE ty_input,
+          converted_result TYPE string_table.
 
-    FIELD-SYMBOLS: <input_table>  TYPE string_table,
-                   <output_table> TYPE STANDARD TABLE,
-                   <output_line>  TYPE any,
-                   <output_field> TYPE string.
+    FIELD-SYMBOLS <actual_result> TYPE STANDARD TABLE.
 
-    CREATE DATA input-table TYPE string_table.
-    ASSIGN input-table->* TO <input_table>.
-    INSERT `Just a test` INTO TABLE <input_table>.
+    input = VALUE #( table = NEW string_table( ( `Just a test` ) ) ).
+    ASSIGN input-table->* TO FIELD-SYMBOL(<expected_result>).
 
     cut = get_deserialized_cut( input ).
 
     " Revert structure conversion (CUT converts elementary line types to structured line types internally)
-    ASSIGN cut->internal_table_ref->* TO <output_table>.
-    LOOP AT <output_table> ASSIGNING <output_line>.
-      ASSIGN COMPONENT 1 OF STRUCTURE <output_line> TO <output_field>.
-      INSERT <output_field> INTO TABLE output_table.
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO <actual_result>.
+    LOOP AT <actual_result> ASSIGNING FIELD-SYMBOL(<actual_result_line>).
+      ASSIGN COMPONENT 1 OF STRUCTURE <actual_result_line> TO FIELD-SYMBOL(<actual_result_field>).
+      INSERT <actual_result_field> INTO TABLE converted_result.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = <input_table>
-                                    act = output_table ).
+    cl_aunit_assert=>assert_equals( exp = <expected_result>
+                                    act = converted_result ).
   ENDMETHOD.
 
   METHOD test_rebuild_from_fieldcatalog.
@@ -170,33 +213,31 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
            END   OF ty_line,
            ty_table TYPE STANDARD TABLE OF ty_line WITH EMPTY KEY.
 
-    DATA: cut              TYPE REF TO /usi/cl_bal_dc_itab,
-          input            TYPE ty_input,
-          input_table_line TYPE ty_line,
-          output_table     TYPE ty_table,
-          output_line      TYPE ty_line.
+    DATA: cut                   TYPE REF TO /usi/cl_bal_dc_itab,
+          input                 TYPE ty_input,
+          converted_result      TYPE ty_table,
+          converted_result_line TYPE ty_line.
 
-    FIELD-SYMBOLS: <input_table>  TYPE ty_table,
-                   <output_table> TYPE STANDARD TABLE,
-                   <output_line>  TYPE any.
+    FIELD-SYMBOLS: <expected_result>    TYPE ty_table,
+                   <actual_result>      TYPE STANDARD TABLE,
+                   <actual_result_line> TYPE any.
 
-    CREATE DATA input-table TYPE ty_table.
-    ASSIGN input-table->* TO <input_table>.
-    input_table_line-field1 = 'Just a test'.
-    input_table_line-field3 = 42.
-    input_table_line-field4 = '123.45'.
-    INSERT input_table_line INTO TABLE <input_table>.
+    input = VALUE #( table = NEW ty_table( ( field1 = 'Just a test'
+                                             field3 = 42
+                                             field4 = '123.45' ) ) ).
+    ASSIGN input-table->* TO <expected_result>.
 
     cut = get_deserialized_cut( input ).
 
-    ASSIGN cut->internal_table_ref->* TO <output_table>.
-    LOOP AT <output_table> ASSIGNING <output_line>.
-      MOVE-CORRESPONDING <output_line> TO output_line.
-      INSERT output_line INTO TABLE output_table.
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO <actual_result>.
+    LOOP AT <actual_result> ASSIGNING <actual_result_line>.
+      MOVE-CORRESPONDING <actual_result_line> TO converted_result_line.
+      INSERT converted_result_line INTO TABLE converted_result.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = <input_table>
-                                    act = output_table ).
+    cl_aunit_assert=>assert_equals( exp = <expected_result>
+                                    act = converted_result ).
   ENDMETHOD.
 
   METHOD get_deserialized_cut.
@@ -220,16 +261,255 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
+
+  METHOD test_table_of_ref_to_dtel.
+    TYPES ty_table TYPE STANDARD TABLE OF REF TO char10 WITH EMPTY KEY.
+
+    CONSTANTS c_test_value TYPE char10 VALUE 'Test'.
+
+    DATA expected_result TYPE REF TO data.
+
+    FIELD-SYMBOLS <expected_result> TYPE STANDARD TABLE.
+
+    DATA(input) = VALUE ty_input( table = NEW ty_table( ( NEW #( c_test_value ) ) ) ).
+    DATA(cut) = get_deserialized_cut( input ).
+
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
+
+    " Convert input to standard table with elementary line type - just like CUT is supposed to
+    CREATE DATA expected_result LIKE <actual_result>.
+    ASSIGN expected_result->* TO <expected_result>.
+    INSERT INITIAL LINE INTO TABLE <expected_result> ASSIGNING FIELD-SYMBOL(<expected_result_line>).
+    ASSIGN COMPONENT 1 OF STRUCTURE <expected_result_line> TO FIELD-SYMBOL(<expected_result_field>).
+    <expected_result_field> = c_test_value.
+
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
+  ENDMETHOD.
+
+  METHOD test_table_of_ref_to_structure.
+    TYPES: BEGIN OF ty_nested_structure_1,
+             field_01 TYPE c LENGTH 10,
+           END   OF ty_nested_structure_1,
+
+           BEGIN OF ty_nested_structure_2,
+             field_01 TYPE c LENGTH 10,
+           END   OF ty_nested_structure_2,
+
+           BEGIN OF ty_line_type,
+             field_01 TYPE c LENGTH 10,
+             field_02 TYPE c LENGTH 10,
+             struc_01 TYPE ty_nested_structure_1,
+             struc_02 TYPE ty_nested_structure_2,
+           END   OF ty_line_type,
+           ty_table_type TYPE STANDARD TABLE OF REF TO ty_line_type WITH EMPTY KEY.
+
+    DATA expected_result TYPE REF TO data.
+
+    FIELD-SYMBOLS <expected_result> TYPE STANDARD TABLE.
+
+    DATA(itab_line) = VALUE ty_line_type( field_01 = 'VALUE_01'
+                                          field_02 = 'VALUE_02'
+                                          struc_01 = VALUE #( field_01 = 'VALUE_03' )
+                                          struc_02 = VALUE #( field_01 = 'VALUE_04' ) ).
+
+    DATA(input) = VALUE ty_input( table = NEW ty_table_type( ( NEW #( itab_line ) ) ) ).
+    DATA(cut) = get_deserialized_cut( input ).
+
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
+
+    " Convert input to standard table with structured line type - just like CUT is supposed to
+    CREATE DATA expected_result LIKE <actual_result>.
+    ASSIGN expected_result->* TO <expected_result>.
+    APPEND INITIAL LINE TO <expected_result> ASSIGNING FIELD-SYMBOL(<expected_result_line>).
+    DO.
+      ASSIGN COMPONENT sy-index OF STRUCTURE itab_line TO FIELD-SYMBOL(<source_field>).
+      ASSIGN COMPONENT sy-index OF STRUCTURE <expected_result_line> TO FIELD-SYMBOL(<target_field>).
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+      <target_field> = <source_field>.
+    ENDDO.
+
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
+  ENDMETHOD.
+
+  METHOD test_nested_structures.
+    TYPES: BEGIN OF ty_nested_structure,
+             very_long_fieldname_for_test_9 TYPE c LENGTH 10,
+           END   OF ty_nested_structure,
+
+           BEGIN OF ty_line_type,
+             field_01 TYPE c LENGTH 10,
+             field_02 TYPE c LENGTH 10,
+             struc_01 TYPE ty_nested_structure,
+             struc_02 TYPE ty_nested_structure,
+             struc_03 TYPE ty_nested_structure,
+           END   OF ty_line_type,
+           ty_table_type TYPE STANDARD TABLE OF ty_line_type WITH EMPTY KEY.
+
+    DATA expected_result TYPE REF TO data.
+
+    FIELD-SYMBOLS <expected_result> TYPE STANDARD TABLE.
+
+    DATA(itab_line) = VALUE ty_line_type( field_01 = 'VALUE_01'
+                                          field_02 = 'VALUE_02'
+                                          struc_01 = VALUE #( very_long_fieldname_for_test_9 = 'VALUE_03' )
+                                          struc_02 = VALUE #( very_long_fieldname_for_test_9 = 'VALUE_04' )
+                                          struc_03 = VALUE #( very_long_fieldname_for_test_9 = 'VALUE_05' ) ).
+
+    DATA(input) = VALUE ty_input( table = NEW ty_table_type( ( itab_line ) ) ).
+    DATA(cut) = get_deserialized_cut( input ).
+
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
+
+    " Convert input to standard table with structured line type - just like CUT is supposed to
+    CREATE DATA expected_result LIKE <actual_result>.
+    ASSIGN expected_result->* TO <expected_result>.
+    APPEND INITIAL LINE TO <expected_result> ASSIGNING FIELD-SYMBOL(<expected_result_line>).
+    DO.
+      ASSIGN COMPONENT sy-index OF STRUCTURE itab_line TO FIELD-SYMBOL(<source_field>).
+      ASSIGN COMPONENT sy-index OF STRUCTURE <expected_result_line> TO FIELD-SYMBOL(<target_field>).
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+      <target_field> = <source_field>.
+    ENDDO.
+
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
+  ENDMETHOD.
+
+  METHOD test_fatal_fieldname_collision.
+    " Fieldnames _MUST_NOT_ start with a digit
+    "   - 1st occurrence of this nested structure will be handled as expected
+    "   - Additional occurrences cannot be handled by CUT since the name collision
+    "     would be solved by adding 1 to the numeric part of the fieldname which
+    "     would result in a forbidden fieldname
+    "     => 2nd - nth occurrence are expected to be ignored
+    TYPES: BEGIN OF ty_nested_structure,
+             _99999999999999999999999999999 TYPE char10,
+           END   OF ty_nested_structure.
+
+    TYPES: BEGIN OF ty_line_type,
+             good_structure TYPE ty_nested_structure,
+             bad_structure  TYPE ty_nested_structure,
+           END   OF ty_line_type,
+           ty_table_type TYPE STANDARD TABLE OF ty_line_type WITH EMPTY KEY.
+
+    CONSTANTS c_field_value TYPE c LENGTH 10 VALUE 'TEST'.
+
+    DATA expected_result TYPE REF TO data.
+
+    FIELD-SYMBOLS <expected_result> TYPE STANDARD TABLE.
+
+    DATA(itab_line) = VALUE ty_line_type( good_structure = VALUE #( _99999999999999999999999999999 = c_field_value )
+                                          bad_structure  = VALUE #( _99999999999999999999999999999 = c_field_value ) ).
+
+    DATA(input) = VALUE ty_input( table = NEW ty_table_type( ( itab_line ) ) ).
+    DATA(cut) = get_deserialized_cut( input ).
+
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
+
+    " Convert input to standard table with structured line type - just like CUT is supposed to
+    CREATE DATA expected_result LIKE <actual_result>.
+    ASSIGN expected_result->* TO <expected_result>.
+    APPEND INITIAL LINE TO <expected_result> ASSIGNING FIELD-SYMBOL(<expected_result_line>).
+    ASSIGN COMPONENT 1 OF STRUCTURE <expected_result_line> TO FIELD-SYMBOL(<expected_result_field>).
+    <expected_result_field> = c_field_value.
+
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
+  ENDMETHOD.
+
+  METHOD test_first_fieldname_collision.
+    TYPES: BEGIN OF ty_nested_structure,
+             field TYPE char10,
+           END   OF ty_nested_structure,
+
+           BEGIN OF ty_line_type,
+             struc_01 TYPE ty_nested_structure,
+             struc_02 TYPE ty_nested_structure,
+           END   OF ty_line_type,
+           ty_table_type TYPE STANDARD TABLE OF ty_line_type WITH EMPTY KEY.
+
+    DATA expected_result TYPE REF TO data.
+
+    FIELD-SYMBOLS <expected_result> TYPE STANDARD TABLE.
+
+    DATA(itab_line) = VALUE ty_line_type( struc_01 = VALUE #( field = 'Value_01' )
+                                          struc_02 = VALUE #( field = 'Value_02' ) ).
+
+    DATA(input) = VALUE ty_input( table = NEW ty_table_type( ( itab_line ) ) ).
+    DATA(cut) = get_deserialized_cut( input ).
+
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
+
+    " Convert input to standard table with structured line type - just like CUT is supposed to
+    CREATE DATA expected_result LIKE <actual_result>.
+    ASSIGN expected_result->* TO <expected_result>.
+    APPEND INITIAL LINE TO <expected_result> ASSIGNING FIELD-SYMBOL(<expected_result_line>).
+    DO.
+      ASSIGN COMPONENT sy-index OF STRUCTURE itab_line TO FIELD-SYMBOL(<source_field>).
+      ASSIGN COMPONENT sy-index OF STRUCTURE <expected_result_line> TO FIELD-SYMBOL(<target_field>).
+      IF sy-subrc <> 0.
+        EXIT.
+      ENDIF.
+      <target_field> = <source_field>.
+    ENDDO.
+
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
+  ENDMETHOD.
+
+  METHOD test_included_structures.
+    TYPES: BEGIN OF ty_included_structure,
+             int4_field  TYPE int4,
+             binary_data TYPE indx_clust,
+           END   OF ty_included_structure.
+
+    TYPES  BEGIN OF ty_line_type.
+             INCLUDE TYPE ty_included_structure.
+    TYPES:   char_field TYPE c LENGTH 10,
+           END OF ty_line_type.
+
+    TYPES ty_table_type TYPE HASHED TABLE OF ty_line_type WITH UNIQUE KEY int4_field.
+
+    DATA: cut                   TYPE REF TO /usi/cl_bal_dc_itab,
+          input                 TYPE ty_input,
+          converted_result      TYPE ty_table_type,
+          converted_result_line TYPE ty_line_type.
+
+    FIELD-SYMBOLS <actual_result> TYPE table.
+
+    input = VALUE #( table = NEW ty_table_type( ( int4_field = 1 ) ) ).
+    ASSIGN input-table->* TO FIELD-SYMBOL(<expected_result>).
+
+    cut = get_deserialized_cut( input ).
+    DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
+    ASSIGN actual_result->* TO <actual_result>.
+
+    LOOP AT <actual_result> ASSIGNING FIELD-SYMBOL(<actual_result_line>).
+      MOVE-CORRESPONDING <actual_result_line> TO converted_result_line.
+      INSERT converted_result_line INTO TABLE converted_result.
+    ENDLOOP.
+
+    cl_aunit_assert=>assert_equals( exp = <expected_result>
+                                    act = converted_result ).
+  ENDMETHOD.
 ENDCLASS.
 
 
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_is_multi_use FOR TESTING.
 ENDCLASS.
@@ -249,10 +529,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Classname
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.
@@ -273,10 +550,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_accepts_ddic_structure  FOR TESTING.
     METHODS test_accepts_non_ddic_struct FOR TESTING.
@@ -288,13 +562,11 @@ ENDCLASS.
 
 CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
   METHOD test_accepts_ddic_structure.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
-          input                TYPE abap_callstack,
+    DATA: input                TYPE abap_callstack,
           unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
     TRY.
-        cut = NEW #( i_internal_table = input ).
+        NEW /usi/cl_bal_dc_itab( i_internal_table = input ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.

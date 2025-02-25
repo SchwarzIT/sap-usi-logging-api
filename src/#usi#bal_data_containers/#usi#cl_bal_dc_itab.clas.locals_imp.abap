@@ -1,6 +1,12 @@
 *"* use this source file for the definition and implementation of
 *"* local helper classes, interface definitions and type
 *"* declarations
+TYPES: BEGIN OF ty_field_mapping_line,
+         target_field_name TYPE fieldname,
+         source_field_path TYPE string,
+       END   OF ty_field_mapping_line,
+       ty_field_mapping TYPE HASHED TABLE OF ty_field_mapping_line WITH UNIQUE KEY target_field_name.
+
 CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
   PUBLIC SECTION.
     CLASS-METHODS get_by_tabname
@@ -35,6 +41,10 @@ CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
       RETURNING VALUE(r_result) TYPE tabname
       RAISING   /usi/cx_bal_root.
 
+    METHODS get_field_mapping
+      RETURNING VALUE(r_result) TYPE ty_field_mapping
+      RAISING   /usi/cx_bal_root.
+
   PRIVATE SECTION.
     DATA: BEGIN OF type_descriptions,
             line  TYPE REF TO cl_abap_structdescr,
@@ -42,7 +52,8 @@ CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
           END   OF type_descriptions.
 
     DATA: BEGIN OF buffers,
-            fieldcatalog TYPE REF TO lvc_t_fcat,
+            fieldcatalog  TYPE REF TO lvc_t_fcat,
+            field_mapping TYPE REF TO ty_field_mapping,
           END   OF buffers.
 
     METHODS get_normalized_line_type_desc
@@ -53,6 +64,17 @@ CLASS lcl_table_descriptor DEFINITION FINAL CREATE PRIVATE.
     METHODS remove_non_elementary_fields
       IMPORTING i_line_type_description TYPE REF TO cl_abap_structdescr
       RETURNING VALUE(r_result)         TYPE REF TO cl_abap_structdescr
+      RAISING   /usi/cx_bal_root.
+
+    METHODS get_elementary_fields
+      IMPORTING i_line_type_description TYPE REF TO cl_abap_structdescr
+                i_source_structure_path TYPE string
+      RETURNING VALUE(r_result)         TYPE abap_component_tab.
+
+    METHODS extend_field_map
+      IMPORTING i_proposed_fieldname TYPE fieldname
+                i_source_field_path  TYPE string
+      RETURNING VALUE(r_result)      TYPE fieldname
       RAISING   /usi/cx_bal_root.
 
     CLASS-METHODS get_type_by_fieldcatalog_line
@@ -129,7 +151,6 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
 
   METHOD get_by_fieldcatalog.
     DATA: components       TYPE abap_component_tab,
-          component        TYPE abap_componentdescr,
           exception        TYPE REF TO cx_sy_struct_creation,
           exception_text   TYPE string,
           type_description TYPE REF TO cl_abap_typedescr.
@@ -137,9 +158,9 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     FIELD-SYMBOLS <field> TYPE lvc_s_fcat.
 
     LOOP AT i_fieldcatalog ASSIGNING <field>.
-      component-name = <field>-fieldname.
-      component-type = get_type_by_fieldcatalog_line( <field> ).
-      INSERT component INTO TABLE components.
+      INSERT VALUE #( name = <field>-fieldname
+                      type = get_type_by_fieldcatalog_line( <field> ) )
+             INTO TABLE components.
     ENDLOOP.
 
     TRY.
@@ -159,16 +180,11 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_type_by_fieldcatalog_line.
-    DATA fieldname TYPE fieldname.
-
     IF i_fieldcatalog_line-ref_table IS NOT INITIAL.
-      IF i_fieldcatalog_line-ref_field IS NOT INITIAL.
-        fieldname = i_fieldcatalog_line-ref_field.
-      ELSE.
-        fieldname = i_fieldcatalog_line-fieldname.
-      ENDIF.
       r_result = get_type_by_ddic_reference( i_tabname   = i_fieldcatalog_line-ref_table
-                                             i_fieldname = fieldname ).
+                                             i_fieldname = COND #( WHEN i_fieldcatalog_line-ref_field IS NOT INITIAL
+                                                                   THEN i_fieldcatalog_line-ref_field
+                                                                   ELSE i_fieldcatalog_line-fieldname ) ).
 
     ELSEIF i_fieldcatalog_line-rollname IS NOT INITIAL.
       r_result = get_type_by_name( i_fieldcatalog_line-rollname ).
@@ -281,58 +297,55 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     decimals     = i_decimals.
 
     TRY.
-        CASE i_internal_type.
-          WHEN cl_abap_typedescr=>typekind_char.
-            r_result = cl_abap_elemdescr=>get_c( field_length ).
+        r_result = SWITCH #( i_internal_type
+                             WHEN cl_abap_typedescr=>typekind_char THEN
+                               cl_abap_elemdescr=>get_c( field_length )
 
-          WHEN cl_abap_typedescr=>typekind_date.
-            r_result = cl_abap_elemdescr=>get_d( ).
+                             WHEN cl_abap_typedescr=>typekind_date THEN
+                               cl_abap_elemdescr=>get_d( )
 
-          WHEN cl_abap_typedescr=>typekind_decfloat16.
-            r_result = cl_abap_elemdescr=>get_decfloat16( ).
+                             WHEN cl_abap_typedescr=>typekind_decfloat16 THEN
+                               cl_abap_elemdescr=>get_decfloat16( )
 
-          WHEN cl_abap_typedescr=>typekind_decfloat34
-              OR cl_abap_typedescr=>typekind_decfloat.
-            r_result = cl_abap_elemdescr=>get_decfloat34( ).
+                             WHEN cl_abap_typedescr=>typekind_decfloat34
+                                 OR cl_abap_typedescr=>typekind_decfloat THEN
+                               cl_abap_elemdescr=>get_decfloat34( )
 
-          WHEN cl_abap_typedescr=>typekind_float.
-            r_result = cl_abap_elemdescr=>get_f( ).
+                             WHEN cl_abap_typedescr=>typekind_float THEN
+                               cl_abap_elemdescr=>get_f( )
 
-          WHEN cl_abap_typedescr=>typekind_hex.
-            r_result = cl_abap_elemdescr=>get_x( field_length ).
+                             WHEN cl_abap_typedescr=>typekind_hex THEN
+                               cl_abap_elemdescr=>get_x( field_length )
 
-          WHEN cl_abap_typedescr=>typekind_int.
-            r_result = cl_abap_elemdescr=>get_i( ).
+                             WHEN cl_abap_typedescr=>typekind_int THEN
+                               cl_abap_elemdescr=>get_i( )
 
-          WHEN cl_abap_typedescr=>typekind_int1.
-            r_result = get_type_by_name( c_special_type_names-int1 ).
+                             WHEN cl_abap_typedescr=>typekind_int1 THEN
+                               get_type_by_name( c_special_type_names-int1 )
 
-          WHEN cl_abap_typedescr=>typekind_int2.
-            r_result = get_type_by_name( c_special_type_names-int2 ).
+                             WHEN cl_abap_typedescr=>typekind_int2 THEN
+                               get_type_by_name( c_special_type_names-int2 )
 
-          WHEN c_special_type_kinds-int8.
-            r_result = get_type_by_name( c_special_type_names-int8 ).
+                             WHEN c_special_type_kinds-int8 THEN
+                               get_type_by_name( c_special_type_names-int8 )
 
-          WHEN cl_abap_typedescr=>typekind_num.
-            r_result = cl_abap_elemdescr=>get_n( field_length ).
+                             WHEN cl_abap_typedescr=>typekind_num THEN
+                               cl_abap_elemdescr=>get_n( field_length )
 
-          WHEN cl_abap_typedescr=>typekind_packed.
-            r_result = cl_abap_elemdescr=>get_p( p_length   = field_length
-                                                 p_decimals = decimals ).
+                             WHEN cl_abap_typedescr=>typekind_packed THEN
+                               cl_abap_elemdescr=>get_p( p_length   = field_length
+                                                         p_decimals = decimals )
 
-          WHEN cl_abap_typedescr=>typekind_string.
-            r_result = cl_abap_elemdescr=>get_string( ).
+                             WHEN cl_abap_typedescr=>typekind_string THEN
+                               cl_abap_elemdescr=>get_string( )
 
-          WHEN cl_abap_typedescr=>typekind_time.
-            r_result = cl_abap_elemdescr=>get_t( ).
+                             WHEN cl_abap_typedescr=>typekind_time THEN
+                               cl_abap_elemdescr=>get_t( )
 
-          WHEN cl_abap_typedescr=>typekind_xstring.
-            r_result = cl_abap_elemdescr=>get_xstring( ).
-
-        ENDCASE.
+                             WHEN cl_abap_typedescr=>typekind_xstring THEN
+                               cl_abap_elemdescr=>get_xstring( ) ).
 
       CATCH cx_parameter_invalid_range INTO exception.
-
         exception_text = exception->get_text( ).
         ASSERT ID /usi/bal_log_writer
                FIELDS exception_text
@@ -352,7 +365,8 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     type_descriptions-line = get_normalized_line_type_desc( i_line_type_description ).
 
     TRY.
-        type_descriptions-table = cl_abap_tabledescr=>get( type_descriptions-line ).
+        type_descriptions-table = cl_abap_tabledescr=>get( p_line_type = type_descriptions-line
+                                                           p_key_kind  = cl_abap_tabledescr=>keydefkind_empty ).
 
       CATCH cx_sy_type_creation INTO exception.
         exception_text = exception->get_text( ).
@@ -371,11 +385,7 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
     TRY.
         CASE i_line_type_description->kind.
           WHEN cl_abap_typedescr=>kind_struct.
-            IF i_line_type_description->type_kind = cl_abap_typedescr=>typekind_struct1.
-              r_result ?= i_line_type_description.
-            ELSE.
-              r_result = remove_non_elementary_fields( CAST #( i_line_type_description ) ).
-            ENDIF.
+            r_result = remove_non_elementary_fields( CAST #( i_line_type_description ) ).
 
           WHEN cl_abap_typedescr=>kind_elem.
             r_result = cl_abap_structdescr=>get( VALUE #( ( name = 'COLUMN_1'
@@ -410,38 +420,109 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD remove_non_elementary_fields.
-    DATA: data_description  TYPE REF TO cl_abap_datadescr,
-          exception         TYPE REF TO cx_sy_struct_creation,
+    DATA: exception         TYPE REF TO cx_sy_struct_creation,
           exception_text    TYPE string,
-          source_component  TYPE REF TO abap_compdescr,
           target_components TYPE abap_component_tab.
 
-    LOOP AT i_line_type_description->components REFERENCE INTO source_component.
-      data_description = i_line_type_description->get_component_type( source_component->name ).
-      IF data_description->kind <> cl_abap_typedescr=>kind_elem.
-        CONTINUE.
+    target_components = get_elementary_fields( i_line_type_description = i_line_type_description
+                                               i_source_structure_path = `` ).
+
+    TRY.
+        r_result = cl_abap_structdescr=>get( target_components ).
+      CATCH cx_sy_struct_creation INTO exception.
+        exception_text = exception->get_text( ).
+        ASSERT ID /usi/bal_log_writer
+               FIELDS exception_text
+               CONDITION 1 = 0.
+
+        RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+          EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
+                    previous = exception.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD get_elementary_fields.
+    LOOP AT i_line_type_description->components REFERENCE INTO DATA(source_component).
+      DATA(data_description) = i_line_type_description->get_component_type( source_component->name ).
+
+      DATA(source_structure_path) = |{ COND #( WHEN i_source_structure_path IS NOT INITIAL
+                                               THEN |{ i_source_structure_path }-| )
+                                    }{ source_component->name }|.
+
+      CASE data_description->kind.
+        WHEN cl_abap_typedescr=>kind_struct.
+          LOOP AT get_elementary_fields( i_line_type_description = CAST #( data_description )
+                                         i_source_structure_path = source_structure_path )
+               REFERENCE INTO DATA(elementary_field).
+            INSERT elementary_field->* INTO TABLE r_result.
+          ENDLOOP.
+
+        WHEN cl_abap_typedescr=>kind_elem.
+          TRY.
+              INSERT VALUE #( name = extend_field_map( i_proposed_fieldname = source_component->name
+                                                       i_source_field_path  = source_structure_path )
+                              type = data_description ) INTO TABLE r_result.
+            CATCH /usi/cx_bal_root INTO DATA(fieldname_generation_error).
+              ASSERT ID /usi/bal_log_writer
+                     FIELDS fieldname_generation_error->get_text( )
+                     CONDITION 1 = 0.
+              CONTINUE.
+          ENDTRY.
+
+        WHEN OTHERS.
+          CONTINUE.
+      ENDCASE.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD extend_field_map.
+    CONSTANTS: c_regex_not_found      TYPE i VALUE -1,
+               c_length_of_separator  TYPE i VALUE 1,
+               c_max_length_fieldname TYPE i VALUE 30.
+
+    DATA: numeric_suffix     TYPE string,
+          proposed_fieldname TYPE fieldname.
+
+    IF buffers-field_mapping IS NOT BOUND.
+      buffers-field_mapping = NEW #( ).
+    ENDIF.
+
+    INSERT VALUE #( target_field_name = i_proposed_fieldname
+                    source_field_path = i_source_field_path )
+           INTO TABLE buffers-field_mapping->*.
+    IF sy-subrc = 0.
+      r_result = i_proposed_fieldname.
+      RETURN.
+    ENDIF.
+
+    DATA(separator_offset) = find( val   = i_proposed_fieldname
+                                   regex = '_(\d+) *$'
+                                   case  = abap_false ).
+    IF separator_offset = c_regex_not_found.
+      proposed_fieldname = |{ i_proposed_fieldname+0(28) }_1|.
+    ELSE.
+      DATA(number_offset) = separator_offset + c_length_of_separator.
+      numeric_suffix = i_proposed_fieldname+number_offset.
+      numeric_suffix = |{ numeric_suffix + 1 }|.
+
+      "  handling for additional digits (9 -> 10)
+      IF number_offset + strlen( numeric_suffix ) > c_max_length_fieldname.
+        number_offset    = c_max_length_fieldname - strlen( numeric_suffix ).
+        separator_offset = number_offset - 1.
+
+        IF separator_offset < 0.
+          " Fatal overflow - fieldname would start with digit, which is forbidden in ABAP!
+          RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+            EXPORTING textid = /usi/cx_bal_invalid_input=>unsupported_duplicate_field
+                      param1 = CONV #( i_proposed_fieldname ).
+        ENDIF.
       ENDIF.
 
-      INSERT VALUE #( name = source_component->name
-                      type = data_description ) INTO TABLE target_components.
-    ENDLOOP.
-
-    IF lines( i_line_type_description->components ) = lines( target_components ).
-      r_result = i_line_type_description.
-    ELSE.
-      TRY.
-          r_result = cl_abap_structdescr=>get( target_components ).
-        CATCH cx_sy_struct_creation INTO exception.
-          exception_text = exception->get_text( ).
-          ASSERT ID /usi/bal_log_writer
-                 FIELDS exception_text
-                 CONDITION 1 = 0.
-
-          RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-            EXPORTING textid   = /usi/cx_bal_invalid_input=>unsupported_line_type
-                      previous = exception.
-      ENDTRY.
+      proposed_fieldname = |{ i_proposed_fieldname+0(separator_offset) }_{ numeric_suffix }|.
     ENDIF.
+
+    r_result = extend_field_map( i_proposed_fieldname = proposed_fieldname
+                                 i_source_field_path  = i_source_field_path ).
   ENDMETHOD.
 
   METHOD get_line_type_dref.
@@ -540,6 +621,14 @@ CLASS lcl_table_descriptor IMPLEMENTATION.
         EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
     ENDIF.
   ENDMETHOD.
+
+  METHOD get_field_mapping.
+    IF buffers-field_mapping IS NOT BOUND.
+      RAISE EXCEPTION TYPE /usi/cx_bal_not_found
+        EXPORTING textid = /usi/cx_bal_not_found=>generic_not_found.
+    ENDIF.
+    r_result = buffers-field_mapping->*.
+  ENDMETHOD.
 ENDCLASS.
 
 
@@ -548,6 +637,7 @@ CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
     METHODS constructor
       IMPORTING i_source_table_ref TYPE REF TO data
                 i_target_table_ref TYPE REF TO data
+                i_field_mapping    TYPE ty_field_mapping OPTIONAL
       RAISING   /usi/cx_bal_root.
 
     METHODS copy_table_contents
@@ -560,6 +650,8 @@ CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
             line_type  TYPE REF TO cl_abap_datadescr,
           END   OF source_table.
 
+    DATA field_mapping TYPE ty_field_mapping.
+
     DATA: BEGIN OF target_table,
             content    TYPE REF TO data,
             table_type TYPE REF TO cl_abap_tabledescr,
@@ -571,14 +663,19 @@ CLASS lcl_table_content_copier DEFINITION FINAL CREATE PUBLIC.
       RETURNING VALUE(r_result) TYPE REF TO cl_abap_tabledescr
       RAISING   /usi/cx_bal_root.
 
-    METHODS copy_elementary_to_structured
+    METHODS copy_from_elementary_line_type
       RAISING /usi/cx_bal_root.
 
-    METHODS copy_reference_to_structured
+    METHODS copy_from_referenced_line_type
       RAISING /usi/cx_bal_root.
 
-    METHODS copy_structured_to_structured
+    METHODS copy_from_structured_line_type
       RAISING /usi/cx_bal_root.
+
+    METHODS copy_field_values
+      IMPORTING i_source_line_ref TYPE REF TO data
+                i_target_line_ref TYPE REF TO data.
+
 ENDCLASS.
 
 
@@ -587,6 +684,8 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     source_table-content    = i_source_table_ref.
     source_table-table_type = get_table_type_description( source_table-content ).
     source_table-line_type  = source_table-table_type->get_table_line_type( ).
+
+    field_mapping           = i_field_mapping.
 
     target_table-content    = i_target_table_ref.
     target_table-table_type = get_table_type_description( target_table-content ).
@@ -621,13 +720,13 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
   METHOD copy_table_contents.
     CASE source_table-line_type->kind.
       WHEN cl_abap_typedescr=>kind_elem.
-        copy_elementary_to_structured( ).
+        copy_from_elementary_line_type( ).
 
       WHEN cl_abap_typedescr=>kind_struct.
-        copy_structured_to_structured( ).
+        copy_from_structured_line_type( ).
 
       WHEN cl_abap_typedescr=>kind_ref.
-        copy_reference_to_structured( ).
+        copy_from_referenced_line_type( ).
 
       WHEN OTHERS.
         RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
@@ -636,23 +735,21 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     ENDCASE.
   ENDMETHOD.
 
-  METHOD copy_elementary_to_structured.
+  METHOD copy_from_elementary_line_type.
     DATA target_line TYPE REF TO data.
 
-    FIELD-SYMBOLS: <source_table>     TYPE ANY TABLE,
-                   <source_value>     TYPE any,
-                   <target_table>     TYPE STANDARD TABLE,
-                   <target_line>      TYPE any,
-                   <target_field>     TYPE any,
-                   <target_component> TYPE abap_compdescr.
+    FIELD-SYMBOLS: <source_table> TYPE ANY TABLE,
+                   <source_value> TYPE any,
+                   <target_table> TYPE STANDARD TABLE,
+                   <target_line>  TYPE any,
+                   <target_field> TYPE any.
 
     ASSIGN source_table-content->* TO <source_table>.
     ASSIGN target_table-content->* TO <target_table>.
 
-    ASSIGN target_table-line_type->components[ 1 ] TO <target_component>.
     CREATE DATA target_line TYPE HANDLE target_table-line_type.
     ASSIGN target_line->* TO <target_line>.
-    ASSIGN COMPONENT <target_component>-name OF STRUCTURE <target_line> TO <target_field>.
+    ASSIGN COMPONENT 1 OF STRUCTURE <target_line> TO <target_field>.
 
     LOOP AT <source_table> ASSIGNING <source_value>.
       <target_field> = <source_value>.
@@ -660,14 +757,13 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
-  METHOD copy_reference_to_structured.
-    FIELD-SYMBOLS: <source_table>     TYPE ANY TABLE,
-                   <source_line>      TYPE any,
-                   <source_value>     TYPE any,
-                   <target_component> TYPE abap_compdescr,
-                   <target_table>     TYPE STANDARD TABLE,
-                   <target_line>      TYPE any,
-                   <target_field>     TYPE any.
+  METHOD copy_from_referenced_line_type.
+    FIELD-SYMBOLS: <source_table> TYPE ANY TABLE,
+                   <source_line>  TYPE any,
+                   <source_value> TYPE any,
+                   <target_table> TYPE STANDARD TABLE,
+                   <target_line>  TYPE any,
+                   <target_field> TYPE any.
 
     DATA target_line TYPE REF TO data.
 
@@ -679,8 +775,7 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
       WHEN cl_abap_typedescr=>kind_elem.
         CREATE DATA target_line TYPE HANDLE target_table-line_type.
         ASSIGN target_line->* TO <target_line>.
-        ASSIGN target_table-line_type->components[ 1 ] TO <target_component>.
-        ASSIGN COMPONENT <target_component>-name OF STRUCTURE <target_line> TO <target_field>.
+        ASSIGN COMPONENT 1 OF STRUCTURE <target_line> TO <target_field>.
 
         LOOP AT <source_table> ASSIGNING <source_line>.
           ASSIGN <source_line>->* TO <source_value>.
@@ -689,12 +784,13 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
         ENDLOOP.
 
       WHEN cl_abap_typedescr=>kind_struct.
-        CREATE DATA target_line TYPE HANDLE target_table-line_type.
-        ASSIGN target_line->* TO <target_line>.
-
         LOOP AT <source_table> ASSIGNING <source_line>.
-          ASSIGN <source_line>->* TO <source_value>.
-          MOVE-CORRESPONDING <source_value> TO <target_line>.
+          CREATE DATA target_line TYPE HANDLE target_table-line_type.
+
+          copy_field_values( i_source_line_ref = <source_line>
+                             i_target_line_ref = target_line ).
+
+          ASSIGN target_line->* TO <target_line>.
           INSERT <target_line> INTO TABLE <target_table>.
         ENDLOOP.
 
@@ -705,32 +801,58 @@ CLASS lcl_table_content_copier IMPLEMENTATION.
     ENDCASE.
   ENDMETHOD.
 
-  METHOD copy_structured_to_structured.
-    DATA: source_line_type TYPE REF TO cl_abap_structdescr,
-          target_line      TYPE REF TO data.
+  METHOD copy_from_structured_line_type.
+    DATA: source_line TYPE REF TO data,
+          target_line TYPE REF TO data.
 
     FIELD-SYMBOLS: <source_table> TYPE ANY TABLE,
-                   <source_line>  TYPE any,
                    <target_table> TYPE STANDARD TABLE,
                    <target_line>  TYPE any.
 
     ASSIGN source_table-content->* TO <source_table>.
     ASSIGN target_table-content->* TO <target_table>.
 
-    source_line_type ?= source_table-line_type.
-    IF target_table-line_type->components = source_line_type->components.
+    CREATE DATA target_line TYPE HANDLE target_table-line_type.
+    IF source_table-line_type->applies_to_data_ref( target_line ) = abap_true.
       <target_table> = <source_table>.
 
     ELSE.
-      CREATE DATA target_line TYPE HANDLE target_table-line_type.
-      ASSIGN target_line->* TO <target_line>.
+      LOOP AT <source_table> REFERENCE INTO source_line.
+        CREATE DATA target_line TYPE HANDLE target_table-line_type.
 
-      LOOP AT <source_table> ASSIGNING <source_line>.
-        MOVE-CORRESPONDING <source_line> TO <target_line>.
+        copy_field_values( i_source_line_ref = source_line
+                           i_target_line_ref = target_line ).
+
+        ASSIGN target_line->* TO <target_line>.
         INSERT <target_line> INTO TABLE <target_table>.
       ENDLOOP.
-
     ENDIF.
+  ENDMETHOD.
+
+  METHOD copy_field_values.
+    ASSIGN i_source_line_ref->* TO FIELD-SYMBOL(<source_line>).
+    ASSIGN i_target_line_ref->* TO FIELD-SYMBOL(<target_line>).
+
+    LOOP AT field_mapping REFERENCE INTO DATA(field_map_line).
+      DATA(source_field_absolute_name) = |<SOURCE_LINE>-{ field_map_line->source_field_path }|.
+      ASSIGN (source_field_absolute_name) TO FIELD-SYMBOL(<source_field>).
+      IF sy-subrc <> 0.
+        ASSERT ID /usi/bal_log_writer
+               FIELDS source_field_absolute_name
+               CONDITION 1 = 0.
+        CONTINUE.
+      ENDIF.
+
+      ASSIGN COMPONENT field_map_line->target_field_name OF STRUCTURE <target_line> TO FIELD-SYMBOL(<target_field>).
+      IF sy-subrc <> 0.
+        ASSERT ID /usi/bal_log_writer
+               FIELDS field_map_line->target_field_name
+               CONDITION 1 = 0.
+        CONTINUE.
+      ENDIF.
+
+      <target_field> = <source_field>.
+    ENDLOOP.
   ENDMETHOD.
 ENDCLASS.
 
@@ -798,23 +920,18 @@ CLASS lcl_persistency_flavor_enum IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD buffer_instance.
-    DATA instance TYPE ty_instance.
-
-    instance-value    = i_value.
-    instance-instance = i_instance.
-    INSERT instance INTO TABLE instances.
+    INSERT VALUE #( value    = i_value
+                    instance = i_instance )
+           INTO TABLE instances.
   ENDMETHOD.
 
   METHOD get_by_value.
-    DATA instance TYPE REF TO ty_instance.
-
-    READ TABLE instances REFERENCE INTO instance WITH TABLE KEY value = i_value.
-    IF sy-subrc = 0.
-      r_result = instance->instance.
-    ELSE.
-      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
-    ENDIF.
+    TRY.
+        r_result = instances[ value = i_value ]-instance.
+      CATCH cx_sy_itab_line_not_found.
+        RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+          EXPORTING textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
+    ENDTRY.
   ENDMETHOD.
 ENDCLASS.
 
@@ -930,32 +1047,26 @@ CLASS lcl_serializer IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD lif_serializer~serialize.
-    DATA: parameters     TYPE abap_trans_srcbind_tab,
-          new_parameters TYPE abap_trans_srcbind_tab,
-          parameter      TYPE REF TO abap_trans_srcbind.
+    DATA: parameters TYPE abap_trans_srcbind_tab,
+          parameter  TYPE REF TO abap_trans_srcbind.
 
-    new_parameters = serialize_persistency_flavor( ).
-    LOOP AT new_parameters REFERENCE INTO parameter.
+    LOOP AT serialize_persistency_flavor( ) REFERENCE INTO parameter.
       INSERT parameter->* INTO TABLE parameters.
     ENDLOOP.
 
-    new_parameters = serialize_table_descriptor( ).
-    LOOP AT new_parameters REFERENCE INTO parameter.
+    LOOP AT serialize_table_descriptor( ) REFERENCE INTO parameter.
       INSERT parameter->* INTO TABLE parameters.
     ENDLOOP.
 
-    new_parameters = serialize_table_data( ).
-    LOOP AT new_parameters REFERENCE INTO parameter.
+    LOOP AT serialize_table_data( ) REFERENCE INTO parameter.
       INSERT parameter->* INTO TABLE parameters.
     ENDLOOP.
 
-    new_parameters = serialize_external_fieldcat( ).
-    LOOP AT new_parameters REFERENCE INTO parameter.
+    LOOP AT serialize_external_fieldcat( ) REFERENCE INTO parameter.
       INSERT parameter->* INTO TABLE parameters.
     ENDLOOP.
 
-    new_parameters = serialize_title( ).
-    LOOP AT new_parameters REFERENCE INTO parameter.
+    LOOP AT serialize_title( ) REFERENCE INTO parameter.
       INSERT parameter->* INTO TABLE parameters.
     ENDLOOP.
 
@@ -963,46 +1074,27 @@ CLASS lcl_serializer IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD serialize_persistency_flavor.
-    DATA result_line TYPE abap_trans_srcbind.
-
-    FIELD-SYMBOLS <persistency_flavor> TYPE lcl_persistency_flavor_enum=>ty_persistency_flavor.
-
-    result_line-name = lif_persistency_constants~c_parameter_names-persistency_flavor.
-    CREATE DATA result_line-value TYPE lcl_persistency_flavor_enum=>ty_persistency_flavor.
-    ASSIGN result_line-value->* TO <persistency_flavor>.
-    <persistency_flavor> = persistency_flavor->value.
-    INSERT result_line INTO TABLE r_result.
+    r_result = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-persistency_flavor
+                          value = NEW lcl_persistency_flavor_enum=>ty_persistency_flavor( persistency_flavor->value ) ) ).
   ENDMETHOD.
 
   METHOD serialize_table_descriptor.
-    DATA: fieldcatalog            TYPE lvc_t_fcat,
-          serialized_fieldcatalog TYPE /usi/bal_json_string,
-          result_line             TYPE abap_trans_srcbind.
-
-    FIELD-SYMBOLS: <tabname>                 TYPE tabname,
-                   <serialized_fieldcatalog> TYPE /usi/bal_json_string.
+    DATA serialized_fieldcatalog TYPE /usi/bal_json_string.
 
     CASE persistency_flavor.
       WHEN lcl_persistency_flavor_enum=>tabname_json.
-        result_line-name = lif_persistency_constants~c_parameter_names-table_name.
-        CREATE DATA result_line-value TYPE tabname.
-        ASSIGN result_line-value->* TO <tabname>.
-        <tabname> = input-table_descriptor->get_tabname( ).
+        r_result = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-table_name
+                              value = NEW tabname( input-table_descriptor->get_tabname( ) ) ) ).
 
       WHEN lcl_persistency_flavor_enum=>fieldcatalog_json.
-        fieldcatalog = input-table_descriptor->get_fieldcatalog( ).
         serialized_fieldcatalog = serializer->serialize_field_as_json(
-                                      i_data = fieldcatalog
+                                      i_data = input-table_descriptor->get_fieldcatalog( )
                                       i_name = lif_persistency_constants~c_parameter_names-internal_fieldcatalog ).
 
-        result_line-name = lif_persistency_constants~c_parameter_names-internal_fieldcatalog.
-        CREATE DATA result_line-value TYPE /usi/bal_json_string.
-        ASSIGN result_line-value->* TO <serialized_fieldcatalog>.
-        <serialized_fieldcatalog> = serialized_fieldcatalog.
+        r_result = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-internal_fieldcatalog
+                              value = NEW /usi/bal_json_string( serialized_fieldcatalog ) ) ).
 
     ENDCASE.
-
-    INSERT result_line INTO TABLE r_result.
   ENDMETHOD.
 
   METHOD serialize_table_data.
@@ -1048,28 +1140,13 @@ CLASS lcl_serializer IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD serialize_title.
-    DATA result_line TYPE abap_trans_srcbind.
-
-    FIELD-SYMBOLS: <classname>        TYPE /usi/bal_text_cont_classname,
-                   <serialized_title> TYPE /usi/bal_xml_string.
-
     IF input-title IS NOT BOUND.
       RETURN.
     ENDIF.
-
-    CLEAR result_line.
-    result_line-name = lif_persistency_constants~c_parameter_names-title_classname.
-    CREATE DATA result_line-value TYPE /usi/bal_text_cont_classname.
-    ASSIGN result_line-value->* TO <classname>.
-    <classname> = input-title->get_classname( ).
-    INSERT result_line INTO TABLE r_result.
-
-    CLEAR result_line.
-    result_line-name = lif_persistency_constants~c_parameter_names-serialized_title.
-    CREATE DATA result_line-value TYPE /usi/bal_xml_string.
-    ASSIGN result_line-value->* TO <serialized_title>.
-    <serialized_title> = input-title->serialize( ).
-    INSERT result_line INTO TABLE r_result.
+    r_result = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-title_classname
+                          value = NEW /usi/bal_text_cont_classname( input-title->get_classname( ) ) )
+                        ( name  = lif_persistency_constants~c_parameter_names-serialized_title
+                          value = NEW /usi/bal_xml_string( input-title->serialize( ) ) ) ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -1206,28 +1283,21 @@ CLASS lcl_deserializer IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_table_data.
-    DATA: fieldname             TYPE abap_trans_resname,
-          serialized_table_data TYPE /usi/bal_serialized_data.
+    DATA serialized_table_data TYPE /usi/bal_serialized_data.
 
     FIELD-SYMBOLS <internal_table_data> TYPE STANDARD TABLE.
 
-    CASE i_persistency_flavor.
-      WHEN lcl_persistency_flavor_enum=>tabname_xml
-          OR lcl_persistency_flavor_enum=>fieldcatalog_xml.
-        fieldname = lif_persistency_constants~c_parameter_names-internal_table_xml.
-
-      WHEN lcl_persistency_flavor_enum=>tabname_json
-          OR lcl_persistency_flavor_enum=>fieldcatalog_json.
-        fieldname = lif_persistency_constants~c_parameter_names-internal_table_json.
-
-    ENDCASE.
-
-    deserializer->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
-                                               i_name            = fieldname
-                                     CHANGING  c_data            = serialized_table_data ).
+    deserializer->deserialize_field(
+      EXPORTING i_serialized_data = i_serialized_data_container
+                i_name            = COND #( WHEN i_persistency_flavor = lcl_persistency_flavor_enum=>tabname_xml
+                                              OR i_persistency_flavor = lcl_persistency_flavor_enum=>fieldcatalog_xml
+                                            THEN lif_persistency_constants~c_parameter_names-internal_table_xml
+                                            ELSE lif_persistency_constants~c_parameter_names-internal_table_json )
+      CHANGING  c_data            = serialized_table_data ).
 
     r_result = i_table_descriptor->get_table_type_dref( ).
     ASSIGN r_result->* TO <internal_table_data>.
+
     deserializer->deserialize_field(
       EXPORTING i_name            = lif_persistency_constants~c_parameter_names-internal_table
                 i_serialized_data = serialized_table_data
@@ -1269,20 +1339,14 @@ CLASS lcl_deserializer IMPLEMENTATION.
     DATA: exception        TYPE REF TO cx_root,
           exception_text   TYPE string,
           classname        TYPE /usi/bal_text_cont_classname,
-          serialized_title TYPE /usi/bal_xml_string,
-          parameters       TYPE abap_trans_resbind_tab,
-          parameter        TYPE abap_trans_resbind.
+          serialized_title TYPE /usi/bal_xml_string.
 
-    parameter-name = lif_persistency_constants~c_parameter_names-title_classname.
-    GET REFERENCE OF classname INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
-
-    parameter-name = lif_persistency_constants~c_parameter_names-serialized_title.
-    GET REFERENCE OF serialized_title INTO parameter-value.
-    INSERT parameter INTO TABLE parameters.
-
-    deserializer->deserialize_fields( i_serialized_data = i_serialized_data_container
-                                      i_parameters      = parameters ).
+    deserializer->deserialize_fields(
+        i_serialized_data = i_serialized_data_container
+        i_parameters      = VALUE #( ( name  = lif_persistency_constants~c_parameter_names-title_classname
+                                       value = REF #( classname ) )
+                                     ( name  = lif_persistency_constants~c_parameter_names-serialized_title
+                                       value = REF #( serialized_title ) ) ) ).
 
     IF classname IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
@@ -1414,36 +1478,29 @@ CLASS lcl_fieldcatalog_collection IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD insert_fieldcatalog.
-    DATA new_fieldcatalog TYPE ty_fieldcatalog.
-
-    new_fieldcatalog-name         = i_fieldcatalog_name->value.
-    new_fieldcatalog-fieldcatalog = i_fieldcatalog.
-    INSERT new_fieldcatalog INTO TABLE fieldcatalogs.
+    INSERT VALUE #( name         = i_fieldcatalog_name->value
+                    fieldcatalog = i_fieldcatalog )
+           INTO TABLE fieldcatalogs.
   ENDMETHOD.
 
   METHOD merge_technical_fieldcatalog.
-    FIELD-SYMBOLS <fieldcatalog_line> TYPE lvc_s_fcat.
-
     r_result = i_table_descriptor->get_fieldcatalog( ).
-
-    LOOP AT r_result ASSIGNING <fieldcatalog_line>.
+    LOOP AT r_result ASSIGNING FIELD-SYMBOL(<fieldcatalog_line>).
       <fieldcatalog_line>-coltext   = <fieldcatalog_line>-fieldname.
       <fieldcatalog_line>-scrtext_l = <fieldcatalog_line>-fieldname.
       <fieldcatalog_line>-scrtext_m = <fieldcatalog_line>-fieldname.
       <fieldcatalog_line>-scrtext_s = <fieldcatalog_line>-fieldname.
       <fieldcatalog_line>-reptext   = <fieldcatalog_line>-fieldname.
+      <fieldcatalog_line>-seltext   = <fieldcatalog_line>-fieldname.
     ENDLOOP.
   ENDMETHOD.
 
   METHOD get_fieldcatalog.
-    DATA fieldcatalog TYPE REF TO ty_fieldcatalog.
-
-    READ TABLE fieldcatalogs WITH TABLE KEY name = i_fieldcatalog_name->value REFERENCE INTO fieldcatalog.
-    IF sy-subrc = 0.
-      r_result = fieldcatalog->fieldcatalog.
-    ELSE.
-      r_result = get_fieldcatalog( lcl_fieldcatalog_name_enum=>internal ).
-    ENDIF.
+    TRY.
+        r_result = fieldcatalogs[ name = i_fieldcatalog_name->value ]-fieldcatalog.
+      CATCH cx_sy_itab_line_not_found.
+        r_result = get_fieldcatalog( lcl_fieldcatalog_name_enum=>internal ).
+    ENDTRY.
   ENDMETHOD.
 
   METHOD has_fieldcatalog.
@@ -1504,11 +1561,9 @@ CLASS lcl_grid_control IMPLEMENTATION.
     input-fieldcatalog_collection = i_fieldcatalog_collection.
     input-internal_table_ref      = i_internal_table_ref.
 
-    IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true.
-      grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>external.
-    ELSE.
-      grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>internal.
-    ENDIF.
+    grid-fieldcatalog_name  = COND #( WHEN input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true
+                                      THEN lcl_fieldcatalog_name_enum=>external
+                                      ELSE lcl_fieldcatalog_name_enum=>internal ).
 
     grid-excluded_functions = get_excluded_functions( ).
     grid-layout             = get_layout( ).
@@ -1522,54 +1577,42 @@ CLASS lcl_grid_control IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_excluded_functions.
-    INSERT cl_gui_alv_grid=>mc_fc_col_invisible   INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_col_optimize    INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_fix_columns     INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_graph           INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_info            INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_loc_copy        INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_print           INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_fc_unfix_columns   INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_paste           INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_subtot          INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_sum             INTO TABLE r_result.
-    INSERT cl_gui_alv_grid=>mc_mb_view            INTO TABLE r_result.
+    r_result = VALUE #( ( cl_gui_alv_grid=>mc_fc_col_invisible )
+                        ( cl_gui_alv_grid=>mc_fc_col_optimize  )
+                        ( cl_gui_alv_grid=>mc_fc_fix_columns   )
+                        ( cl_gui_alv_grid=>mc_fc_graph         )
+                        ( cl_gui_alv_grid=>mc_fc_info          )
+                        ( cl_gui_alv_grid=>mc_fc_loc_copy      )
+                        ( cl_gui_alv_grid=>mc_fc_print         )
+                        ( cl_gui_alv_grid=>mc_fc_unfix_columns )
+                        ( cl_gui_alv_grid=>mc_mb_paste         )
+                        ( cl_gui_alv_grid=>mc_mb_subtot        )
+                        ( cl_gui_alv_grid=>mc_mb_sum           )
+                        ( cl_gui_alv_grid=>mc_mb_view          ) ).
   ENDMETHOD.
 
   METHOD get_layout.
-    r_result-zebra      = abap_true.
-    r_result-cwidth_opt = abap_true.
+    r_result = VALUE #( zebra      = abap_true
+                        cwidth_opt = abap_true ).
   ENDMETHOD.
 
   METHOD on_alv_toolbar.
-    DATA toolbar_button TYPE stb_button.
-
     IF input-fieldcatalog_collection->has_fieldcatalog( lcl_fieldcatalog_name_enum=>external ) = abap_true.
-      CLEAR toolbar_button.
-      toolbar_button-function = c_user_commands-set_external_fcat.
-      IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>external.
-        toolbar_button-disabled = abap_true.
-      ENDIF.
-      toolbar_button-text = 'External fieldcatalog'(b01).
-
-      INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
+      INSERT VALUE #( function = c_user_commands-set_external_fcat
+                      disabled = boolc( grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>external )
+                      text     = 'External fieldcatalog'(b01) )
+             INTO TABLE e_object->mt_toolbar.
     ENDIF.
 
-    CLEAR toolbar_button.
-    toolbar_button-function = c_user_commands-set_internal_fcat.
-    IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>internal.
-      toolbar_button-disabled = abap_true.
-    ENDIF.
-    toolbar_button-text = 'Regular fieldcatalog'(b02).
-    INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( function = c_user_commands-set_internal_fcat
+                    disabled = boolc( grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>internal )
+                    text     = 'Regular fieldcatalog'(b02) )
+           INTO TABLE e_object->mt_toolbar.
 
-    CLEAR toolbar_button.
-    toolbar_button-function = c_user_commands-set_technical_fcat.
-    IF grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>technical.
-      toolbar_button-disabled = abap_true.
-    ENDIF.
-    toolbar_button-text = 'Technical fieldnames'(b03).
-    INSERT toolbar_button INTO TABLE e_object->mt_toolbar.
+    INSERT VALUE #( function = c_user_commands-set_technical_fcat
+                    disabled = boolc( grid-fieldcatalog_name = lcl_fieldcatalog_name_enum=>technical )
+                    text     = 'Technical fieldnames'(b03) )
+           INTO TABLE e_object->mt_toolbar.
   ENDMETHOD.
 
   METHOD on_alv_user_command.
