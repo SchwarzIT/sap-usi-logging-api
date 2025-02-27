@@ -30,6 +30,10 @@ CLASS /usi/cl_bal_lstate_invalidated IMPLEMENTATION.
     raise_wrong_state_exception( ).
   ENDMETHOD.
 
+  METHOD /usi/if_bal_logger_state~display.
+    raise_wrong_state_exception( ).
+  ENDMETHOD.
+
   METHOD /usi/if_bal_logger_state~free.
     raise_wrong_state_exception( ).
   ENDMETHOD.

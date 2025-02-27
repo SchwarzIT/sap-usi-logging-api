@@ -21,8 +21,7 @@ CLASS /usi/cl_bal_log_dao DEFINITION PUBLIC FINAL CREATE PUBLIC.
       RAISING   /usi/cx_bal_root.
 
   PRIVATE SECTION.
-    DATA: log_handle TYPE balloghndl,
-          log_number TYPE balognr.
+    DATA log_number TYPE balognr.
 
     METHODS get_log_header
       IMPORTING i_log_object           TYPE balobj_d
@@ -50,7 +49,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
     DATA data_container TYPE REF TO /usi/if_bal_data_container.
 
     CALL FUNCTION 'BAL_LOG_MSG_ADD'
-      EXPORTING  i_log_handle     = log_handle
+      EXPORTING  i_log_handle     = /usi/if_bal_log_dao~log_handle
                  i_s_msg          = i_message
       EXCEPTIONS log_not_found    = 1
                  msg_inconsistent = 2
@@ -67,7 +66,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
 
   METHOD /usi/if_bal_log_dao~free.
     CALL FUNCTION 'BAL_LOG_REFRESH'
-      EXPORTING  i_log_handle = log_handle
+      EXPORTING  i_log_handle = /usi/if_bal_log_dao~log_handle
       EXCEPTIONS OTHERS       = 0.
   ENDMETHOD.
 
@@ -82,14 +81,10 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
 
   METHOD /usi/if_bal_log_dao~save.
     DATA: data_container TYPE REF TO /usi/if_bal_data_container,
-          log_handles    TYPE bal_t_logh,
           log_numbers    TYPE bal_t_lgnm.
 
-    FIELD-SYMBOLS <log_number> TYPE bal_s_lgnm.
-
-    INSERT log_handle INTO TABLE log_handles.
     CALL FUNCTION 'BAL_DB_SAVE'
-      EXPORTING  i_t_log_handle       = log_handles
+      EXPORTING  i_t_log_handle       = VALUE bal_t_logh( ( /usi/if_bal_log_dao~log_handle ) )
                  i_2th_connection     = abap_true
                  i_2th_connect_commit = abap_true
       IMPORTING  e_new_lognumbers     = log_numbers
@@ -103,12 +98,14 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
       RAISE EXCEPTION TYPE /usi/cx_bal_external_api_error
         EXPORTING textid  = /usi/cx_bal_external_api_error=>log_save_error
                   details = data_container.
-    ELSEIF log_numbers IS NOT INITIAL.
-      ASSIGN log_numbers[ extnumber  = /usi/if_bal_log_dao~log_header-extnumber
-                          log_handle = log_handle ] TO <log_number>.
-      IF sy-subrc = 0.
-        log_number = <log_number>-lognumber.
-      ENDIF.
+    ELSEIF     log_number  IS INITIAL
+           AND log_numbers IS NOT INITIAL.
+      TRY.
+          log_number = log_numbers[ extnumber  = /usi/if_bal_log_dao~log_header-extnumber
+                                    log_handle = /usi/if_bal_log_dao~log_handle ]-lognumber.
+        CATCH cx_sy_itab_line_not_found.
+          CLEAR log_number.
+      ENDTRY.
     ENDIF.
   ENDMETHOD.
 
@@ -119,7 +116,7 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
                                                      i_retention_parameters = i_retention_parameters
                                                      i_context              = i_context
                                                      i_params               = i_params ).
-    log_handle = create_log( /usi/if_bal_log_dao~log_header ).
+    /usi/if_bal_log_dao~log_handle = create_log( /usi/if_bal_log_dao~log_header ).
   ENDMETHOD.
 
   METHOD create_log.
