@@ -31,7 +31,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     " serialize
     DATA(input) = get_callstack( ).
     TRY.
-        DATA(serialized_data_container) = NEW /usi/cl_bal_dc_callstack( input )->/usi/if_bal_data_container~serialize( ).
+        DATA(serialized_data_container) =
+            NEW /usi/cl_bal_dc_callstack( input )->/usi/if_bal_data_container~serialize( ).
       CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
