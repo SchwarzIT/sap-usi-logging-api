@@ -1,8 +1,5 @@
 *"* use this source file for your ABAP unit test classes
-CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_equals_same_instance FOR TESTING.
     METHODS assert_not_equals_others    FOR TESTING.
@@ -16,9 +13,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     DATA(actual_result) = cut->/usi/if_bal_token~is_equal( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = actual_result
-                                    msg = 'Instance does not equal itself!' ).
+    cl_abap_unit_assert=>assert_true( act = actual_result
+                                      msg = 'Instance does not equal itself!' ).
   ENDMETHOD.
 
   METHOD assert_not_equals_others.
@@ -27,8 +23,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     DATA(actual_result) = cut->/usi/if_bal_token~is_equal( other_instance ).
 
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result
-                                    msg = 'Two independet instances are considered equal!' ).
+    cl_abap_unit_assert=>assert_false( act = actual_result
+                                       msg = 'Two independend instances are considered equal!' ).
   ENDMETHOD.
 ENDCLASS.

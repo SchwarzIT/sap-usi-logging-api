@@ -25,7 +25,7 @@ CLASS lcl_single_use_container IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~deserialize.
-    r_result = NEW lcl_single_use_container( i_serialized_data_container = i_serialized_data_container ).
+    r_result = NEW lcl_single_use_container( i_serialized_data_container ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~get_classname.
@@ -67,7 +67,7 @@ CLASS lcl_multi_use_container IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~deserialize.
-    r_result = NEW lcl_multi_use_container( i_serialized_data_container = i_serialized_data_container ).
+    r_result = NEW lcl_multi_use_container( i_serialized_data_container ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_container~get_classname.
@@ -108,11 +108,6 @@ CLASS lcl_defect_container DEFINITION FINAL FOR TESTING.
       IMPORTING i_serialized_data_container TYPE /usi/bal_xml_string.
 
   PRIVATE SECTION.
-    CONSTANTS: BEGIN OF classnames,
-                 right TYPE /usi/bal_data_cont_classname VALUE 'LCL_DEFECT_CONTAINER',
-                 wrong TYPE /usi/bal_data_cont_classname VALUE 'LCL_UNKNOWN_CLASS',
-               END   OF classnames.
-
     CLASS-DATA: my_classname         TYPE /usi/bal_data_cont_classname,
                 throw_on_deserialize TYPE abap_bool,
                 throw_on_serialize   TYPE abap_bool.
@@ -133,6 +128,11 @@ CLASS lcl_defect_container IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD set_return_invalid_classname.
+    CONSTANTS: BEGIN OF classnames,
+                 right TYPE /usi/bal_data_cont_classname VALUE 'LCL_DEFECT_CONTAINER',
+                 wrong TYPE /usi/bal_data_cont_classname VALUE 'LCL_UNKNOWN_CLASS',
+               END   OF classnames.
+
     IF i_return_invalid_classname = abap_true.
       my_classname = classnames-wrong.
     ELSE.
@@ -158,7 +158,7 @@ CLASS lcl_defect_container IMPLEMENTATION.
 
   METHOD /usi/if_bal_data_container~deserialize.
     IF throw_on_deserialize = abap_false.
-      r_result = NEW lcl_defect_container( i_serialized_data_container = i_serialized_data_container ).
+      r_result = NEW lcl_defect_container( i_serialized_data_container ).
     ELSE.
       RAISE EXCEPTION TYPE /usi/cx_bal_type_mismatch
         EXPORTING textid = /usi/cx_bal_type_mismatch=>/usi/cx_bal_type_mismatch.
@@ -187,10 +187,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_data_container_col.
 
@@ -226,11 +223,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_single_use_restriction.
-    DATA: data_container_1 TYPE REF TO /usi/if_bal_data_container,
-          data_container_2 TYPE REF TO /usi/if_bal_data_container.
-
-    data_container_1 = get_single_use_container( 'Data_1' ).
-    data_container_2 = get_single_use_container( 'Data_2' ).
+    DATA(data_container_1) = get_single_use_container( 'Data_1' ).
+    DATA(data_container_2) = get_single_use_container( 'Data_2' ).
 
     cut->insert( data_container_1 ).
     cut->insert( data_container_2 ).
@@ -256,11 +250,8 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_multi_use_is_working.
-    DATA: data_container_1 TYPE REF TO /usi/if_bal_data_container,
-          data_container_2 TYPE REF TO /usi/if_bal_data_container.
-
-    data_container_1 = get_multi_use_container( 'Data_1' ).
-    data_container_2 = get_multi_use_container( 'Data_2' ).
+    DATA(data_container_1) = get_multi_use_container( 'Data_1' ).
+    DATA(data_container_2) = get_multi_use_container( 'Data_2' ).
 
     cut->insert( data_container_1 ).
     cut->insert( data_container_2 ).
@@ -270,36 +261,29 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_single_use_container.
-    r_result = NEW lcl_single_use_container( i_serialized_data_container = i_serialized_data_container ).
+    r_result = NEW lcl_single_use_container( i_serialized_data_container ).
   ENDMETHOD.
 
   METHOD get_multi_use_container.
-    r_result = NEW lcl_multi_use_container( i_serialized_data_container = i_serialized_data_container ).
+    r_result = NEW lcl_multi_use_container( i_serialized_data_container ).
   ENDMETHOD.
 
   METHOD assert_has_container.
-    DATA data_container_classname TYPE /usi/bal_data_cont_classname.
-
     IF has_container( i_data_container ) <> abap_true.
-      data_container_classname = i_data_container->get_classname( ).
-      cl_aunit_assert=>fail( msg    = `Expected container is missing!`
-                             detail = data_container_classname ).
+      cl_abap_unit_assert=>fail( msg    = `Expected container is missing!`
+                                 detail = i_data_container->get_classname( ) ).
     ENDIF.
   ENDMETHOD.
 
   METHOD assert_not_has_container.
-    DATA data_container_classname TYPE /usi/bal_data_cont_classname.
-
     IF has_container( i_data_container ) = abap_true.
-      data_container_classname = i_data_container->get_classname( ).
-      cl_aunit_assert=>fail( msg    = `Unexpected container found!`
-                             detail = data_container_classname ).
+      cl_abap_unit_assert=>fail( msg    = `Unexpected container found!`
+                                 detail = i_data_container->get_classname( ) ).
     ENDIF.
   ENDMETHOD.
 
   METHOD has_container.
     DATA(data_containers) = cut->get_data_containers( ).
-
     r_result = boolc( line_exists( data_containers[ table_line = i_data_container ] ) ).
   ENDMETHOD.
 ENDCLASS.
@@ -308,10 +292,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_flattened_data_container,
              data_container_classname  TYPE /usi/bal_data_cont_classname,
@@ -351,96 +332,74 @@ ENDCLASS.
 
 CLASS lcl_unit_test_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_cont_data.
-    DATA: good_data_container TYPE REF TO /usi/if_bal_data_container,
-          bad_data_container  TYPE REF TO lcl_defect_container,
-          cut                 TYPE REF TO /usi/if_bal_data_container_col,
-          actual_result       TYPE ty_flattened_data_containers,
-          expected_result     TYPE ty_flattened_data_containers.
-
-    cut = NEW /usi/cl_bal_dc_collection( ).
-    good_data_container = get_good_data_container( `data` ).
+    DATA(cut) = CAST /usi/if_bal_data_container_col( NEW /usi/cl_bal_dc_collection( ) ).
+    DATA(good_data_container) = get_good_data_container( `data` ).
     cut->insert( good_data_container ).
-    expected_result = flatten_data_cont_coll( cut ).
+    DATA(expected_result) = flatten_data_cont_coll( cut ).
 
     " Deserialize( ) should skip bad_container due to errors
-    bad_data_container = get_bad_data_container( i_throw_on_deserialize = abap_true ).
+    DATA(bad_data_container) = get_bad_data_container( i_throw_on_deserialize = abap_true ).
     cut->insert( bad_data_container ).
     cut = serialize_and_deserialize_coll( cut ).
 
-    actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals( exp = expected_result
-                                    act = actual_result
-                                    msg = `Data altered during serialization/deserialization!` ).
+    DATA(actual_result) = flatten_data_cont_coll( cut ).
+    cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                        act = actual_result
+                                        msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_deserialize_unknown_class.
-    DATA: good_data_container TYPE REF TO /usi/if_bal_data_container,
-          bad_data_container  TYPE REF TO lcl_defect_container,
-          cut                 TYPE REF TO /usi/if_bal_data_container_col,
-          actual_result       TYPE ty_flattened_data_containers,
-          expected_result     TYPE ty_flattened_data_containers.
-
-    cut = NEW /usi/cl_bal_dc_collection( ).
-    good_data_container = get_good_data_container( `data` ).
+    DATA(cut) = CAST /usi/if_bal_data_container_col( NEW /usi/cl_bal_dc_collection( ) ).
+    DATA(good_data_container) = get_good_data_container( `data` ).
     cut->insert( good_data_container ).
-    expected_result = flatten_data_cont_coll( cut ).
+    DATA(expected_result) = flatten_data_cont_coll( cut ).
 
     " Deserialize( ) should skip bad_container due to errors
-    bad_data_container = get_bad_data_container( i_return_invalid_classname = abap_true ).
+    DATA(bad_data_container) = get_bad_data_container( i_return_invalid_classname = abap_true ).
     cut->insert( bad_data_container ).
     cut = serialize_and_deserialize_coll( cut ).
 
-    actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals( exp = expected_result
-                                    act = actual_result
-                                    msg = `Data altered during serialization/deserialization!` ).
+    DATA(actual_result) = flatten_data_cont_coll( cut ).
+    cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                        act = actual_result
+                                        msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_deserialize_total_garbage.
     TRY.
         /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( `Garbage, that cannot be parsed.` ).
-        cl_aunit_assert=>fail( `Errors on collection level should raise an exception!` ).
+        cl_abap_unit_assert=>fail( `Errors on collection level should raise an exception!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_serialize_deserialize.
-    DATA: data_container_1 TYPE REF TO /usi/if_bal_data_container,
-          data_container_2 TYPE REF TO /usi/if_bal_data_container,
-          data_container_3 TYPE REF TO /usi/if_bal_data_container,
-          cut              TYPE REF TO /usi/if_bal_data_container_col,
-          actual_result    TYPE ty_flattened_data_containers,
-          expected_result  TYPE ty_flattened_data_containers.
+    DATA(data_container_1) = get_good_data_container( `First container` ).
+    DATA(data_container_2) = get_good_data_container( `Second container` ).
+    DATA(data_container_3) = get_good_data_container( `Third container` ).
 
-    data_container_1 = get_good_data_container( `First container` ).
-    data_container_2 = get_good_data_container( `Second container` ).
-    data_container_3 = get_good_data_container( `Third container` ).
-
-    cut = NEW /usi/cl_bal_dc_collection( ).
+    DATA(cut) = CAST /usi/if_bal_data_container_col( NEW /usi/cl_bal_dc_collection( ) ).
     cut->insert( data_container_1 ).
     cut->insert( data_container_2 ).
     cut->insert( data_container_3 ).
-    expected_result = flatten_data_cont_coll( cut ).
+    DATA(expected_result) = flatten_data_cont_coll( cut ).
 
     cut = serialize_and_deserialize_coll( cut ).
 
-    actual_result = flatten_data_cont_coll( cut ).
-    cl_aunit_assert=>assert_equals( exp = expected_result
-                                    act = actual_result
-                                    msg = `Data altered during serialization/deserialization!` ).
+    DATA(actual_result) = flatten_data_cont_coll( cut ).
+    cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                        act = actual_result
+                                        msg = `Data altered during serialization/deserialization!` ).
   ENDMETHOD.
 
   METHOD test_empty_collection.
-    DATA: cut           TYPE REF TO /usi/if_bal_data_container_col,
-          actual_result TYPE ty_flattened_data_containers.
+    DATA(cut) = CAST /usi/if_bal_data_container_col( NEW /usi/cl_bal_dc_collection( ) ).
+    cut = serialize_and_deserialize_coll( cut ).
+    DATA(actual_result) = flatten_data_cont_coll( cut ).
 
-    cut = NEW /usi/cl_bal_dc_collection( ).
-    cut           = serialize_and_deserialize_coll( cut ).
-    actual_result = flatten_data_cont_coll( cut ).
-
-    cl_aunit_assert=>assert_initial( act = actual_result
-                                     msg = `Empty collection returned containers!` ).
+    cl_abap_unit_assert=>assert_initial( act = actual_result
+                                         msg = `Empty collection returned containers!` ).
   ENDMETHOD.
 
   METHOD get_bad_data_container.
@@ -454,37 +413,25 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD flatten_data_cont_coll.
-    DATA: data_containers     TYPE /usi/bal_data_containers,
-          flattened_container TYPE ty_flattened_data_container.
-
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
-
-    data_containers = i_data_container_collection->get_data_containers( ).
-    LOOP AT data_containers ASSIGNING <data_container>.
-      flattened_container = flatten_data_container( <data_container> ).
-      INSERT flattened_container INTO TABLE r_result.
+    LOOP AT i_data_container_collection->get_data_containers( ) ASSIGNING FIELD-SYMBOL(<data_container>).
+      INSERT flatten_data_container( <data_container> ) INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.
 
   METHOD flatten_data_container.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     r_result-data_container_classname = i_data_container->get_classname( ).
     TRY.
         r_result-serialized_data_container = i_data_container->serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD serialize_and_deserialize_coll.
-    DATA: serialized_data_cont_coll TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
-    serialized_data_cont_coll = i_data_container_collection->serialize( ).
+    DATA(serialized_data_cont_coll) = i_data_container_collection->serialize( ).
     TRY.
         r_result = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( serialized_data_cont_coll ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
@@ -494,10 +441,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_convenience DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_convenience DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_insert_returns_itself FOR TESTING.
 ENDCLASS.
@@ -505,18 +449,11 @@ ENDCLASS.
 
 CLASS lcl_unit_test_convenience IMPLEMENTATION.
   METHOD test_insert_returns_itself.
-    DATA: actual_result  TYPE REF TO /usi/if_bal_data_container_col,
-          cut            TYPE REF TO /usi/if_bal_data_container_col,
-          data_container TYPE REF TO /usi/if_bal_data_container.
-
-    data_container = NEW lcl_single_use_container( i_serialized_data_container = 'Data_1' ).
-
-    cut = NEW /usi/cl_bal_dc_collection( ).
-    actual_result = cut->insert( data_container ).
-
-    cl_aunit_assert=>assert_equals( msg = 'Insert( ) has to return the collection itself (me)!'
-                                    exp = cut
-                                    act = actual_result ).
+    DATA(cut) = CAST /usi/if_bal_data_container_col( NEW /usi/cl_bal_dc_collection( ) ).
+    DATA(actual_result) = cut->insert( NEW lcl_single_use_container( 'Data_1' ) ).
+    cl_abap_unit_assert=>assert_equals( exp = cut
+                                        act = actual_result
+                                        msg = 'Insert( ) has to return the collection itself (me)!' ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -524,10 +461,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_bad_data_cont DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_bad_data_cont DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_data_container_col.
 
@@ -544,46 +478,29 @@ CLASS lcl_unit_test_bad_data_cont IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_insert_bad_data_container.
-    DATA: bad_data_container TYPE REF TO lcl_defect_container,
-          has_containers     TYPE abap_bool.
-
-    bad_data_container = NEW #( i_serialized_data_container = `data` ).
+    DATA(bad_data_container) = NEW lcl_defect_container( `data` ).
     bad_data_container->set_throw_on_serialize( abap_true ).
-
     cut->insert( bad_data_container ).
-    has_containers = cut->has_data_containers( ).
 
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = has_containers
-                                    msg = `Invalid container was added` ).
+    cl_abap_unit_assert=>assert_false( act = cut->has_data_containers( )
+                                       msg = `Invalid container was added` ).
   ENDMETHOD.
 
   METHOD test_serialize_bad_data_cont.
-    DATA: bad_data_container        TYPE REF TO lcl_defect_container,
-          has_containers            TYPE abap_bool,
-          serialized_data_cont_coll TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
 
-    bad_data_container = NEW #( i_serialized_data_container = `data` ).
-
+    DATA(bad_data_container) = NEW lcl_defect_container( `data` ).
     cut->insert( bad_data_container ).
-    has_containers = cut->has_data_containers( ).
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = has_containers
-                                    msg = `Container should have been added` ).
+    cl_abap_unit_assert=>assert_true( act = cut->has_data_containers( )
+                                      msg = `Container should have been added` ).
 
     bad_data_container->set_throw_on_serialize( abap_true ).
-    serialized_data_cont_coll = cut->serialize( ).
-
     TRY.
-        cut = cut->deserialize( serialized_data_cont_coll ).
+        cut = cut->deserialize( cut->serialize( ) ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
-    has_containers = cut->has_data_containers( ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = has_containers
-                                    msg = `Container should have been dropped due to serialization errors` ).
+    cl_abap_unit_assert=>assert_false( act = cut->has_data_containers( )
+                                       msg = `Container should have been dropped due to serialization errors` ).
   ENDMETHOD.
 ENDCLASS.

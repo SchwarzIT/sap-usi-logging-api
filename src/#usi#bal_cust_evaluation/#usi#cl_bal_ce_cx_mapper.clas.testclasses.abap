@@ -1,8 +1,8 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Test-Double for DAO (To inject customizing)
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" Test-Double for DAO (To inject customizing)
+" ---------------------------------------------------------------------
 CLASS lcl_test_double_cust_dao DEFINITION FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_cd_cx_mapper.
@@ -15,13 +15,13 @@ CLASS lcl_test_double_cust_dao DEFINITION FOR TESTING.
     DATA mock_data TYPE /usi/if_bal_cd_cx_mapper=>ty_records.
 ENDCLASS.
 
+
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   METHOD /usi/if_bal_cd_cx_mapper~get_records.
     r_result = mock_data.
     IF r_result IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 
@@ -30,12 +30,11 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test
-*--------------------------------------------------------------------*
-CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+
+" ---------------------------------------------------------------------
+" Unit test
+" ---------------------------------------------------------------------
+CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     TYPES:
       BEGIN OF ty_request,
@@ -48,15 +47,15 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
           cut                  TYPE REF TO /usi/if_bal_ce_cx_mapper.
 
     METHODS setup.
-    METHODS test_ignore_invalid_mappers    FOR TESTING.
-    METHODS test_match_class               FOR TESTING.
-    METHODS test_match_new_interface       FOR TESTING.
-    METHODS test_match_superclass          FOR TESTING.
-    METHODS test_validate_fallback         FOR TESTING.
+    METHODS test_ignore_invalid_mappers FOR TESTING.
+    METHODS test_match_class            FOR TESTING.
+    METHODS test_match_new_interface    FOR TESTING.
+    METHODS test_match_superclass       FOR TESTING.
+    METHODS test_validate_fallback      FOR TESTING.
 
     METHODS reset_cut
       IMPORTING
-        i_quit TYPE aunit_flowctrl DEFAULT cl_aunit_assert=>method.
+        i_quit TYPE aunit_flowctrl DEFAULT if_aunit_constants=>method.
 
     METHODS assert_expected_result
       IMPORTING
@@ -65,10 +64,11 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
         i_expected_result TYPE /usi/bal_exception_mapper.
 ENDCLASS.
 
+
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     test_double_cust_dao = NEW #( ).
-    reset_cut( cl_aunit_assert=>class ).
+    reset_cut( if_aunit_constants=>class ).
   ENDMETHOD.
 
   METHOD reset_cut.
@@ -179,8 +179,8 @@ CLASS lcl_unit_tests IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    cl_aunit_assert=>assert_equals( act = mapper_class_name
-                                    exp = i_expected_result ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected_result
+                                        act = mapper_class_name ).
   ENDMETHOD.
 
   METHOD test_validate_fallback.
@@ -200,7 +200,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     IF    object_description->is_implementing( mapper_interface_name ) <> abap_true
        OR object_description->is_instantiatable( ) <> abap_true.
-      cl_aunit_assert=>fail( 'Invalid fallback for mapper class!' ).
+      cl_abap_unit_assert=>fail( 'Invalid fallback for mapper class!' ).
     ENDIF.
   ENDMETHOD.
 ENDCLASS.

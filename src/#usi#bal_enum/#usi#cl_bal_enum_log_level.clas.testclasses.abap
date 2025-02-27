@@ -3,10 +3,7 @@
 " ---------------------------------------------------------------------
 " Test all public static object references are bound & read-only
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
@@ -34,10 +31,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Check the various helper methods of the class
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_raise_on_invalid_value    FOR TESTING.
     METHODS test_get_by_value              FOR TESTING.
@@ -67,7 +61,7 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
   METHOD test_raise_on_invalid_value.
     TRY.
         /usi/cl_bal_enum_log_level=>get_by_value( 9 ).
-        cl_aunit_assert=>fail( msg = 'Exception should have been raised, as input was invalid!' ).
+        cl_abap_unit_assert=>fail( msg = 'Exception should have been raised, as input was invalid!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -103,9 +97,9 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
     TRY.
         actual_result = /usi/cl_bal_enum_log_level=>get_by_value( i_value ).
 
-        cl_aunit_assert=>assert_equals( act = actual_result
-                                        exp = i_expected
-                                        msg = `GET_BY_VALUE( ) returns wrong instance!` ).
+        cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                            act = actual_result
+                                            msg = `GET_BY_VALUE( ) returns wrong instance!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
@@ -137,12 +131,12 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals( act = i_instance->value
-                                    exp = i_expected ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = i_instance->value ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound( act = i_instance ).
+    cl_abap_unit_assert=>assert_bound( act = i_instance ).
   ENDMETHOD.
 
   METHOD test_is_higher.
@@ -150,21 +144,17 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
           unbound_log_level TYPE REF TO /usi/cl_bal_enum_log_level.
 
     actual_result = /usi/cl_bal_enum_log_level=>everything->is_higher_than( /usi/cl_bal_enum_log_level=>nothing ).
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_true( actual_result ).
 
     actual_result = /usi/cl_bal_enum_log_level=>nothing->is_higher_than( /usi/cl_bal_enum_log_level=>very_important ).
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_false( actual_result ).
 
     actual_result = /usi/cl_bal_enum_log_level=>very_important->is_higher_than(
                         /usi/cl_bal_enum_log_level=>very_important ).
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_false( actual_result ).
 
     actual_result = /usi/cl_bal_enum_log_level=>very_important->is_higher_than( unbound_log_level ).
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_false( actual_result ).
   ENDMETHOD.
 
   METHOD test_is_problem_class_relevant.
@@ -207,9 +197,9 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
       expected_result = boolc( log_level BETWEEN i_relevant_from AND i_relevant_to ).
       actual_result = cut->is_problem_class_relevant( i_problem_class ).
 
-      cl_aunit_assert=>assert_equals( exp = expected_result
-                                      act = actual_result
-                                      msg = `Assignment of problem classes to log levels is broken!` ).
+      cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                          act = actual_result
+                                          msg = `Assignment of problem classes to log levels is broken!` ).
 
       log_level = log_level + 1.
     ENDWHILE.

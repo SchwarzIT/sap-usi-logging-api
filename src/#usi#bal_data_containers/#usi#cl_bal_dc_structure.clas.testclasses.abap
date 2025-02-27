@@ -25,31 +25,18 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Serialization
 " ---------------------------------------------------------------------
-CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml       FOR TESTING.
-
     METHODS test_deserialize_valid_xml     FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_ignores_object_references FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_throws_on_empty_result    FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_resolves_included_struc   FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_resolves_include_w_suffix FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_resolves_multiple_suffix  FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_resolves_structured_field FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_resolves_recursively      FOR TESTING RAISING /usi/cx_bal_root.
-
     METHODS test_keeps_deep_struc_values   FOR TESTING RAISING /usi/cx_bal_root.
-
 ENDCLASS.
 
 
@@ -57,7 +44,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
     TRY.
         /usi/cl_bal_dc_structure=>/usi/if_bal_data_container~deserialize( `Garbage input - should fail.` ).
-        cl_aunit_assert=>fail( 'Input was garbage! Exception expected!' ).
+        cl_abap_unit_assert=>fail( 'Input was garbage! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -90,8 +77,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
                         /usi/cl_bal_dc_structure=>/usi/if_bal_data_container~deserialize( valid_xml ) ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_ignores_object_references.
@@ -106,8 +93,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( structure ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_throws_on_empty_result.
@@ -119,7 +106,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     TRY.
         cut->/usi/if_bal_data_container~serialize( ).
-        cl_aunit_assert=>fail( 'Input contained no relevant fields! Exception expected!' ).
+        cl_abap_unit_assert=>fail( 'Input contained no relevant fields! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -142,8 +129,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( given ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_resolves_include_w_suffix.
@@ -163,8 +150,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( given ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_resolves_multiple_suffix.
@@ -192,8 +179,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( given ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_resolves_structured_field.
@@ -213,8 +200,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( given ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_resolves_recursively.
@@ -238,8 +225,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(cut) = NEW /usi/cl_bal_dc_structure( given ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 
   METHOD test_keeps_deep_struc_values.
@@ -257,8 +244,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
                                                                        field_02 = 'MUST NOT BE LOST!' ) ).
     DATA(act) = lcl_private_attribute_reader=>get_alv_output( cut ).
 
-    cl_aunit_assert=>assert_equals( exp = exp
-                                    act = act ).
+    cl_abap_unit_assert=>assert_equals( exp = exp
+                                        act = act ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -266,10 +253,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_is_single_use FOR TESTING.
 ENDCLASS.
@@ -277,11 +261,8 @@ ENDCLASS.
 
 CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_is_single_use.
-    DATA actual_result TYPE abap_bool.
-
-    actual_result = /usi/cl_bal_dc_structure=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = actual_result ).
+    DATA(actual_result) = /usi/cl_bal_dc_structure=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
+    cl_abap_unit_assert=>assert_true( actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -289,10 +270,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Classname
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.

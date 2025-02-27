@@ -67,22 +67,22 @@ CLASS /usi/cl_bal_aunit_method_calls IMPLEMENTATION.
       actual_number_of_calls = actual_number_of_calls + 1.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = i_expected_number_of_calls
-                                    act = actual_number_of_calls
-                                    msg = `Unexpected number of method calls!` ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected_number_of_calls
+                                        act = actual_number_of_calls
+                                        msg = `Unexpected number of method calls!` ).
   ENDMETHOD.
 
   METHOD assert_method_was_called.
     IF was_method_called( i_method_name ) = abap_false.
-      cl_aunit_assert=>fail( msg    = `Method was not called!`
-                             detail = i_method_name ).
+      cl_abap_unit_assert=>fail( msg    = `Method was not called!`
+                                 detail = i_method_name ).
     ENDIF.
   ENDMETHOD.
 
   METHOD assert_method_was_not_called.
     IF was_method_called( i_method_name ) = abap_true.
-      cl_aunit_assert=>fail( msg    = `Method was called!`
-                             detail = i_method_name ).
+      cl_abap_unit_assert=>fail( msg    = `Method was called!`
+                                 detail = i_method_name ).
     ENDIF.
   ENDMETHOD.
 

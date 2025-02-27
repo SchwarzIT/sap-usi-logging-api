@@ -3,9 +3,7 @@
 *--------------------------------------------------------------------*
 * Test all public static object references are bound & read-only
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
@@ -31,9 +29,7 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 * Check the values of the public static attributes
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS verify_static_instances FOR TESTING.
 
@@ -71,21 +67,19 @@ CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals( act = i_instance->value
-                                    exp = i_expected ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = i_instance->value ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound( act = i_instance ).
+    cl_abap_unit_assert=>assert_bound( act = i_instance ).
   ENDMETHOD.
 ENDCLASS.
 
 *--------------------------------------------------------------------*
 * Check the various helper methods of the class
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_raise_on_invalid_value     FOR TESTING.
     METHODS test_get_by_value               FOR TESTING.
@@ -102,7 +96,7 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
 
     TRY.
         /usi/cl_bal_enum_message_type=>get_by_value( invalid_message_type ).
-        cl_aunit_assert=>fail( msg = 'Exception should have been raised, as input was invalid!' ).
+        cl_abap_unit_assert=>fail( msg = 'Exception should have been raised, as input was invalid!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -135,9 +129,9 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
     TRY.
         actual_result = /usi/cl_bal_enum_message_type=>get_by_value( i_value ).
 
-        cl_aunit_assert=>assert_equals( act = actual_result
-                                        exp = i_expected
-                                        msg = `GET_BY_VALUE( ) returns wrong instance!` ).
+        cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                            act = actual_result
+                                            msg = `GET_BY_VALUE( ) returns wrong instance!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.

@@ -1,9 +1,6 @@
 *"* use this source file for your ABAP unit test classes
-CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
-  "#AU Duration   Short
-  "#AU Risk_Level Harmless
+CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-
     DATA cut TYPE REF TO /usi/cl_bal_cust_dao_factory.
 
     METHODS setup.
@@ -16,6 +13,7 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
 
 ENDCLASS.
 
+
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     cut = NEW #( ).
@@ -23,26 +21,26 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
   METHOD test_exception_mapper_dao.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_exception_mapper( ).
-    cl_aunit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 
   METHOD test_regular_log_level_dao.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_log_object( ).
-    cl_aunit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 
   METHOD test_increased_log_level_dao.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_user( ).
-    cl_aunit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 
   METHOD test_message_context_data_dao.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_data_containers( ).
-    cl_aunit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 
   METHOD test_retention_parameter_dao.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_retention_parameters( ).
-    cl_aunit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 ENDCLASS.
