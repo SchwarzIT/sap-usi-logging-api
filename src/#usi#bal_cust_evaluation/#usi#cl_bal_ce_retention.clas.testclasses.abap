@@ -22,9 +22,7 @@ ENDCLASS.
 
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   METHOD /usi/if_bal_cd_retention~get_records.
-    FIELD-SYMBOLS <mock_data_line> TYPE LINE OF /usi/if_bal_cd_retention=>ty_records.
-
-    LOOP AT mock_data ASSIGNING <mock_data_line>
+    LOOP AT mock_data ASSIGNING FIELD-SYMBOL(<mock_data_line>)
          WHERE     log_object IN i_log_object_range
                AND sub_object IN i_sub_object_range
                AND log_level   = i_log_level.
@@ -42,21 +40,18 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD insert_mock_data_line.
-    DATA mock_data_line TYPE LINE OF /usi/if_bal_cd_retention=>ty_records.
-    mock_data_line-log_object           = i_log_object.
-    mock_data_line-sub_object           = i_sub_object.
-    mock_data_line-log_level            = i_log_level->value.
-    mock_data_line-retention_parameters = i_retention_params.
-    INSERT mock_data_line INTO TABLE mock_data.
+    INSERT VALUE #( log_object           = i_log_object
+                    sub_object           = i_sub_object
+                    log_level            = i_log_level->value
+                    retention_parameters = i_retention_params )
+           INTO TABLE mock_data.
   ENDMETHOD.
 ENDCLASS.
 
 *--------------------------------------------------------------------*
 * Unit test
 *--------------------------------------------------------------------*
-CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: test_double_cust_dao TYPE REF TO lcl_test_double_cust_dao,
           cut                  TYPE REF TO /usi/cl_bal_ce_retention.
@@ -90,57 +85,38 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD reset_cut.
-    DATA exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut = NEW #( i_customizing_dao = test_double_cust_dao ).
-      CATCH /usi/cx_bal_root INTO exception.
-        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = exception
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
+        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = unexpected_exception
                                                                     i_quit      = if_aunit_constants=>method ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_fallback_for_no_cust.
-    DATA expected_result TYPE /usi/bal_retention_parameters.
-
-    expected_result = cut->get_fallback( ).
     assert_expected_result( i_log_object      = 'DUMMY'
-                            i_expected_result = expected_result ).
+                            i_expected_result = cut->get_fallback( ) ).
   ENDMETHOD.
 
   METHOD test_no_match_for_log_object.
-    DATA: expected_result               TYPE /usi/bal_retention_parameters,
-          non_fallback_retention_params TYPE /usi/bal_retention_parameters.
-
-    non_fallback_retention_params = get_non_fallback_retention_par( 10 ).
-
     test_double_cust_dao->insert_mock_data_line( i_log_object       = 'CUST_LOG_OBJECT'
-                                                 i_retention_params = non_fallback_retention_params ).
+                                                 i_retention_params = get_non_fallback_retention_par( 10 ) ).
 
-    expected_result = cut->get_fallback( ).
     assert_expected_result( i_log_object      = 'NOT_IN_CUST'
-                            i_expected_result = expected_result ).
+                            i_expected_result = cut->get_fallback( ) ).
   ENDMETHOD.
 
   METHOD test_no_match_for_sub_object.
-    DATA: expected_result               TYPE /usi/bal_retention_parameters,
-          non_fallback_retention_params TYPE /usi/bal_retention_parameters.
-
-    non_fallback_retention_params = get_non_fallback_retention_par( 20 ).
-
     test_double_cust_dao->insert_mock_data_line( i_sub_object       = 'CUST_SUB_OBJECT'
-                                                 i_retention_params = non_fallback_retention_params ).
+                                                 i_retention_params = get_non_fallback_retention_par( 20 ) ).
 
-    expected_result = cut->get_fallback( ).
     assert_expected_result( i_log_object      = space
                             i_sub_object      = 'NOT_IN_CUST'
-                            i_expected_result = expected_result ).
+                            i_expected_result = cut->get_fallback( ) ).
   ENDMETHOD.
 
   METHOD test_cust_entry_priorities.
-    DATA: non_fallback_retention_params TYPE /usi/bal_retention_parameters,
-          cust_key_log_object           TYPE balobj_d,
-          cust_key_sub_object           TYPE balsubobj.
+    DATA non_fallback_retention_params TYPE /usi/bal_retention_parameters.
 
     " Prio 4
     non_fallback_retention_params = get_non_fallback_retention_par( 4 ).
@@ -197,19 +173,14 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_expected_result.
-    DATA: actual_result TYPE /usi/bal_retention_parameters,
-          message       TYPE string.
-
     reset_cut( ).
+    DATA(actual_result) = cut->/usi/if_bal_ce_retention~get_parameters( i_log_object = i_log_object
+                                                                        i_sub_object = i_sub_object
+                                                                        i_log_level  = i_log_level ).
 
-    actual_result = cut->/usi/if_bal_ce_retention~get_parameters( i_log_object = i_log_object
-                                                                  i_sub_object = i_sub_object
-                                                                  i_log_level  = i_log_level ).
-
-    CONCATENATE `REQUEST:` i_log_object i_sub_object INTO message IN CHARACTER MODE SEPARATED BY space.
-    cl_aunit_assert=>assert_equals( msg  = message
-                                    act  = actual_result
-                                    exp  = i_expected_result
-                                    quit = if_aunit_constants=>no ).
+    cl_abap_unit_assert=>assert_equals( exp  = i_expected_result
+                                        act  = actual_result
+                                        msg  = |REQUEST: { i_log_object } { i_sub_object }|
+                                        quit = if_aunit_constants=>no ).
   ENDMETHOD.
 ENDCLASS.

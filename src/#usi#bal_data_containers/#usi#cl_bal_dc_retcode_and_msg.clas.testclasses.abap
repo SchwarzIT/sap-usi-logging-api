@@ -1,26 +1,24 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Unit test: Serialization
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" Unit test: Serialization
+" ---------------------------------------------------------------------
 CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
 CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
-CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
     METHODS test_deserialize_valid_xml FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    DATA cut TYPE REF TO /usi/cl_bal_dc_retcode_and_msg.
-
     TRY.
-        cut ?= /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize( `Invalid garbage` ).
-        cl_aunit_assert=>fail( msg = 'Input was garbage! Exception expected!' ).
+        CAST /usi/cl_bal_dc_retcode_and_msg( /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize(
+                                                 `Invalid garbage` ) ).
+        cl_abap_unit_assert=>fail( msg = 'Input was garbage! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -56,42 +54,39 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    cl_aunit_assert=>assert_equals( act = cut->message
-                                    exp = input-message ).
-    cl_aunit_assert=>assert_equals( act = cut->return_code
-                                    exp = input-return_code ).
+    cl_abap_unit_assert=>assert_equals( exp = input-message
+                                        act = cut->message ).
+    cl_abap_unit_assert=>assert_equals( exp = input-return_code
+                                        act = cut->return_code ).
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Cardinality
-*--------------------------------------------------------------------*
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+
+" ---------------------------------------------------------------------
+" Unit test: Cardinality
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_is_single_use FOR TESTING.
 ENDCLASS.
 
+
 CLASS lcl_unit_test_cardinality IMPLEMENTATION.
   METHOD assert_is_single_use.
-    DATA actual_result TYPE abap_bool.
-
-    actual_result = /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result ).
+    DATA(actual_result) = /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
+    cl_abap_unit_assert=>assert_false( actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test: Classname
-*--------------------------------------------------------------------*
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+
+" ---------------------------------------------------------------------
+" Unit test: Classname
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_classname IMPLEMENTATION.
   METHOD assert_returns_right_classname.

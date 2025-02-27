@@ -20,10 +20,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " The test
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_refuse_unbound_exception  FOR TESTING.
     METHODS test_data_container            FOR TESTING.
@@ -50,7 +47,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
 
     TRY.
         NEW lcl_cut_subclass( i_exception = unbound_reference ).
-        cl_aunit_assert=>fail( 'Initial references must not be accepted!' ).
+        cl_abap_unit_assert=>fail( 'Initial references must not be accepted!' ).
       CATCH /usi/cx_bal_root.
         " Expected result - this is exactly, what we wanted!
         RETURN.
@@ -116,7 +113,7 @@ CLASS lcl_unit_test IMPLEMENTATION.
     TRY.
         cut = NEW #( i_exception = exception ).
       CATCH /usi/cx_bal_root.
-        cl_aunit_assert=>fail( 'Unexpected exception!' ).
+        cl_abap_unit_assert=>fail( 'Unexpected exception!' ).
     ENDTRY.
 
     data_container_collection = NEW #( ).
@@ -124,12 +121,9 @@ CLASS lcl_unit_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_data_container.
-    DATA source_code_position TYPE /usi/bal_source_code_position.
-
-    source_code_position-program_name = 'FOO'.
-    source_code_position-include_name = 'BAR'.
-    source_code_position-source_line  = 42.
-    r_result = NEW /usi/cl_bal_dc_src_pos_cx( i_source_code_position = source_code_position ).
+    r_result = NEW /usi/cl_bal_dc_src_pos_cx( VALUE #( program_name = 'FOO'
+                                                       include_name = 'BAR'
+                                                       source_line  = 42   ) ).
   ENDMETHOD.
 
   METHOD get_exception.
@@ -144,16 +138,11 @@ CLASS lcl_unit_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_container_in_collection.
-    DATA data_containers TYPE /usi/bal_data_containers.
-
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
-
-    data_containers = i_data_container_collection->get_data_containers( ).
-    LOOP AT data_containers ASSIGNING <data_container>.
+    LOOP AT i_data_container_collection->get_data_containers( ) ASSIGNING FIELD-SYMBOL(<data_container>).
       IF <data_container> = i_data_container.
         RETURN.
       ENDIF.
     ENDLOOP.
-    cl_aunit_assert=>fail( 'Expected data container is missing!' ).
+    cl_abap_unit_assert=>fail( 'Expected data container is missing!' ).
   ENDMETHOD.
 ENDCLASS.

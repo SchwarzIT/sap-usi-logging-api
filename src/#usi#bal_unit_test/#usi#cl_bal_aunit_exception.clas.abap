@@ -22,15 +22,15 @@ ENDCLASS.
 CLASS /usi/cl_bal_aunit_exception IMPLEMENTATION.
   METHOD abort_on_unexpected_exception.
     DATA(exception_text) = i_exception->get_text( ).
-    cl_aunit_assert=>abort( msg    = `Unexpected exception!`
-                            detail = exception_text
-                            quit   = i_quit ).
+    cl_abap_unit_assert=>abort( msg    = `Unexpected exception!`
+                                detail = exception_text
+                                quit   = i_quit ).
   ENDMETHOD.
 
   METHOD fail_on_unexpected_exception.
     DATA(exception_text) = i_exception->get_text( ).
-    cl_aunit_assert=>fail( msg    = `Unexpected exception!`
-                           detail = exception_text
-                           quit   = i_quit ).
+    cl_abap_unit_assert=>fail( msg    = `Unexpected exception!`
+                               detail = exception_text
+                               quit   = i_quit ).
   ENDMETHOD.
 ENDCLASS.

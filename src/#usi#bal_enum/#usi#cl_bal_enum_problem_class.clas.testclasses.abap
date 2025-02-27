@@ -3,9 +3,7 @@
 *--------------------------------------------------------------------*
 * Test all public static object references are bound & read-only
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
@@ -31,9 +29,7 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 * Check the values of the public static attributes
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS verify_static_instances FOR TESTING.
 
@@ -68,11 +64,11 @@ CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals( act = i_instance->value
-                                    exp = i_expected ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = i_instance->value ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound( i_instance ).
+    cl_abap_unit_assert=>assert_bound( i_instance ).
   ENDMETHOD.
 ENDCLASS.

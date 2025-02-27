@@ -102,7 +102,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_rejects_invalid_xml.
     TRY.
         /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( |Invalid input! XML expected!| ).
-        cl_aunit_assert=>fail( `Input was garbage! Exception expected!` ).
+        cl_abap_unit_assert=>fail( `Input was garbage! Exception expected!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -120,8 +120,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     cut = get_deserialized_cut( input ).
 
-    cl_aunit_assert=>assert_equals( exp = input-fieldcatalog
-                                    act = NEW lcl_unit_test_cut_spy( cut )->get_external_fieldcatalog( ) ).
+    cl_abap_unit_assert=>assert_equals( exp = input-fieldcatalog
+                                        act = NEW lcl_unit_test_cut_spy( cut )->get_external_fieldcatalog( ) ).
   ENDMETHOD.
 
   METHOD test_title.
@@ -140,8 +140,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
 
     serialized_title-input  = input-title->serialize( ).
     serialized_title-output = NEW lcl_unit_test_cut_spy( cut )->get_title( )->serialize( ).
-    cl_aunit_assert=>assert_equals( exp = serialized_title-input
-                                    act = serialized_title-output ).
+    cl_abap_unit_assert=>assert_equals( exp = serialized_title-input
+                                        act = serialized_title-output ).
   ENDMETHOD.
 
   METHOD test_table_of_ddic_struc.
@@ -155,8 +155,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
     ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
 
-    cl_aunit_assert=>assert_equals( exp = <expected_result>
-                                    act = <actual_result> ).
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
   ENDMETHOD.
 
   METHOD test_table_of_non_ddic_struc.
@@ -176,8 +176,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(actual_result) = NEW lcl_unit_test_cut_spy( cut )->get_internal_table( ).
     ASSIGN actual_result->* TO FIELD-SYMBOL(<actual_result>).
 
-    cl_aunit_assert=>assert_equals( exp = <expected_result>
-                                    act = <actual_result> ).
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = <actual_result> ).
   ENDMETHOD.
 
   METHOD test_table_of_ddic_elem.
@@ -200,8 +200,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
       INSERT <actual_result_field> INTO TABLE converted_result.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = <expected_result>
-                                    act = converted_result ).
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = converted_result ).
   ENDMETHOD.
 
   METHOD test_rebuild_from_fieldcatalog.
@@ -236,8 +236,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
       INSERT converted_result_line INTO TABLE converted_result.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = <expected_result>
-                                    act = converted_result ).
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = converted_result ).
   ENDMETHOD.
 
   METHOD get_deserialized_cut.
@@ -500,8 +500,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
       INSERT converted_result_line INTO TABLE converted_result.
     ENDLOOP.
 
-    cl_aunit_assert=>assert_equals( exp = <expected_result>
-                                    act = converted_result ).
+    cl_abap_unit_assert=>assert_equals( exp = <expected_result>
+                                        act = converted_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -520,8 +520,7 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_true( actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -614,7 +613,7 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
 
         cut->/usi/if_bal_data_container~serialize( ).
 
-        cl_aunit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
+        cl_abap_unit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
       CATCH /usi/cx_bal_root.
         " We expected that
         RETURN.
@@ -630,7 +629,7 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
 
         cut->/usi/if_bal_data_container~serialize( ).
 
-        cl_aunit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
+        cl_abap_unit_assert=>fail( `The class should only accept itabs with structured or elementary line types!` ).
       CATCH /usi/cx_bal_root.
         " We expected that
         RETURN.

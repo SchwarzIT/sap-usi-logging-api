@@ -16,7 +16,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD test_throws_on_no_cust.
     TRY.
         cut->get_records( i_log_object_range = exclude_all_log_objects_range ).
-        cl_aunit_assert=>fail( `Should throw exception on no data!` ).
+        cl_abap_unit_assert=>fail( `Should throw exception on no data!` ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.

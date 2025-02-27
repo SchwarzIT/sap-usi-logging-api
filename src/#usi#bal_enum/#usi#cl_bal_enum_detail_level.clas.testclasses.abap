@@ -1,18 +1,17 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Test all public static object references are bound & read-only
-*--------------------------------------------------------------------*
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+" ---------------------------------------------------------------------
+" Test all public static object references are bound & read-only
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut_description TYPE REF TO /usi/cl_bal_aunit_cut_descr_cl.
 
     METHODS setup.
-    METHODS assert_public_is_read_only FOR TESTING.
+    METHODS assert_public_is_read_only  FOR TESTING.
     METHODS assert_public_statics_bound FOR TESTING.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_public_attribs IMPLEMENTATION.
   METHOD setup.
@@ -28,12 +27,11 @@ CLASS lcl_unit_test_public_attribs IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Check the values of the public static attributes
-*--------------------------------------------------------------------*
-CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+
+" ---------------------------------------------------------------------
+" Check the values of the public static attributes
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS verify_static_instances FOR TESTING.
 
@@ -46,6 +44,7 @@ CLASS lcl_unit_test_values DEFINITION FINAL FOR TESTING.
       IMPORTING
         i_instance TYPE REF TO /usi/cl_bal_enum_detail_level.
 ENDCLASS.
+
 
 CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD verify_static_instances.
@@ -80,11 +79,11 @@ CLASS lcl_unit_test_values IMPLEMENTATION.
   METHOD assert_value.
     assert_bound( i_instance ).
 
-    cl_aunit_assert=>assert_equals( act = i_instance->value
-                                    exp = i_expected ).
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = i_instance->value ).
   ENDMETHOD.
 
   METHOD assert_bound.
-    cl_aunit_assert=>assert_bound( i_instance ).
+    cl_abap_unit_assert=>assert_bound( i_instance ).
   ENDMETHOD.
 ENDCLASS.

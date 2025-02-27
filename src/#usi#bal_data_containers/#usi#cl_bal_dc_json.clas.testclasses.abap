@@ -6,10 +6,7 @@
 CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
 CLASS /usi/cl_bal_dc_json DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
-CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
     METHODS test_deserialize_valid_xml FOR TESTING.
@@ -18,12 +15,9 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA cut TYPE REF TO /usi/cl_bal_dc_json.
-
     TRY.
-        cut ?= /usi/cl_bal_dc_json=>/usi/if_bal_data_container~deserialize( `Garbage input - should fail.` ).
-        cl_aunit_assert=>fail( 'Input was garbage! Exception expected!' ).
+        CAST /usi/cl_bal_dc_json( /usi/cl_bal_dc_json=>/usi/if_bal_data_container~deserialize( `Garbage` ) ).
+        cl_abap_unit_assert=>fail( 'Input was garbage! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -41,7 +35,7 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     " serialize
     document = `<html><head/><body><p>test document</p></body></html>`.
 
-    title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Test document title' ).
+    title = NEW /usi/cl_bal_tc_literal_c40( 'Test document title' ).
 
     cut = NEW #( i_json_document  = document
                  i_document_title = title ).
@@ -60,13 +54,13 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     ENDTRY.
 
     " compare
-    cl_aunit_assert=>assert_equals( act = cut->json_document
-                                    exp = document ).
+    cl_abap_unit_assert=>assert_equals( exp = document
+                                        act = cut->json_document ).
 
     serialized_title_in  = title->serialize( ).
     serialized_title_out = cut->document_title->serialize( ).
-    cl_aunit_assert=>assert_equals( act = serialized_title_out
-                                    exp = serialized_title_in ).
+    cl_abap_unit_assert=>assert_equals( exp = serialized_title_in
+                                        act = serialized_title_out ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -74,10 +68,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_is_multi_use FOR TESTING.
 ENDCLASS.
@@ -88,8 +79,7 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_json=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals( act = actual_result
-                                    exp = abap_true ).
+    cl_abap_unit_assert=>assert_true( actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -97,10 +87,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Classname
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.

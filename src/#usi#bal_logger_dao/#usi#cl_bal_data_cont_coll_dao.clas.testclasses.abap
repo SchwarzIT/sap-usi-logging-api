@@ -6,10 +6,7 @@
 CLASS lcl_unit_tests_db_conversion DEFINITION DEFERRED.
 CLASS /usi/cl_bal_data_cont_coll_dao DEFINITION LOCAL FRIENDS lcl_unit_tests_db_conversion.
 
-CLASS lcl_unit_tests_db_conversion DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_tests_db_conversion DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_conversion       FOR TESTING.
     METHODS test_empty_xml_string FOR TESTING.
@@ -34,9 +31,9 @@ CLASS lcl_unit_tests_db_conversion IMPLEMENTATION.
                                             i_serialized_data_cont_coll = expected_result ).
     actual_result = cut->convert_db_to_xml( db_records ).
 
-    cl_aunit_assert=>assert_equals( exp = expected_result
-                                    act = actual_result
-                                    msg = `XML2DB-Cenversion is broken!` ).
+    cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                        act = actual_result
+                                        msg = `XML2DB-Cenversion is broken!` ).
   ENDMETHOD.
 
   METHOD get_xml_test_string.
@@ -61,8 +58,8 @@ CLASS lcl_unit_tests_db_conversion IMPLEMENTATION.
                                                                            i_message_number            = 1
                                                                            i_serialized_data_cont_coll = `` ).
 
-        cl_aunit_assert=>assert_initial( act = cut->db_records
-                                         msg = `CUT should not create entries for initial input!` ).
+        cl_abap_unit_assert=>assert_initial( act = cut->db_records
+                                             msg = `CUT should not create entries for initial input!` ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
@@ -73,10 +70,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Duplicate message
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_duplicate_msg DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_duplicate_msg DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_duplicate_message FOR TESTING.
 ENDCLASS.
@@ -84,25 +78,22 @@ ENDCLASS.
 
 CLASS lcl_unit_test_duplicate_msg IMPLEMENTATION.
   METHOD test_duplicate_message.
-    DATA: cut                  TYPE REF TO /usi/if_bal_data_cont_coll_dao,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    cut = NEW /usi/cl_bal_data_cont_coll_dao( ).
+    DATA(cut) = CAST /usi/if_bal_data_cont_coll_dao( NEW /usi/cl_bal_data_cont_coll_dao( ) ).
     TRY.
         cut->insert_collection_into_buffer( i_log_number                = '1'
                                             i_message_number            = 1
                                             i_serialized_data_cont_coll = `<test>` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
     TRY.
-        cut->insert_collection_into_buffer( i_message_number            = 1
-                                            i_log_number                = '1'
+        cut->insert_collection_into_buffer( i_log_number                = '1'
+                                            i_message_number            = 1
                                             i_serialized_data_cont_coll = `<test>` ).
 
-        cl_aunit_assert=>fail( `Call should have failed (Duplicate)!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        cl_abap_unit_assert=>fail( `Call should have failed (Duplicate)!` ).
+      CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
   ENDMETHOD.

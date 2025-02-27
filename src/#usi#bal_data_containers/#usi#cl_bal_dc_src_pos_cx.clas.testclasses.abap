@@ -6,10 +6,7 @@
 CLASS lcl_unit_tests_serialization DEFINITION DEFERRED.
 CLASS /usi/cl_bal_dc_src_pos_cx DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 
-CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
     METHODS test_deserialize_valid_xml FOR TESTING.
@@ -18,12 +15,10 @@ ENDCLASS.
 
 CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   METHOD test_deserialize_bad_xml.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA cut TYPE REF TO /usi/cl_bal_dc_src_pos_cx.
-
     TRY.
-        cut ?= /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~deserialize( `Invalid garbage` ).
-        cl_aunit_assert=>fail( 'Input was garbage! Exception expected!' ).
+        CAST /usi/cl_bal_dc_src_pos_cx( /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~deserialize(
+                                            `Invalid garbage` ) ).
+        cl_abap_unit_assert=>fail( 'Input was garbage! Exception expected!' ).
       CATCH /usi/cx_bal_root.
         RETURN.
     ENDTRY.
@@ -36,10 +31,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
           unexpected_exception      TYPE REF TO /usi/cx_bal_root.
 
     " serialize
-    input-program_name = 'FOO'.
-    input-include_name = 'BAR'.
-    input-source_line  = 42.
-
+    input = VALUE #( program_name = 'FOO'
+                     include_name = 'BAR'
+                     source_line  = 42 ).
     cut = NEW #( i_source_code_position = input ).
 
     TRY.
@@ -57,8 +51,8 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     ENDTRY.
 
     " compare
-    cl_aunit_assert=>assert_equals( act = cut->source_code_position
-                                    exp = input ).
+    cl_abap_unit_assert=>assert_equals( exp = input
+                                        act = cut->source_code_position ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -66,10 +60,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Cardinality
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_cardinality DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_is_single_use FOR TESTING.
 ENDCLASS.
@@ -80,8 +71,7 @@ CLASS lcl_unit_test_cardinality IMPLEMENTATION.
     DATA actual_result TYPE abap_bool.
 
     actual_result = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~is_multiple_use_allowed( ).
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = actual_result ).
+    cl_abap_unit_assert=>assert_false( actual_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -89,10 +79,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Classname
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.

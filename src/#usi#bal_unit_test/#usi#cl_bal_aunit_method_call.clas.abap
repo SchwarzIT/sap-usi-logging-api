@@ -54,7 +54,7 @@ CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
 
     INSERT parameter INTO TABLE parameters.
     IF sy-subrc <> 0.
-      cl_aunit_assert=>fail( `Duplicate call! Test is broken!` ).
+      cl_abap_unit_assert=>fail( `Duplicate call! Test is broken!` ).
     ENDIF.
   ENDMETHOD.
 
@@ -66,8 +66,8 @@ CLASS /usi/cl_bal_aunit_method_call IMPLEMENTATION.
 
     ASSIGN parameters[ parameter_name = i_parameter_name ] TO <parameter>.
     IF sy-subrc <> 0.
-      cl_aunit_assert=>fail( msg    = `Parameter not found!`
-                             detail = i_parameter_name ).
+      cl_abap_unit_assert=>fail( msg    = `Parameter not found!`
+                                 detail = i_parameter_name ).
     ENDIF.
 
     ASSIGN <parameter>-parameter_value->* TO <parameter_value>.

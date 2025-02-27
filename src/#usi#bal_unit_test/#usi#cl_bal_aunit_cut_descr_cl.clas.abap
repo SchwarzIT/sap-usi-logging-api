@@ -57,9 +57,9 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
   METHOD assert_classname_equals.
-    cl_aunit_assert=>assert_equals( exp = classname
-                                    act = i_actual_classname
-                                    msg = `Unexpected classname!` ).
+    cl_abap_unit_assert=>assert_equals( exp = classname
+                                        act = i_actual_classname
+                                        msg = `Unexpected classname!` ).
   ENDMETHOD.
 
   METHOD assert_public_attrib_read_only.
@@ -72,8 +72,8 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     ASSIGN class_description->attributes[ visibility   = cl_abap_classdescr=>public
                                           is_read_only = abap_false ] TO <attribute>.
     IF sy-subrc = 0.
-      cl_aunit_assert=>fail( msg    = `A public attribute is not READ-ONLY!`
-                             detail = <attribute>-name ).
+      cl_abap_unit_assert=>fail( msg    = `A public attribute is not READ-ONLY!`
+                                 detail = <attribute>-name ).
     ENDIF.
   ENDMETHOD.
 
@@ -91,11 +91,11 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
                AND type_kind  = cl_abap_classdescr=>typekind_oref.
       ASSIGN (classname)=>(<attribute>-name) TO <instance>.
       IF sy-subrc <> 0.
-        cl_aunit_assert=>fail( msg    = `Could not access public static oref-attribute`
-                               detail = <attribute>-name ).
+        cl_abap_unit_assert=>fail( msg    = `Could not access public static oref-attribute`
+                                   detail = <attribute>-name ).
       ELSE.
-        cl_aunit_assert=>assert_bound( act = <instance>
-                                       msg = <attribute>-name ).
+        cl_abap_unit_assert=>assert_bound( act = <instance>
+                                           msg = <attribute>-name ).
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
@@ -121,7 +121,7 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
                                                               internal_error = 2
                                                               OTHERS         = 3 ).
     IF sy-subrc <> 0.
-      cl_aunit_assert=>fail( `Caller is not a class!` ).
+      cl_abap_unit_assert=>fail( `Caller is not a class!` ).
     ENDIF.
 
     r_result = NEW #( i_classname = include_resolver->cifkey-clsname ).
@@ -138,8 +138,8 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     IF sy-subrc <> 0.
       CLEAR type_description.
     ENDIF.
-    cl_aunit_assert=>assert_bound( act = type_description
-                                   msg = `Could not get class description!` ).
+    cl_abap_unit_assert=>assert_bound( act = type_description
+                                       msg = `Could not get class description!` ).
 
     TRY.
         r_result ?= type_description.
