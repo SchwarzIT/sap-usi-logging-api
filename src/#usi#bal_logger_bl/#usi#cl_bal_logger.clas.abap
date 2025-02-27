@@ -185,6 +185,10 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
     ENDTRY.
   ENDMETHOD.
 
+  METHOD /usi/if_bal_logger~display.
+    state->display( ).
+  ENDMETHOD.
+
   METHOD /usi/if_bal_logger~free.
     DATA: exception      TYPE REF TO /usi/cx_bal_root,
           exception_text TYPE string.

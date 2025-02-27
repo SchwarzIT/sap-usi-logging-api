@@ -3,10 +3,22 @@ CLASS lcl_log_message_detail IMPLEMENTATION.
     DATA: serialized_data_cont_coll TYPE /usi/bal_xml_string,
           data_container_collection TYPE REF TO /usi/if_bal_data_container_col.
 
-    message_parameters        = get_message_parameters( i_message_parameters ).
-    serialized_data_cont_coll = get_serialized_data_cont_coll( message_parameters ).
-    data_container_collection = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize(
-                                    serialized_data_cont_coll ).
+    message_parameters = get_message_parameters( i_message_parameters ).
+
+    IF data_cont_coll_buffer IS BOUND.
+      TRY.
+          data_container_collection = data_cont_coll_buffer->get_data_container_collection(
+                                          message_parameters-message_number ).
+        CATCH /usi/cx_bal_root.
+          CLEAR data_container_collection.
+      ENDTRY.
+    ENDIF.
+
+    IF data_container_collection IS NOT BOUND.
+      serialized_data_cont_coll = get_serialized_data_cont_coll( message_parameters ).
+      data_container_collection = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize(
+                                      serialized_data_cont_coll ).
+    ENDIF.
 
     data_container_selector = NEW #( i_data_container_collection = data_container_collection ).
   ENDMETHOD.

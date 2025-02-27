@@ -55,12 +55,10 @@ CLASS lcl_data_cont_coll_dao_mock IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+
 " ---------------------------------------------------------------------
 " State-Double
 " ---------------------------------------------------------------------
-CLASS lcl_log_writer_state_double DEFINITION DEFERRED.
-CLASS /usi/cl_bal_logger DEFINITION LOCAL FRIENDS lcl_log_writer_state_double.
-
 CLASS lcl_log_writer_state_double DEFINITION FINAL CREATE PUBLIC FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_logger_state.
@@ -73,10 +71,6 @@ CLASS lcl_log_writer_state_double DEFINITION FINAL CREATE PUBLIC FOR TESTING.
             claim_ownership TYPE abap_bool,
             save            TYPE abap_bool,
           END   OF called_methods.
-
-    CLASS-METHODS inject_into
-      IMPORTING i_log_writer    TYPE REF TO /usi/if_bal_logger
-      RETURNING VALUE(r_result) TYPE REF TO lcl_log_writer_state_double.
 
     METHODS make_next_call_fail.
 
@@ -93,14 +87,6 @@ ENDCLASS.
 
 
 CLASS lcl_log_writer_state_double IMPLEMENTATION.
-  METHOD inject_into.
-    DATA log_writer TYPE REF TO /usi/cl_bal_logger.
-
-    log_writer ?= i_log_writer.
-    r_result = NEW #( ).
-    log_writer->state = r_result.
-  ENDMETHOD.
-
   METHOD /usi/if_bal_logger_state~add_exception.
     called_methods-add_exception = abap_true.
     fail_if_requested( ).
@@ -114,6 +100,10 @@ CLASS lcl_log_writer_state_double IMPLEMENTATION.
   METHOD /usi/if_bal_logger_state~add_message.
     called_methods-add_message = abap_true.
     fail_if_requested( ).
+  ENDMETHOD.
+
+  METHOD /usi/if_bal_logger_state~display.
+    cl_abap_unit_assert=>fail( msg = `Method not implemented!` ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_logger_state~free.
@@ -151,17 +141,50 @@ ENDCLASS.
 
 
 " ---------------------------------------------------------------------
-" Unit test: Delegation
+" Helper class to access private data
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_delegation DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_private_data DEFINITION DEFERRED.
+CLASS /usi/cl_bal_logger DEFINITION LOCAL FRIENDS lcl_private_data.
+
+CLASS lcl_private_data DEFINITION FINAL CREATE PUBLIC FOR TESTING.
+  PUBLIC SECTION.
+    METHODS constructor
+      IMPORTING i_logger TYPE REF TO /usi/if_bal_logger.
+
+    METHODS set_state
+      IMPORTING i_state TYPE REF TO /usi/if_bal_logger_state.
+
+    METHODS get_state
+      RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_logger_state.
 
   PRIVATE SECTION.
-    DATA: cut              TYPE REF TO /usi/if_bal_logger,
-          dao_mock         TYPE REF TO lcl_log_writer_dao_mock,
-          dc_coll_dao_mock TYPE REF TO lcl_data_cont_coll_dao_mock,
-          state_double     TYPE REF TO lcl_log_writer_state_double.
+    DATA logger TYPE REF TO /usi/cl_bal_logger.
+
+ENDCLASS.
+
+
+CLASS lcl_private_data IMPLEMENTATION.
+  METHOD constructor.
+    logger = CAST #( i_logger ).
+  ENDMETHOD.
+
+  METHOD set_state.
+    logger->state = i_state.
+  ENDMETHOD.
+
+  METHOD get_state.
+    r_result = logger->state.
+  ENDMETHOD.
+ENDCLASS.
+
+
+" ---------------------------------------------------------------------
+" Unit test: Delegation
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_delegation DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
+  PRIVATE SECTION.
+    DATA: cut          TYPE REF TO /usi/if_bal_logger,
+          state_double TYPE REF TO lcl_log_writer_state_double.
 
     METHODS setup.
     METHODS test_add_exception   FOR TESTING.
@@ -175,78 +198,53 @@ ENDCLASS.
 
 CLASS lcl_unit_test_delegation IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames.
-
-    dao_mock = NEW #( ).
-    dc_coll_dao_mock = NEW #( ).
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-
-    cut = NEW /usi/cl_bal_logger( i_factory                  = logger_bl_factory
-                                  i_relevant_data_containers = relevant_data_containers
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
+    cut = NEW /usi/cl_bal_logger( i_factory                  = bl_factory
+                                  i_relevant_data_containers = VALUE #( )
                                   i_log_level                = /usi/cl_bal_enum_log_level=>everything
                                   i_auto_save_pckg_size      = 0
-                                  i_log_dao                  = dao_mock
-                                  i_data_cont_coll_dao       = dc_coll_dao_mock ).
+                                  i_log_dao                  = NEW lcl_log_writer_dao_mock( )
+                                  i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_mock( ) ).
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    state_double = NEW #( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
   ENDMETHOD.
 
   METHOD test_add_exception.
-    DATA exception TYPE REF TO cx_root.
-
-    cut->add_exception( exception ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-add_exception
-                                    msg = 'STATE->ADD_EXCEPTION( ) not called!' ).
+    cut->add_exception( VALUE #( ) ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-add_exception
+                                      msg = 'STATE->ADD_EXCEPTION( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_add_free_text.
     cut->add_free_text( `Just a test` ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-add_free_text
-                                    msg = 'STATE->ADD_FREE_TEXT( ) not called!' ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-add_free_text
+                                      msg = 'STATE->ADD_FREE_TEXT( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_add_message.
     cut->add_message( i_message_class  = '38'
                       i_message_number = '000' ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-add_message
-                                    msg = 'STATE->ADD_MESSAGE( ) not called!' ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-add_message
+                                      msg = 'STATE->ADD_MESSAGE( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_free.
-    DATA token TYPE REF TO /usi/if_bal_token.
-
-    cut->free( token ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-free
-                                    msg = 'STATE->FREE( ) not called!' ).
+    cut->free( VALUE #( ) ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-free
+                                      msg = 'STATE->FREE( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_claim_ownership.
     cut->claim_ownership( ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-claim_ownership
-                                    msg = 'STATE->CLAIM_OWNERSHIP( ) not called!' ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-claim_ownership
+                                      msg = 'STATE->CLAIM_OWNERSHIP( ) not called!' ).
   ENDMETHOD.
 
   METHOD test_save.
-    DATA token TYPE REF TO /usi/if_bal_token.
-
-    cut->save( token ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = state_double->called_methods-save
-                                    msg = 'STATE->SAVE( ) not called!' ).
+    cut->save( VALUE #( ) ).
+    cl_abap_unit_assert=>assert_true( act = state_double->called_methods-save
+                                      msg = 'STATE->SAVE( ) not called!' ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -254,10 +252,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Events
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_events DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_events DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut          TYPE REF TO /usi/if_bal_logger,
           event_raised TYPE abap_bool,
@@ -294,15 +289,14 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
                                   i_data_cont_coll_dao       = dc_coll_dao_mock ).
     SET HANDLER on_free FOR cut.
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    state_double = NEW #( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
   ENDMETHOD.
 
   METHOD test_raises_on_free_ok.
     cut->free( token ).
-
-    cl_aunit_assert=>assert_equals( exp = abap_true
-                                    act = event_raised
-                                    msg = 'No event raised on free( )!' ).
+    cl_abap_unit_assert=>assert_true( act = event_raised
+                                      msg = 'No event raised on free( )!' ).
   ENDMETHOD.
 
   METHOD test_dont_raise_on_free_error.
@@ -310,9 +304,8 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
 
     cut->free( token ).
 
-    cl_aunit_assert=>assert_equals( exp = abap_false
-                                    act = event_raised
-                                    msg = 'Event raised, though free( ) ran on errors!' ).
+    cl_abap_unit_assert=>assert_false( act = event_raised
+                                       msg = 'Event raised, though free( ) ran on errors!' ).
   ENDMETHOD.
 
   METHOD on_free.
@@ -320,16 +313,11 @@ CLASS lcl_unit_test_events IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
+
 " ---------------------------------------------------------------------
 " Unit test: State transitions
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_state_transition DEFINITION DEFERRED.
-CLASS /usi/cl_bal_logger DEFINITION LOCAL FRIENDS lcl_unit_test_state_transition.
-
-CLASS lcl_unit_test_state_transition DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_state_transition DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_logger.
 
@@ -388,19 +376,19 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   METHOD test_state_trans_add_exception.
     DATA dummy_exception TYPE REF TO cx_root.
 
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->add_exception( dummy_exception ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_add_free_text.
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->add_free_text( `Should not change state.` ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_add_message.
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->add_message( i_message_class  = '38'
                       i_message_number = '000' ).
     assert_state_is_test_double( ).
@@ -409,13 +397,13 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   METHOD test_state_trans_free.
     DATA dummy_token TYPE REF TO /usi/if_bal_token.
 
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->free( dummy_token ).
     assert_state_is_invalidated( ).
   ENDMETHOD.
 
   METHOD test_claim_ownership.
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->claim_ownership( ).
     assert_state_is_active( ).
   ENDMETHOD.
@@ -423,7 +411,7 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   METHOD test_state_trans_save.
     DATA dummy_token TYPE REF TO /usi/if_bal_token.
 
-    lcl_log_writer_state_double=>inject_into( cut ).
+    NEW lcl_private_data( cut )->set_state( NEW lcl_log_writer_state_double( ) ).
     cut->save( dummy_token ).
     assert_state_is_test_double( ).
   ENDMETHOD.
@@ -432,25 +420,25 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
     DATA: dummy_exception TYPE REF TO cx_root,
           state_double    TYPE REF TO lcl_log_writer_state_double.
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    state_double = NEW #( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
     state_double->make_next_call_fail( ).
     cut->add_exception( dummy_exception ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_add_txt_error.
-    DATA state_double TYPE REF TO lcl_log_writer_state_double.
-
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    DATA(state_double) = NEW lcl_log_writer_state_double( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
     state_double->make_next_call_fail( ).
     cut->add_free_text( `Should not change state.` ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_add_msg_error.
-    DATA state_double TYPE REF TO lcl_log_writer_state_double.
+    DATA(state_double) = NEW lcl_log_writer_state_double( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
     state_double->make_next_call_fail( ).
     cut->add_message( i_message_class  = '38'
                       i_message_number = '000' ).
@@ -458,90 +446,69 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_state_trans_free_error.
-    DATA: dummy_token  TYPE REF TO /usi/if_bal_token,
-          state_double TYPE REF TO lcl_log_writer_state_double.
+    DATA dummy_token TYPE REF TO /usi/if_bal_token.
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    DATA(state_double) = NEW lcl_log_writer_state_double( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
     state_double->make_next_call_fail( ).
     cut->free( dummy_token ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_token_error.
-    DATA state_double TYPE REF TO lcl_log_writer_state_double.
-
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    DATA(state_double) = NEW lcl_log_writer_state_double( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
     state_double->make_next_call_fail( ).
     cut->claim_ownership( ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD test_state_trans_save_error.
-    DATA: dummy_token  TYPE REF TO /usi/if_bal_token,
-          state_double TYPE REF TO lcl_log_writer_state_double.
+    DATA dummy_token TYPE REF TO /usi/if_bal_token.
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    DATA(state_double) = NEW lcl_log_writer_state_double( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
     state_double->make_next_call_fail( ).
     cut->save( dummy_token ).
     assert_state_is_test_double( ).
   ENDMETHOD.
 
   METHOD assert_state_is_test_double.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: requested_state      TYPE REF TO lcl_log_writer_state_double,
-          unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     TRY.
-        requested_state ?= get_current_state( ).
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
+        CAST lcl_log_writer_state_double( get_current_state( ) ).
+      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD assert_state_is_not_claimed.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_not_claimed,
-          unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     TRY.
-        requested_state ?= get_current_state( ).
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
+        CAST /usi/cl_bal_lstate_not_claimed( get_current_state( ) ).
+      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD assert_state_is_active.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_active,
-          unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     TRY.
-        requested_state ?= get_current_state( ).
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
+        CAST /usi/cl_bal_lstate_active( get_current_state( ) ).
+      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD assert_state_is_invalidated.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: requested_state      TYPE REF TO /usi/cl_bal_lstate_invalidated,
-          unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     TRY.
-        requested_state ?= get_current_state( ).
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
+        CAST /usi/cl_bal_lstate_invalidated( get_current_state( ) ).
+      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_current_state.
-    DATA log_writer TYPE REF TO /usi/cl_bal_logger.
-
-    log_writer ?= cut.
-    r_result = log_writer->state.
-
-    cl_aunit_assert=>assert_bound( act = r_result
-                                   msg = `State is not bound!` ).
+    r_result = NEW lcl_private_data( cut )->get_state( ).
+    cl_abap_unit_assert=>assert_bound( act = r_result
+                                       msg = `State is not bound!` ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -549,10 +516,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Tokens
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_token DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_token DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut               TYPE REF TO /usi/if_bal_logger,
           logger_bl_factory TYPE REF TO /usi/if_bal_logger_bl_factory,
@@ -584,7 +548,8 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
                                   i_log_dao                  = dao_mock
                                   i_data_cont_coll_dao       = dc_coll_dao_mock ).
 
-    state_double = lcl_log_writer_state_double=>inject_into( cut ).
+    state_double = NEW #( ).
+    NEW lcl_private_data( cut )->set_state( state_double ).
   ENDMETHOD.
 
   METHOD test_token_on_state_exception.
@@ -597,10 +562,10 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
 
     actual_result = cut->claim_ownership( ).
 
-    cl_aunit_assert=>assert_bound( act = actual_result
-                                   msg = `Should return dummy token!` ).
+    cl_abap_unit_assert=>assert_bound( act = actual_result
+                                       msg = `Should return dummy token!` ).
     IF secret_token = actual_result.
-      cl_aunit_assert=>fail( `Returns real token on failure!!!` ).
+      cl_abap_unit_assert=>fail( `Returns real token on failure!!!` ).
     ENDIF.
   ENDMETHOD.
 
@@ -612,9 +577,9 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
     state_double->set_token( expected ).
     actual = cut->claim_ownership( ).
 
-    cl_aunit_assert=>assert_equals( exp = expected
-                                    act = actual
-                                    msg = `Token should come from state in this case!` ).
+    cl_abap_unit_assert=>assert_equals( exp = expected
+                                        act = actual
+                                        msg = `Token should come from state in this case!` ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -622,10 +587,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Type conversions
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_type_conversions DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_type_conversions DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut   TYPE REF TO /usi/if_bal_logger,
           token TYPE REF TO /usi/if_bal_token.

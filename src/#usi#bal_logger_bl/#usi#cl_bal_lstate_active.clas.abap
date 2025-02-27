@@ -21,13 +21,7 @@ CLASS /usi/cl_bal_lstate_active DEFINITION PUBLIC FINAL CREATE PUBLIC.
                 i_relevant_data_containers TYPE /usi/bal_data_cont_classnames.
 
   PRIVATE SECTION.
-    TYPES: BEGIN OF ty_message,
-             number                    TYPE /usi/bal_message_number,
-             message                   TYPE bal_s_msg,
-             data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-           END   OF ty_message,
-           ty_messages   TYPE STANDARD TABLE OF ty_message WITH EMPTY KEY,
-           ty_exceptions TYPE STANDARD TABLE OF REF TO cx_root WITH EMPTY KEY.
+    TYPES ty_exceptions TYPE STANDARD TABLE OF REF TO cx_root WITH EMPTY KEY.
 
     DATA: factory TYPE REF TO /usi/if_bal_logger_bl_factory,
           token   TYPE REF TO /usi/if_bal_token.
@@ -39,7 +33,10 @@ CLASS /usi/cl_bal_lstate_active DEFINITION PUBLIC FINAL CREATE PUBLIC.
           END   OF settings.
 
     DATA: BEGIN OF messages,
-            message_buffer         TYPE ty_messages,
+            BEGIN OF unsaved_data,
+              message_counter            TYPE int4,
+              data_container_collections TYPE /usi/bal_msg_data_cont_colls,
+            END   OF unsaved_data,
             highest_message_number TYPE /usi/bal_message_number,
           END   OF messages.
 
@@ -99,6 +96,9 @@ CLASS /usi/cl_bal_lstate_active DEFINITION PUBLIC FINAL CREATE PUBLIC.
     METHODS save_data_container_colls
       IMPORTING i_log_number TYPE balognr
       RAISING   /usi/cx_bal_root.
+
+    METHODS has_unsaved_messages
+      RETURNING VALUE(r_result) TYPE abap_bool.
 
 ENDCLASS.
 
@@ -217,6 +217,36 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
       EXPORTING textid = /usi/cx_bal_not_allowed=>wrong_logger_state.
   ENDMETHOD.
 
+  METHOD /usi/if_bal_logger_state~display.
+    CALL FUNCTION '/USI/BAL_SET_DC_COLL_BUFFER'
+      EXPORTING i_unsaved_data_cont_colls = messages-unsaved_data-data_container_collections.
+
+    CALL FUNCTION 'BAL_DSP_LOG_DISPLAY'
+      EXPORTING  i_t_log_handle       = VALUE bal_t_logh( ( dao_objects-log->log_handle ) )
+      EXCEPTIONS profile_inconsistent = 1
+                 internal_error       = 2
+                 no_data_available    = 3
+                 no_authority         = 4
+                 OTHERS               = 5.
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE /usi/cx_bal_external_api_error
+        EXPORTING textid = VALUE #( msgid = sy-msgid
+                                    msgno = sy-msgno
+                                    attr1 = 'PARAM1'
+                                    attr2 = 'PARAM2'
+                                    attr3 = 'PARAM3'
+                                    attr4 = 'PARAM4' )
+                  param1 = sy-msgv1
+                  param2 = sy-msgv2
+                  param3 = sy-msgv3
+                  param4 = sy-msgv4.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD has_unsaved_messages.
+    r_result = boolc( messages-unsaved_data-message_counter IS NOT INITIAL ).
+  ENDMETHOD.
+
   METHOD /usi/if_bal_logger_state~free.
     IF token->is_equal( i_token ) = abap_true.
       dao_objects-log->free( ).
@@ -234,12 +264,17 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
         EXPORTING textid = /usi/cx_bal_not_allowed=>only_owner_may_do_that.
     ENDIF.
 
+    IF has_unsaved_messages( ) = abap_false.
+      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+        EXPORTING textid = /usi/cx_bal_invalid_input=>log_is_empty.
+    ENDIF.
+
     TRY.
         log_number = save_log( ).
         save_data_container_colls( log_number ).
-        CLEAR messages-message_buffer.
+        CLEAR messages-unsaved_data.
       CLEANUP.
-        CLEAR messages-message_buffer.
+        CLEAR messages-unsaved_data.
     ENDTRY.
   ENDMETHOD.
 
@@ -297,39 +332,31 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD collect_data_containers.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container            TYPE REF TO /usi/if_bal_data_container,
-          data_containers           TYPE /usi/bal_data_containers.
-
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
+    DATA data_containers TYPE /usi/bal_data_containers.
 
     IF i_source IS NOT BOUND.
       RETURN.
     ENDIF.
 
     TRY.
-        data_container_collection ?= i_source.
-        data_containers = data_container_collection->get_data_containers( ).
+        INSERT CAST /usi/if_bal_data_container( i_source ) INTO TABLE data_containers.
       CATCH cx_sy_move_cast_error.
-        CLEAR data_container_collection.
+        TRY.
+            data_containers = CAST /usi/if_bal_data_container_col( i_source )->get_data_containers( ).
+          CATCH cx_sy_move_cast_error.
+            RETURN.
+        ENDTRY.
     ENDTRY.
 
-    TRY.
-        data_container ?= i_source.
-        INSERT data_container INTO TABLE data_containers.
-      CATCH cx_sy_move_cast_error.
-        CLEAR data_container.
-    ENDTRY.
-
-    LOOP AT data_containers ASSIGNING <data_container>.
+    LOOP AT data_containers ASSIGNING FIELD-SYMBOL(<data_container>).
       insert_container_if_relevant( i_data_containter       = <data_container>
                                     i_target_data_cont_coll = i_target ).
     ENDLOOP.
   ENDMETHOD.
 
   METHOD constructor.
-    factory                               = i_factory.
-    token                                 = i_token.
+    factory = i_factory.
+    token   = i_token.
 
     settings-log_level                = i_log_level.
     settings-auto_save_pckg_size      = i_auto_save_pckg_size.
@@ -370,14 +397,10 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD insert_message.
-    CONSTANTS:
-      BEGIN OF callback_function,
-        function_module TYPE baluef VALUE '/USI/BAL_POPUP_MESSAGE_DETAILS',
-        callback_type   TYPE baluet VALUE 'F',
-      END   OF callback_function.
-
-    DATA: callback_parameter TYPE bal_s_par,
-          message            TYPE ty_message.
+    CONSTANTS: BEGIN OF callback_function,
+                 function_module TYPE baluef VALUE '/USI/BAL_POPUP_MESSAGE_DETAILS',
+                 callback_type   TYPE baluet VALUE 'F',
+               END   OF callback_function.
 
     IF    i_message_class IS INITIAL
        OR i_message_type  IS INITIAL.
@@ -385,34 +408,38 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
         EXPORTING textid = /usi/cx_bal_invalid_input=>/usi/cx_bal_invalid_input.
     ENDIF.
 
-    messages-highest_message_number = messages-highest_message_number + 1.
+    DATA(next_message_number) = messages-highest_message_number + 1.
 
-    message-number            = messages-highest_message_number.
-    message-message-detlevel  = i_detail_level->value.
-    message-message-probclass = i_problem_class->value.
-    message-message-msgty     = i_message_type->value.
-    message-message-msgid     = i_message_class.
-    message-message-msgno     = i_message_number.
-    message-message-msgv1     = i_message_variable_1.
-    message-message-msgv2     = i_message_variable_2.
-    message-message-msgv3     = i_message_variable_3.
-    message-message-msgv4     = i_message_variable_4.
-    message-message-context   = i_message_context.
+    dao_objects-log->add_message(
+        VALUE bal_s_msg( msgty     = i_message_type->value
+                         msgid     = i_message_class
+                         msgno     = i_message_number
+                         msgv1     = i_message_variable_1
+                         msgv2     = i_message_variable_2
+                         msgv3     = i_message_variable_3
+                         msgv4     = i_message_variable_4
+                         detlevel  = i_detail_level->value
+                         probclass = i_problem_class->value
+                         context   = i_message_context
+                         params    = COND #( WHEN i_data_container_collection->has_data_containers( ) = abap_true
+                                             THEN VALUE #(
+                                                 callback = VALUE #( userexitf = callback_function-function_module
+                                                                     userexitt = callback_function-callback_type )
+                                                 t_par    = VALUE #(
+                                                     ( parname  = /usi/cl_bal_enum_message_param=>message_number->value
+                                                       parvalue = next_message_number ) ) ) ) ) ).
 
     IF i_data_container_collection->has_data_containers( ) = abap_true.
-      message-data_container_collection         = i_data_container_collection.
-
-      message-message-params-callback-userexitf = callback_function-function_module.
-      message-message-params-callback-userexitt = callback_function-callback_type.
-      callback_parameter-parname  = /usi/cl_bal_enum_message_param=>message_number->value.
-      callback_parameter-parvalue = message-number.
-      INSERT callback_parameter INTO TABLE message-message-params-t_par.
+      INSERT VALUE #( message_number            = next_message_number
+                      data_container_collection = i_data_container_collection )
+             INTO TABLE messages-unsaved_data-data_container_collections.
     ENDIF.
 
-    INSERT message INTO TABLE messages-message_buffer.
+    messages-highest_message_number       = next_message_number.
+    messages-unsaved_data-message_counter = messages-unsaved_data-message_counter + 1.
 
-    IF     settings-auto_save_pckg_size      > 0
-       AND lines( messages-message_buffer ) >= settings-auto_save_pckg_size.
+    IF     settings-auto_save_pckg_size           > 0
+       AND messages-unsaved_data-message_counter >= settings-auto_save_pckg_size.
       TRY.
           /usi/if_bal_logger_state~save( token ).
         CATCH /usi/cx_bal_root.
@@ -426,70 +453,34 @@ CLASS /usi/cl_bal_lstate_active IMPLEMENTATION.
     r_result = boolc( line_exists( settings-relevant_data_containers[ table_line = i_data_container_classname ] ) ).
   ENDMETHOD.
 
+  METHOD save_log.
+    dao_objects-log->save( ).
+    r_result = dao_objects-log->get_log_number( ).
+  ENDMETHOD.
+
   METHOD save_data_container_colls.
-    DATA: serialized_data_cont_coll TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception_text TYPE string,
-          unsaved_data_exists       TYPE abap_bool.
+    DATA unsaved_data_exists TYPE abap_bool.
 
-    FIELD-SYMBOLS <message> TYPE ty_message.
-
-    LOOP AT messages-message_buffer ASSIGNING <message> WHERE data_container_collection IS BOUND.
-      IF <message>-data_container_collection->has_data_containers( ) = abap_false.
-        CONTINUE.
-      ENDIF.
-      serialized_data_cont_coll = <message>-data_container_collection->serialize( ).
+    LOOP AT messages-unsaved_data-data_container_collections
+         ASSIGNING FIELD-SYMBOL(<data_container_collection>).
       TRY.
           dao_objects-data_container_collection->insert_collection_into_buffer(
               i_log_number                = i_log_number
-              i_message_number            = <message>-number
-              i_serialized_data_cont_coll = serialized_data_cont_coll ).
+              i_message_number            = <data_container_collection>-message_number
+              i_serialized_data_cont_coll = <data_container_collection>-data_container_collection->serialize( ) ).
 
           unsaved_data_exists = abap_true.
-        CATCH /usi/cx_bal_root INTO unexpected_exception.
-          unexpected_exception_text = unexpected_exception->get_text( ).
+        CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
+          DATA(unexpected_exception_text) = unexpected_exception->get_text( ).
           ASSERT ID /usi/bal_log_writer
                  FIELDS unexpected_exception_text
                  CONDITION unexpected_exception IS NOT BOUND.
-
           CONTINUE.
       ENDTRY.
     ENDLOOP.
+
     IF unsaved_data_exists = abap_true.
       dao_objects-data_container_collection->save_buffer_to_db( ).
     ENDIF.
-  ENDMETHOD.
-
-  METHOD save_log.
-    DATA: unexpected_exception      TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception_text TYPE string,
-          unsaved_data_exists       TYPE abap_bool.
-
-    FIELD-SYMBOLS <message> TYPE ty_message.
-
-    IF messages-message_buffer IS INITIAL.
-      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
-        EXPORTING textid = /usi/cx_bal_invalid_input=>log_is_empty.
-    ENDIF.
-
-    LOOP AT messages-message_buffer ASSIGNING <message>.
-      TRY.
-          dao_objects-log->add_message( <message>-message ).
-          unsaved_data_exists = abap_true.
-        CATCH /usi/cx_bal_root INTO unexpected_exception.
-          unexpected_exception_text = unexpected_exception->get_text( ).
-          ASSERT ID /usi/bal_log_writer
-                 FIELDS unexpected_exception_text
-                 CONDITION unexpected_exception IS NOT BOUND.
-
-          " Don't save the containers, if the message could not be saved!
-          CLEAR <message>-data_container_collection.
-      ENDTRY.
-    ENDLOOP.
-    IF unsaved_data_exists = abap_true.
-      dao_objects-log->save( ).
-    ENDIF.
-
-    r_result = dao_objects-log->get_log_number( ).
   ENDMETHOD.
 ENDCLASS.

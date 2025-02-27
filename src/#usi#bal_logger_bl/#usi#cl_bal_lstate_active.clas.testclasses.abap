@@ -17,6 +17,16 @@ CLASS lcl_dao_spy DEFINITION FINAL FOR TESTING.
     DATA method_calls TYPE REF TO /usi/cl_bal_aunit_method_calls READ-ONLY.
 
     METHODS constructor.
+
+    METHODS get_message
+      IMPORTING i_nth_call      TYPE int4
+      RETURNING VALUE(r_result) TYPE bal_s_msg.
+
+  PRIVATE SECTION.
+    CONSTANTS: BEGIN OF c_parameter_names,
+                 i_message TYPE /usi/cl_bal_aunit_method_call=>ty_parameter_name VALUE 'I_MESSAGE',
+               END   OF c_parameter_names.
+
 ENDCLASS.
 
 
@@ -26,11 +36,9 @@ CLASS lcl_dao_spy IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_log_dao~add_message.
-    DATA method_call TYPE REF TO /usi/cl_bal_aunit_method_call.
-
-    method_call = method_calls->insert_method_call( method_names-add_message ).
-    method_call->add_parameter( i_parameter_name  = 'I_MESSAGE'
-                                i_parameter_value = i_message ).
+    method_calls->insert_method_call( method_names-add_message )->add_parameter(
+                                                                   i_parameter_name  = c_parameter_names-i_message
+                                                                   i_parameter_value = i_message ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_log_dao~free.
@@ -44,6 +52,17 @@ CLASS lcl_dao_spy IMPLEMENTATION.
   METHOD /usi/if_bal_log_dao~get_log_number.
     method_calls->insert_method_call( method_names-get_log_number ).
     r_result = '123456'.
+  ENDMETHOD.
+
+  METHOD get_message.
+    DATA(all_method_calls) = method_calls->get_method_calls( method_names-add_message ).
+    TRY.
+        DATA(relevant_method_call) = all_method_calls[ i_nth_call ].
+      CATCH cx_sy_itab_line_not_found.
+        cl_abap_unit_assert=>fail( msg = |Method call { method_names-add_message }[{ i_nth_call }] was not traced!| ).
+    ENDTRY.
+    relevant_method_call-method_call->get_parameter( EXPORTING i_parameter_name  = c_parameter_names-i_message
+                                                     IMPORTING e_parameter_value = r_result ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -82,17 +101,13 @@ CLASS lcl_data_cont_coll_dao_spy IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_cont_coll_dao~delete_collections.
-    DATA method_call TYPE REF TO /usi/cl_bal_aunit_method_call.
-
-    method_call = method_calls->insert_method_call( method_names-delete_collection ).
-    method_call->add_parameter( i_parameter_name  = 'I_LOG_NUMBER'
-                                i_parameter_value = i_log_numbers ).
+    method_calls->insert_method_call( method_names-delete_collection )->add_parameter(
+                                                                         i_parameter_name  = 'I_LOG_NUMBER'
+                                                                         i_parameter_value = i_log_numbers ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_cont_coll_dao~get_collection.
-    DATA method_call TYPE REF TO /usi/cl_bal_aunit_method_call.
-
-    method_call = method_calls->insert_method_call( method_names-get_collection ).
+    DATA(method_call) = method_calls->insert_method_call( method_names-get_collection ).
     method_call->add_parameter( i_parameter_name  = 'I_LOG_NUMBER'
                                 i_parameter_value = i_log_number ).
     method_call->add_parameter( i_parameter_name  = 'I_MESSAGE_NUMBER'
@@ -100,9 +115,7 @@ CLASS lcl_data_cont_coll_dao_spy IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer.
-    DATA method_call TYPE REF TO /usi/cl_bal_aunit_method_call.
-
-    method_call = method_calls->insert_method_call( method_names-insert_into_buffer ).
+    DATA(method_call) = method_calls->insert_method_call( method_names-insert_into_buffer ).
     method_call->add_parameter( i_parameter_name  = 'I_LOG_NUMBER'
                                 i_parameter_value = i_log_number ).
     method_call->add_parameter( i_parameter_name  = 'I_MESSAGE_NUMBER'
@@ -130,13 +143,9 @@ CLASS lcl_private_data DEFINITION FINAL FOR TESTING.
     METHODS get_message_counter
       RETURNING VALUE(r_result) TYPE int4.
 
-    METHODS get_message
-      IMPORTING i_index         TYPE int4
-      RETURNING VALUE(r_result) TYPE bal_s_msg.
-
     METHODS get_data_container_collection
-      IMPORTING i_index         TYPE int4
-      RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_data_container_col.
+      IMPORTING i_message_number TYPE /usi/bal_message_number
+      RETURNING VALUE(r_result)  TYPE REF TO /usi/if_bal_data_container_col.
 
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/cl_bal_lstate_active.
@@ -145,39 +154,27 @@ ENDCLASS.
 
 CLASS lcl_private_data IMPLEMENTATION.
   METHOD constructor.
-    DATA unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     TRY.
         cut ?= i_cut.
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
+      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_message_counter.
-    r_result = lines( cut->messages-message_buffer ).
-  ENDMETHOD.
-
-  METHOD get_message.
-    FIELD-SYMBOLS <message> TYPE cut->ty_message.
-
-    ASSIGN cut->messages-message_buffer[ i_index ] TO <message>.
-    IF sy-subrc <> 0.
-      cl_aunit_assert=>fail( `Requested entry does not exist!` ).
-    ENDIF.
-
-    r_result = <message>-message.
+    r_result = cut->messages-highest_message_number.
   ENDMETHOD.
 
   METHOD get_data_container_collection.
-    FIELD-SYMBOLS <message> TYPE cut->ty_message.
-
-    ASSIGN cut->messages-message_buffer[ i_index ] TO <message>.
-    IF sy-subrc <> 0.
-      cl_aunit_assert=>fail( `Requested entry does not exist!` ).
+    IF cut->messages-highest_message_number < i_message_number.
+      cl_abap_unit_assert=>fail( msg = |Message { i_message_number } was not created yet!| ).
     ENDIF.
 
-    r_result = <message>-data_container_collection.
+    TRY.
+        r_result = cut->messages-unsaved_data-data_container_collections[ i_message_number ]-data_container_collection.
+      CATCH cx_sy_itab_line_not_found.
+        r_result = NEW /usi/cl_bal_dc_collection( ).
+    ENDTRY.
   ENDMETHOD.
 ENDCLASS.
 
@@ -236,76 +233,44 @@ CLASS lcl_data_container_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_html_container.
-    DATA: document_title TYPE REF TO /usi/if_bal_text_container_c40,
-          html_document  TYPE string,
-          paragraph_text TYPE string.
-
-    paragraph_text = cl_abap_dyn_prg=>escape_xss_xml_html( i_paragraph_text ).
-    CONCATENATE '<html><head/><body><p>'
-                paragraph_text
-                '</p></body></html>'
-                INTO html_document
-                IN CHARACTER MODE.
-
-    IF i_title IS NOT INITIAL.
-      document_title = NEW /usi/cl_bal_tc_literal_c40( i_text = i_title ).
-    ENDIF.
-
-    r_result = NEW /usi/cl_bal_dc_html( i_html_document  = html_document
-                                        i_document_title = document_title ).
+    r_result = NEW /usi/cl_bal_dc_html( i_html_document  = |<html><head/><body><p>{
+                                                             cl_abap_dyn_prg=>escape_xss_xml_html( i_paragraph_text )
+                                                           }</p></body></html>|
+                                        i_document_title = COND #( WHEN i_title IS NOT INITIAL
+                                                                   THEN NEW /usi/cl_bal_tc_literal_c40( i_title ) ) ).
   ENDMETHOD.
 
   METHOD get_itab_container.
-    DATA: string_table         TYPE string_table,
-          title                TYPE REF TO /usi/if_bal_text_container_c40,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    INSERT `Just` INTO TABLE string_table.
-    INSERT `a   ` INTO TABLE string_table.
-    INSERT `test` INTO TABLE string_table.
-
-    IF i_title IS NOT INITIAL.
-      title = NEW /usi/cl_bal_tc_literal_c40( i_text = i_title ).
-    ENDIF.
-
     TRY.
-        r_result = NEW /usi/cl_bal_dc_itab( i_internal_table = string_table
-                                            i_title          = title ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        r_result = NEW /usi/cl_bal_dc_itab(
+                           i_internal_table = VALUE string_table( ( `Just` )
+                                                                  ( `a`    )
+                                                                  ( `test` ) )
+                           i_title          = COND #( WHEN i_title IS NOT INITIAL
+                                                      THEN NEW /usi/cl_bal_tc_literal_c40( i_title ) ) ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_retcode_msg_container.
-    DATA message TYPE symsg.
-
-    message-msgid = '38'.
-    message-msgno = '000'.
-    message-msgty = 'E'.
-    message-msgv1 = i_text.
-
-    r_result = NEW /usi/cl_bal_dc_retcode_and_msg( i_message     = message
+    r_result = NEW /usi/cl_bal_dc_retcode_and_msg( i_message     = VALUE #( msgid = '38'
+                                                                            msgno = '000'
+                                                                            msgty = 'E'
+                                                                            msgv1 = i_text )
                                                    i_return_code = i_return_code ).
   ENDMETHOD.
 
   METHOD get_src_pos_caller_container.
-    DATA source_code_position TYPE /usi/bal_source_code_position.
-
-    source_code_position-program_name = i_program_name.
-    source_code_position-include_name = i_include_name.
-    source_code_position-source_line  = i_source_line.
-
-    r_result = NEW /usi/cl_bal_dc_src_pos_caller( i_source_code_position = source_code_position ).
+    r_result = NEW /usi/cl_bal_dc_src_pos_caller( VALUE #( program_name = i_program_name
+                                                           include_name = i_include_name
+                                                           source_line  = i_source_line ) ).
   ENDMETHOD.
 
   METHOD get_src_pos_cx_container.
-    DATA source_code_position TYPE /usi/bal_source_code_position.
-
-    source_code_position-program_name = i_program_name.
-    source_code_position-include_name = i_include_name.
-    source_code_position-source_line  = i_source_line.
-
-    r_result = NEW /usi/cl_bal_dc_src_pos_cx( i_source_code_position = source_code_position ).
+    r_result = NEW /usi/cl_bal_dc_src_pos_cx( VALUE #( program_name = i_program_name
+                                                       include_name = i_include_name
+                                                       source_line  = i_source_line ) ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -341,10 +306,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Delegation
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_dao_delegation DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_dao_delegation DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
           log_dao_spy     TYPE REF TO lcl_dao_spy,
@@ -361,35 +323,27 @@ ENDCLASS.
 
 CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
-          data_container_classnames TYPE /usi/bal_data_cont_classnames,
-          data_container_classname  TYPE /usi/bal_data_cont_classname,
-          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao_spy = NEW #( ).
+    token           = bl_factory->get_token( ).
+    log_dao_spy     = NEW #( ).
     dc_coll_dao_spy = NEW #( ).
 
-    data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT data_container_classname INTO TABLE data_container_classnames.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao_spy
-                                         i_data_cont_coll_dao       = dc_coll_dao_spy
-                                         i_token                    = token
-                                         i_relevant_data_containers = data_container_classnames ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = log_dao_spy
+                  i_data_cont_coll_dao       = dc_coll_dao_spy
+                  i_token                    = token
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) ) ) ).
   ENDMETHOD.
 
   METHOD test_free.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->free( token ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -397,15 +351,13 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_save.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = 'Just a test' ).
         cut->save( token ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -415,21 +367,18 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
 
     " Data-Container-Collection-DAO (Saves data container collections)
     dc_coll_dao_spy->method_calls->assert_method_was_called( dc_coll_dao_spy->method_names-insert_into_buffer ).
-
     dc_coll_dao_spy->method_calls->assert_method_was_called( dc_coll_dao_spy->method_names-save_buffer_to_db ).
   ENDMETHOD.
 
   METHOD test_skip_save_for_empty_log.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->save( token ).
-        cl_aunit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
+        cl_abap_unit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
       CATCH /usi/cx_bal_root.
-        " This was supposed to happen, as the log was empty
+        " This was supposed to happen since the log was empty
         TRY.
             cut->free( token ).
-          CATCH /usi/cx_bal_root INTO unexpected_exception.
+          CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
             /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
         ENDTRY.
     ENDTRY.
@@ -440,13 +389,10 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
 
     " Data-Container-Collection-DAO (Saves data container collections)
     dc_coll_dao_spy->method_calls->assert_method_was_not_called( dc_coll_dao_spy->method_names-insert_into_buffer ).
-
     dc_coll_dao_spy->method_calls->assert_method_was_not_called( dc_coll_dao_spy->method_names-save_buffer_to_db ).
   ENDMETHOD.
 
   METHOD test_save_multiple_times.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -456,7 +402,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
 
         TRY.
             cut->save( token ).
-            cl_aunit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
+            cl_abap_unit_assert=>fail( msg = 'Should throw an exception, if no unsaved messages exist' ).
           CATCH /usi/cx_bal_root.
             " This was supposed to happen, as there were no unsaved changes
         ENDTRY.
@@ -474,7 +420,7 @@ CLASS lcl_unit_test_dao_delegation IMPLEMENTATION.
         dc_coll_dao_spy->method_calls->assert_method_called_n_times(
             i_method_name              = dc_coll_dao_spy->method_names-save_buffer_to_db
             i_expected_number_of_calls = 1 ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
@@ -482,12 +428,12 @@ ENDCLASS.
 
 
 " ---------------------------------------------------------------------
-" Unit test: Unbound data container collections
+" Unit test: Test messages without data containers (Simple Calls)
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_unbound_dc_coll DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+" The test has to ensure, that calls to the ADD_*-Methods are accepted
+" by cut (The active state of the logger is supposed to accept them).
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_messages_wo_dcs DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_logger_state.
 
@@ -498,70 +444,47 @@ CLASS lcl_unit_test_unbound_dc_coll DEFINITION FINAL FOR TESTING.
 ENDCLASS.
 
 
-CLASS lcl_unit_test_unbound_dc_coll IMPLEMENTATION.
+CLASS lcl_unit_test_messages_wo_dcs IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          data_container_coll_dao  TYPE REF TO /usi/if_bal_data_cont_coll_dao,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          log_dao                  TYPE REF TO /usi/if_bal_log_dao,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          relevant_data_container  TYPE /usi/bal_data_cont_classname,
-          token                    TYPE REF TO /usi/if_bal_token.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao = NEW lcl_dao_spy( ).
-    data_container_coll_dao = NEW lcl_data_cont_coll_dao_spy( ).
-
-    relevant_data_container = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao
-                                         i_data_cont_coll_dao       = data_container_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = NEW lcl_dao_spy( )
+                  i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                  i_token                    = bl_factory->get_token( )
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ) ) ) ).
   ENDMETHOD.
 
   METHOD test_add_exception.
-    DATA: exception            TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    exception = lcl_exception_factory=>get_exception( ).
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = lcl_exception_factory=>get_exception( )
                             i_log_previous  = abap_false ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = 'Just a test' ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -569,7 +492,7 @@ CLASS lcl_unit_test_unbound_dc_coll IMPLEMENTATION.
                           i_message_class      = '38'
                           i_message_number     = '000'
                           i_message_variable_1 = 'Just a test' ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
@@ -579,15 +502,9 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Automatic creation of data containers
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_auto_data_cont DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_auto_data_cont DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
-          dc_coll_dao_spy TYPE REF TO lcl_data_cont_coll_dao_spy,
-          log_dao_spy     TYPE REF TO lcl_dao_spy,
-          token           TYPE REF TO /usi/if_bal_token.
+    DATA cut TYPE REF TO /usi/if_bal_logger_state.
 
     METHODS setup.
     METHODS test_add_exception FOR TESTING.
@@ -605,95 +522,69 @@ ENDCLASS.
 
 CLASS lcl_unit_test_auto_data_cont IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          relevant_data_container  TYPE /usi/bal_data_cont_classname.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao_spy = NEW #( ).
-    dc_coll_dao_spy = NEW #( ).
-
-    relevant_data_container = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao_spy
-                                         i_data_cont_coll_dao       = dc_coll_dao_spy
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = NEW lcl_dao_spy( )
+                  i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                  i_token                    = bl_factory->get_token( )
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ) ) ) ).
   ENDMETHOD.
 
   METHOD test_add_exception.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container_classname  TYPE /usi/bal_data_cont_classname,
-          exception                 TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
-    exception = lcl_exception_factory=>get_exception( ).
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = lcl_exception_factory=>get_exception( )
                             i_log_previous  = abap_false ).
 
-        data_container_collection = get_data_container_collection( ).
+        DATA(data_container_collection) = get_data_container_collection( ).
 
-        data_container_classname = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ) ).
 
-        data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) ).
 
-        data_container_classname = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container_classname  TYPE /usi/bal_data_cont_classname,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = `Just a test` ).
 
-        data_container_collection = get_data_container_collection( ).
+        DATA(data_container_collection) = get_data_container_collection( ).
 
-        data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) ).
 
-        data_container_classname = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container_classname  TYPE /usi/bal_data_cont_classname,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -702,50 +593,42 @@ CLASS lcl_unit_test_auto_data_cont IMPLEMENTATION.
                           i_message_number     = '000'
                           i_message_variable_1 = 'Just a test' ).
 
-        data_container_collection = get_data_container_collection( ).
+        DATA(data_container_collection) = get_data_container_collection( ).
 
-        data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) ).
 
-        data_container_classname = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-        assert_has_container( i_data_container_collection = data_container_collection
-                              i_data_container_classname  = data_container_classname ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        assert_has_container(
+            i_data_container_collection = data_container_collection
+            i_data_container_classname  = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_data_container_collection.
-    DATA: private_data  TYPE REF TO lcl_private_data,
-          message_count TYPE int4.
+    DATA(private_data) = NEW lcl_private_data( cut ).
 
-    private_data = NEW #( i_cut = cut ).
-
-    message_count = private_data->get_message_counter( ).
-    cl_aunit_assert=>assert_equals( exp = 1
-                                    act = message_count
-                                    msg = `The buffer should contain exactly one message!` ).
+    cl_abap_unit_assert=>assert_equals( exp = 1
+                                        act = private_data->get_message_counter( )
+                                        msg = `The buffer should contain exactly one message!` ).
 
     r_result = private_data->get_data_container_collection( 1 ).
-    cl_aunit_assert=>assert_bound( act = r_result
-                                   msg = `Data container collection is not bound!` ).
+    cl_abap_unit_assert=>assert_bound( act = r_result
+                                       msg = `Data container collection is not bound!` ).
   ENDMETHOD.
 
   METHOD assert_has_container.
-    DATA data_containers TYPE /usi/bal_data_containers.
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
-
-    data_containers = i_data_container_collection->get_data_containers( ).
-    LOOP AT data_containers ASSIGNING <data_container>.
+    LOOP AT i_data_container_collection->get_data_containers( ) ASSIGNING FIELD-SYMBOL(<data_container>).
       IF <data_container>->get_classname( ) <> i_data_container_classname.
         CONTINUE.
       ENDIF.
       RETURN.
     ENDLOOP.
 
-    cl_aunit_assert=>fail( msg    = `Expected container not found`
-                           detail = i_data_container_classname ).
+    cl_abap_unit_assert=>fail( msg    = `Expected container not found`
+                               detail = i_data_container_classname ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -753,16 +636,10 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Filter data containers
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_filter_data_cont DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_filter_data_cont DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut                       TYPE REF TO /usi/if_bal_logger_state,
-          dc_coll_dao_spy           TYPE REF TO lcl_data_cont_coll_dao_spy,
-          irrelevant_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col,
-          log_dao_spy               TYPE REF TO lcl_dao_spy,
-          token                     TYPE REF TO /usi/if_bal_token.
+          irrelevant_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
     METHODS setup.
     METHODS test_add_exception FOR TESTING.
@@ -774,37 +651,23 @@ ENDCLASS.
 
 CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
-          irrelevant_data_container TYPE REF TO /usi/if_bal_data_container,
-          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory,
-          relevant_data_containers  TYPE /usi/bal_data_cont_classnames.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao_spy = NEW #( ).
-    dc_coll_dao_spy = NEW #( ).
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
                                          i_log_level                = /usi/cl_bal_enum_log_level=>everything
                                          i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao_spy
-                                         i_data_cont_coll_dao       = dc_coll_dao_spy
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+                                         i_log_dao                  = NEW lcl_dao_spy( )
+                                         i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                                         i_token                    = bl_factory->get_token( )
+                                         i_relevant_data_containers = VALUE #( ) ).
 
-    irrelevant_data_cont_coll = lcl_data_container_factory=>get_data_container_collection( ).
-    irrelevant_data_container = lcl_data_container_factory=>get_html_container( `Irrelevant container` ).
-    irrelevant_data_cont_coll->insert( irrelevant_data_container ).
+    irrelevant_data_cont_coll = lcl_data_container_factory=>get_data_container_collection( )->insert(
+                                    lcl_data_container_factory=>get_html_container( `Irrelevant container` ) ).
   ENDMETHOD.
 
   METHOD test_add_exception.
-    DATA: exception                 TYPE REF TO /usi/cx_bal_root,
-          irrelevant_data_container TYPE REF TO /usi/if_bal_data_container,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
-    irrelevant_data_container = lcl_data_container_factory=>get_retcode_msg_container( i_text = 'Irrelevant' ).
-    exception                 = lcl_exception_factory=>get_exception( i_details = irrelevant_data_container ).
+    DATA(irrelevant_data_container) = lcl_data_container_factory=>get_retcode_msg_container( i_text = 'Irrelevant' ).
+    DATA(exception)                 = lcl_exception_factory=>get_exception( i_details = irrelevant_data_container ).
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -813,14 +676,12 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
                             i_log_previous  = abap_false
                             i_details       = irrelevant_data_cont_coll ).
         assert_collection_is_empty( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -828,14 +689,12 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
                             i_free_text     = `Just a test`
                             i_details       = irrelevant_data_cont_coll ).
         assert_collection_is_empty( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -845,31 +704,22 @@ CLASS lcl_unit_test_filter_data_cont IMPLEMENTATION.
                           i_message_variable_1 = 'Just a test'
                           i_details            = irrelevant_data_cont_coll ).
         assert_collection_is_empty( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD assert_collection_is_empty.
-    DATA: private_data              TYPE REF TO lcl_private_data,
-          message_count             TYPE int4,
-          data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          has_data_containers       TYPE abap_bool.
+    DATA(private_data) = NEW lcl_private_data( cut ).
 
-    private_data = NEW #( i_cut = cut ).
+    cl_abap_unit_assert=>assert_equals( exp = 1
+                                        act = private_data->get_message_counter( )
+                                        msg = `The buffer should contain exactly one message!` ).
 
-    message_count = private_data->get_message_counter( ).
-    cl_aunit_assert=>assert_equals( exp = 1
-                                    act = message_count
-                                    msg = `The buffer should contain exactly one message!` ).
-
-    data_container_collection = private_data->get_data_container_collection( 1 ).
+    DATA(data_container_collection) = private_data->get_data_container_collection( 1 ).
     IF data_container_collection IS BOUND.
-      has_data_containers = data_container_collection->has_data_containers( ).
-
-      cl_aunit_assert=>assert_equals( exp = abap_false
-                                      act = has_data_containers
-                                      msg = `The collection should not have any containers!` ).
+      cl_abap_unit_assert=>assert_false( act = data_container_collection->has_data_containers( )
+                                         msg = `The collection should not have any containers!` ).
     ENDIF.
   ENDMETHOD.
 ENDCLASS.
@@ -878,15 +728,12 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: CUT must not return a token
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_token DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_token DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    DATA: cut               TYPE REF TO /usi/if_bal_logger_state,
-          dc_coll_dao       TYPE REF TO lcl_data_cont_coll_dao_spy,
-          logger_bl_factory TYPE REF TO /usi/if_bal_logger_bl_factory,
-          log_dao           TYPE REF TO lcl_dao_spy.
+    DATA: cut         TYPE REF TO /usi/if_bal_logger_state,
+          dc_coll_dao TYPE REF TO lcl_data_cont_coll_dao_spy,
+          bl_factory  TYPE REF TO /usi/if_bal_logger_bl_factory,
+          log_dao     TYPE REF TO lcl_dao_spy.
 
     METHODS setup.
     METHODS test_throws_on_get_token FOR TESTING.
@@ -898,28 +745,23 @@ ENDCLASS.
 
 CLASS lcl_unit_test_token IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          token                    TYPE REF TO /usi/if_bal_token.
-
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token = logger_bl_factory->get_token( ).
-    log_dao = NEW #( ).
+    bl_factory  = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
+    log_dao     = NEW #( ).
     dc_coll_dao = NEW #( ).
 
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
                                          i_log_level                = /usi/cl_bal_enum_log_level=>everything
                                          i_auto_save_pckg_size      = 0
                                          i_log_dao                  = log_dao
                                          i_data_cont_coll_dao       = dc_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+                                         i_token                    = bl_factory->get_token( )
+                                         i_relevant_data_containers = VALUE #( ) ).
   ENDMETHOD.
 
   METHOD test_throws_on_get_token.
     TRY.
         cut->claim_ownership( ).
-        cl_aunit_assert=>fail( `GET_TOKEN should throw an exception!` ).
+        cl_abap_unit_assert=>fail( `GET_TOKEN should throw an exception!` ).
       CATCH /usi/cx_bal_root.
         " Expected result
         RETURN.
@@ -927,30 +769,24 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_free_checks_token.
-    DATA wrong_token TYPE REF TO /usi/if_bal_token.
-
     add_test_message( ).
-    wrong_token = logger_bl_factory->get_token( ).
+    DATA(wrong_token) = bl_factory->get_token( ).
 
     TRY.
         cut->free( wrong_token ).
-
-        cl_aunit_assert=>fail( `Should throw exception on wrong token!` ).
+        cl_abap_unit_assert=>fail( `Should throw exception on wrong token!` ).
       CATCH /usi/cx_bal_root.
         log_dao->method_calls->assert_method_was_not_called( log_dao->method_names-free ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_save_checks_token.
-    DATA wrong_token TYPE REF TO /usi/if_bal_token.
-
     add_test_message( ).
-    wrong_token = logger_bl_factory->get_token( ).
+    DATA(wrong_token) = bl_factory->get_token( ).
 
     TRY.
         cut->save( wrong_token ).
-
-        cl_aunit_assert=>fail( `Should throw exception on wrong token!` ).
+        cl_abap_unit_assert=>fail( `Should throw exception on wrong token!` ).
       CATCH /usi/cx_bal_root.
         log_dao->method_calls->assert_method_was_not_called( log_dao->method_names-save ).
         dc_coll_dao->method_calls->assert_method_was_not_called( dc_coll_dao->method_names-save_buffer_to_db ).
@@ -958,14 +794,12 @@ CLASS lcl_unit_test_token IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD add_test_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = 'Test message...' ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
@@ -975,10 +809,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Filtering of messages by log level
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_msg_filter DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_msg_filter DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA cut TYPE REF TO /usi/if_bal_logger_state.
 
@@ -1001,62 +832,43 @@ ENDCLASS.
 
 CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          log_dao                  TYPE REF TO lcl_dao_spy,
-          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          token                    TYPE REF TO /usi/if_bal_token.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao = NEW #( ).
-    dc_coll_dao = NEW #( ).
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
                                          i_log_level                = /usi/cl_bal_enum_log_level=>very_important
                                          i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao
-                                         i_data_cont_coll_dao       = dc_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+                                         i_log_dao                  = NEW lcl_dao_spy( )
+                                         i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                                         i_token                    = bl_factory->get_token( )
+                                         i_relevant_data_containers = VALUE #( ) ).
   ENDMETHOD.
 
   METHOD test_add_irrelevant_exception.
-    DATA: exception            TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    exception = lcl_exception_factory=>get_exception( ).
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = lcl_exception_factory=>get_exception( )
                             i_log_previous  = abap_false ).
         assert_message_wasnt_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_irrelevant_free_text.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = 'Should be ignored...' ).
         assert_message_wasnt_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_irrelevant_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>important
                           i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -1065,45 +877,37 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
                           i_message_number     = '000'
                           i_message_variable_1 = 'Should be ignored...' ).
         assert_message_wasnt_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_relevant_exception.
-    DATA: exception            TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    exception = lcl_exception_factory=>get_exception( ).
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = lcl_exception_factory=>get_exception( )
                             i_log_previous  = abap_false ).
         assert_message_was_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_relevant_free_text.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = 'Should be appended...' ).
         assert_message_was_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_relevant_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level       = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -1112,33 +916,25 @@ CLASS lcl_unit_test_msg_filter IMPLEMENTATION.
                           i_message_number     = '000'
                           i_message_variable_1 = 'Should be appended...' ).
         assert_message_was_appended( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD assert_message_wasnt_appended.
     IF is_message_buffer_initial( ) <> abap_true.
-      cl_aunit_assert=>fail( `Message buffer should be initial!` ).
+      cl_abap_unit_assert=>fail( `Message buffer should be initial!` ).
     ENDIF.
   ENDMETHOD.
 
   METHOD assert_message_was_appended.
     IF is_message_buffer_initial( ) = abap_true.
-      cl_aunit_assert=>fail( `Message buffer should _NOT_ be initial!` ).
+      cl_abap_unit_assert=>fail( `Message buffer should _NOT_ be initial!` ).
     ENDIF.
   ENDMETHOD.
 
   METHOD is_message_buffer_initial.
-    DATA: private_data    TYPE REF TO lcl_private_data,
-          message_counter TYPE int4.
-
-    private_data = NEW #( i_cut = cut ).
-
-    message_counter = private_data->get_message_counter( ).
-    IF message_counter = 0.
-      r_result = abap_true.
-    ENDIF.
+    r_result = boolc( NEW lcl_private_data( cut )->get_message_counter( ) = 0 ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -1146,15 +942,11 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Add previous exceptions, if requested
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_log_previous DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_log_previous DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    DATA: cut               TYPE REF TO /usi/if_bal_logger_state,
-          exception         TYPE REF TO /usi/cx_bal_root,
-          logger_bl_factory TYPE REF TO /usi/if_bal_logger_bl_factory,
-          private_data      TYPE REF TO lcl_private_data.
+    DATA: cut          TYPE REF TO /usi/if_bal_logger_state,
+          bl_factory   TYPE REF TO /usi/if_bal_logger_bl_factory,
+          private_data TYPE REF TO lcl_private_data.
 
     METHODS setup.
     METHODS test_log_with_previous       FOR TESTING.
@@ -1165,8 +957,8 @@ CLASS lcl_unit_test_log_previous DEFINITION FINAL FOR TESTING.
       RETURNING VALUE(r_result) TYPE REF TO /usi/cx_bal_root.
 
     METHODS get_actual_result
-      IMPORTING i_index         TYPE int4
-      RETURNING VALUE(r_result) TYPE /usi/bal_data_cont_classnames.
+      IMPORTING i_message_number TYPE /usi/bal_message_number
+      RETURNING VALUE(r_result)  TYPE /usi/bal_data_cont_classnames.
 
     METHODS get_expected_result
       IMPORTING i_exception                 TYPE REF TO cx_root
@@ -1178,86 +970,57 @@ ENDCLASS.
 
 CLASS lcl_unit_test_log_previous IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          log_dao                  TYPE REF TO lcl_dao_spy,
-          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          relevant_data_container  TYPE /usi/bal_data_cont_classname,
-          token                    TYPE REF TO /usi/if_bal_token.
+    bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao = NEW #( ).
-    dc_coll_dao = NEW #( ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = NEW lcl_dao_spy( )
+                  i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                  i_token                    = bl_factory->get_token( )
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_html=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~get_classname( ) ) ) ).
 
-    relevant_data_container = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    relevant_data_container = /usi/cl_bal_dc_html=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao
-                                         i_data_cont_coll_dao       = dc_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
-
-    private_data = NEW #( i_cut = cut ).
-
-    exception = get_exception( ).
+    private_data = NEW #( cut ).
   ENDMETHOD.
 
   METHOD get_exception.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container            TYPE REF TO /usi/if_bal_data_container,
-          previous                  TYPE REF TO /usi/cx_bal_root.
+    DATA(previous) = lcl_exception_factory=>get_exception(
+                         i_text    = 'Pre-Previous'
+                         i_details = lcl_data_container_factory=>get_html_container( `Exception-specific container` ) ).
 
-    data_container = lcl_data_container_factory=>get_html_container( `Exception-specific container` ).
-    previous       = lcl_exception_factory=>get_exception( i_text    = 'Pre-Previous'
-                                                           i_details = data_container ).
+    previous = lcl_exception_factory=>get_exception(
+                   i_text     = 'Previous'
+                   i_previous = previous
+                   i_details  = lcl_data_container_factory=>get_data_container_collection( )->insert(
+                                    lcl_data_container_factory=>get_retcode_msg_container( ) ) ).
 
-    data_container_collection = lcl_data_container_factory=>get_data_container_collection( ).
-    data_container            = lcl_data_container_factory=>get_retcode_msg_container( ).
-    data_container_collection->insert( data_container ).
-    previous = lcl_exception_factory=>get_exception( i_text     = 'Previous'
-                                                     i_previous = previous
-                                                     i_details  = data_container_collection ).
-
-    data_container = lcl_data_container_factory=>get_itab_container( `Exception-specific container` ).
-    r_result       = lcl_exception_factory=>get_exception( i_text     = 'The exception'
-                                                           i_previous = previous
-                                                           i_details  = data_container ).
+    r_result = lcl_exception_factory=>get_exception(
+                   i_text     = 'The exception'
+                   i_previous = previous
+                   i_details  = lcl_data_container_factory=>get_itab_container( `Exception-specific container` ) ).
   ENDMETHOD.
 
   METHOD test_log_with_previous.
-    DATA: unexpected_exception TYPE REF TO /usi/cx_bal_root,
-          message_counter      TYPE int4.
-
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = get_exception( )
                             i_log_previous  = abap_true ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
-    message_counter = private_data->get_message_counter( ).
-    cl_aunit_assert=>assert_equals( exp = 3
-                                    act = message_counter
-                                    msg = `Not all previous exceptions have been appended!` ).
+    cl_abap_unit_assert=>assert_equals( exp = 3
+                                        act = private_data->get_message_counter( )
+                                        msg = `Not all previous exceptions have been appended!` ).
   ENDMETHOD.
 
   METHOD test_log_without_previous.
@@ -1268,31 +1031,28 @@ CLASS lcl_unit_test_log_previous IMPLEMENTATION.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
-                            i_exception     = exception
+                            i_exception     = get_exception( )
                             i_log_previous  = abap_false ).
       CATCH /usi/cx_bal_root INTO unexpected_exception.
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
     message_counter = private_data->get_message_counter( ).
-    cl_aunit_assert=>assert_equals( exp = 1
-                                    act = message_counter
-                                    msg = `Previous exceptions have been appended. This was not requested!` ).
+    cl_abap_unit_assert=>assert_equals( exp = 1
+                                        act = message_counter
+                                        msg = `Previous exceptions have been appended. This was not requested!` ).
   ENDMETHOD.
 
   METHOD test_previous_data_container.
     DATA: actual_result                 TYPE /usi/bal_data_cont_classnames,
-          data_container_collection     TYPE REF TO /usi/if_bal_data_container_col,
-          data_container                TYPE REF TO /usi/if_bal_data_container,
           current_exception             TYPE REF TO cx_root,
           expected_result               TYPE /usi/bal_data_cont_classnames,
           index_starting_with_last_line TYPE int4,
-          message_counter               TYPE int4,
-          unexpected_exception          TYPE REF TO /usi/cx_bal_root.
+          message_counter               TYPE int4.
 
-    data_container            = lcl_data_container_factory=>get_html_container( `Some HTML container` ).
-    data_container_collection = lcl_data_container_factory=>get_data_container_collection( ).
-    data_container_collection->insert( data_container ).
+    DATA(exception) = get_exception( ).
+    DATA(data_container_collection) = lcl_data_container_factory=>get_data_container_collection( )->insert(
+                                          lcl_data_container_factory=>get_html_container( `Some HTML container` ) ).
 
     TRY.
         cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1301,7 +1061,7 @@ CLASS lcl_unit_test_log_previous IMPLEMENTATION.
                             i_exception     = exception
                             i_log_previous  = abap_true
                             i_details       = data_container_collection ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -1310,7 +1070,7 @@ CLASS lcl_unit_test_log_previous IMPLEMENTATION.
     WHILE current_exception IS BOUND.
       " Previous will be appended before the main-exception (inverted order)
       index_starting_with_last_line = message_counter + 1 - sy-index.
-      actual_result                 = get_actual_result( index_starting_with_last_line ).
+      actual_result                 = get_actual_result( CONV #( index_starting_with_last_line ) ).
 
       IF current_exception = exception.
         expected_result = get_expected_result( i_exception                 = current_exception
@@ -1321,66 +1081,44 @@ CLASS lcl_unit_test_log_previous IMPLEMENTATION.
                                                i_is_previous = abap_true ).
       ENDIF.
 
-      cl_aunit_assert=>assert_equals( exp = expected_result
-                                      act = actual_result
-                                      msg = `Container list did not look, like expected!` ).
+      cl_abap_unit_assert=>assert_equals( exp = expected_result
+                                          act = actual_result
+                                          msg = `Container Collection did not look, like expected!` ).
 
       current_exception = current_exception->previous.
     ENDWHILE.
   ENDMETHOD.
 
   METHOD get_actual_result.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_containers           TYPE /usi/bal_data_containers,
-          data_container_classname  TYPE /usi/bal_data_cont_classname.
-
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
-
-    data_container_collection = private_data->get_data_container_collection( i_index ).
-    data_containers = data_container_collection->get_data_containers( ).
-
-    LOOP AT data_containers ASSIGNING <data_container>.
-      data_container_classname = <data_container>->get_classname( ).
-      INSERT data_container_classname INTO TABLE r_result.
+    LOOP AT private_data->get_data_container_collection( i_message_number )->get_data_containers( )
+         ASSIGNING FIELD-SYMBOL(<data_container>).
+      INSERT <data_container>->get_classname( ) INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.
 
   METHOD get_expected_result.
-    DATA: data_containers          TYPE /usi/bal_data_containers,
-          data_container_classname TYPE /usi/bal_data_cont_classname,
-          exception_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col,
-          exception_mapper         TYPE REF TO /usi/if_bal_exception_mapper.
-
-    FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
+    DATA exception_data_cont_coll TYPE REF TO /usi/if_bal_data_container_col.
 
     " Exception-Containers (directly attached to the exception itself)
-    exception_mapper         = logger_bl_factory->get_exception_mapper( i_exception ).
     exception_data_cont_coll = lcl_data_container_factory=>get_data_container_collection( ).
-    exception_mapper->get_data_containers( exception_data_cont_coll ).
-    data_containers = exception_data_cont_coll->get_data_containers( ).
-    LOOP AT data_containers ASSIGNING <data_container>.
-      data_container_classname = <data_container>->get_classname( ).
-      INSERT data_container_classname INTO TABLE r_result.
+    bl_factory->get_exception_mapper( i_exception )->get_data_containers( exception_data_cont_coll ).
+    LOOP AT exception_data_cont_coll->get_data_containers( ) ASSIGNING FIELD-SYMBOL(<data_container>).
+      INSERT <data_container>->get_classname( ) INTO TABLE r_result.
     ENDLOOP.
 
     " Exception-related, automatic containers (Source code position of the RAISE-EXCEPTION-statement)
-    data_container_classname = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-    INSERT data_container_classname INTO TABLE r_result.
+    INSERT /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ) INTO TABLE r_result.
 
     " Caller-related containers (For main-exception only!)
     IF i_is_previous <> abap_true.
       " Auto-Containers
-      data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-      INSERT data_container_classname INTO TABLE r_result.
-      data_container_classname = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-      INSERT data_container_classname INTO TABLE r_result.
+      INSERT /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) INTO TABLE r_result.
+      INSERT /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ) INTO TABLE r_result.
 
       " Containers, that were passed as an independent collection along with the main exception
       IF i_data_container_collection IS BOUND.
-        data_containers = i_data_container_collection->get_data_containers( ).
-        LOOP AT data_containers ASSIGNING <data_container>.
-          data_container_classname = <data_container>->get_classname( ).
-          INSERT data_container_classname INTO TABLE r_result.
+        LOOP AT i_data_container_collection->get_data_containers( ) ASSIGNING <data_container>.
+          INSERT <data_container>->get_classname( ) INTO TABLE r_result.
         ENDLOOP.
       ENDIF.
     ENDIF.
@@ -1391,10 +1129,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Priority of data containers
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_data_cont_prio DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_data_cont_prio DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut          TYPE REF TO /usi/if_bal_logger_state,
           private_data TYPE REF TO lcl_private_data.
@@ -1414,52 +1149,32 @@ ENDCLASS.
 
 CLASS lcl_unit_test_data_cont_prio IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          log_dao                  TYPE REF TO lcl_dao_spy,
-          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          relevant_data_container  TYPE /usi/bal_data_cont_classname,
-          token                    TYPE REF TO /usi/if_bal_token.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao = NEW #( ).
-    dc_coll_dao = NEW #( ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = NEW lcl_dao_spy( )
+                  i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                  i_token                    = bl_factory->get_token( )
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( )      )
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) )
+                      ( /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( )     ) ) ).
 
-    relevant_data_container = /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-    relevant_data_container = /usi/cl_bal_dc_src_pos_cx=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao
-                                         i_data_cont_coll_dao       = dc_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
-
-    private_data = NEW #( i_cut = cut ).
+    private_data = NEW #( cut ).
   ENDMETHOD.
 
   METHOD test_add_exception.
-    DATA: exception_to_log         TYPE REF TO /usi/cx_bal_root,
-          data_cont_coll_direct    TYPE REF TO /usi/if_bal_data_container_col,
-          data_cont_coll_exception TYPE REF TO /usi/if_bal_data_container_col,
-          unexpected_exception     TYPE REF TO /usi/cx_bal_root.
-
-    data_cont_coll_direct    = get_data_container_collection( ).
-    data_cont_coll_exception = get_data_container_collection( ).
+    DATA(data_cont_coll_direct)    = get_data_container_collection( ).
+    DATA(data_cont_coll_exception) = get_data_container_collection( ).
 
     TRY.
         RAISE EXCEPTION TYPE /usi/cx_bal_not_found
           EXPORTING textid  = /usi/cx_bal_not_found=>no_db_entries_found
                     details = data_cont_coll_exception.
-      CATCH /usi/cx_bal_root INTO exception_to_log.
+      CATCH /usi/cx_bal_root INTO DATA(exception_to_log).
         TRY.
             cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                                 i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
@@ -1475,17 +1190,14 @@ CLASS lcl_unit_test_data_cont_prio IMPLEMENTATION.
                                 i_exception     = exception_to_log
                                 i_log_previous  = abap_false ).
             assert_has_data_cont_coll( data_cont_coll_exception ).
-          CATCH /usi/cx_bal_root INTO unexpected_exception.
+          CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
             /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
         ENDTRY.
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_free_text.
-    DATA: data_cont_coll_direct TYPE REF TO /usi/if_bal_data_container_col,
-          unexpected_exception  TYPE REF TO /usi/cx_bal_root.
-
-    data_cont_coll_direct = get_data_container_collection( ).
+    DATA(data_cont_coll_direct) = get_data_container_collection( ).
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1495,16 +1207,13 @@ CLASS lcl_unit_test_data_cont_prio IMPLEMENTATION.
                             i_details       = data_cont_coll_direct ).
 
         assert_has_data_cont_coll( data_cont_coll_direct ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_add_message.
-    DATA: data_cont_coll_direct TYPE REF TO /usi/if_bal_data_container_col,
-          unexpected_exception  TYPE REF TO /usi/cx_bal_root.
-
-    data_cont_coll_direct = get_data_container_collection( ).
+    DATA(data_cont_coll_direct) = get_data_container_collection( ).
 
     TRY.
         cut->add_message( i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
@@ -1516,47 +1225,29 @@ CLASS lcl_unit_test_data_cont_prio IMPLEMENTATION.
                           i_details            = data_cont_coll_direct ).
 
         assert_has_data_cont_coll( data_cont_coll_direct ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_data_container_collection.
-    DATA data_container TYPE REF TO /usi/if_bal_data_container.
-
     r_result = NEW /usi/cl_bal_dc_collection( ).
-
-    data_container = lcl_data_container_factory=>get_callstack_container( ).
-    r_result->insert( data_container ).
-
-    data_container = lcl_data_container_factory=>get_src_pos_caller_container( ).
-    r_result->insert( data_container ).
-
-    data_container = lcl_data_container_factory=>get_src_pos_cx_container( ).
-    r_result->insert( data_container ).
+    r_result->insert( lcl_data_container_factory=>get_callstack_container( ) ).
+    r_result->insert( lcl_data_container_factory=>get_src_pos_caller_container( ) ).
+    r_result->insert( lcl_data_container_factory=>get_src_pos_cx_container( ) ).
   ENDMETHOD.
 
   METHOD assert_has_data_cont_coll.
-    DATA: expected_data_containers TYPE /usi/bal_data_containers,
-          actual_data_cont_coll    TYPE REF TO /usi/if_bal_data_container_col,
-          actual_data_containers   TYPE /usi/bal_data_containers,
-          actual_result_index      TYPE int4,
-          data_container_classname TYPE /usi/bal_data_cont_classname.
+    DATA(expected_data_containers) = i_data_container_collection->get_data_containers( ).
 
-    FIELD-SYMBOLS <expected_data_container> TYPE REF TO /usi/if_bal_data_container.
+    DATA(actual_result_index)        = private_data->get_message_counter( ).
+    DATA(actual_data_container_coll) = private_data->get_data_container_collection( CONV #( actual_result_index ) ).
+    DATA(actual_data_containers)     = actual_data_container_coll->get_data_containers( ).
 
-    expected_data_containers = i_data_container_collection->get_data_containers( ).
-
-    actual_result_index      = private_data->get_message_counter( ).
-    actual_data_cont_coll    = private_data->get_data_container_collection( actual_result_index ).
-    actual_data_containers   = actual_data_cont_coll->get_data_containers( ).
-
-    LOOP AT expected_data_containers ASSIGNING <expected_data_container>.
-
+    LOOP AT expected_data_containers ASSIGNING FIELD-SYMBOL(<expected_data_container>).
       IF NOT line_exists( actual_data_containers[ table_line = <expected_data_container> ] ).
-        data_container_classname = <expected_data_container>->get_classname( ).
-        cl_aunit_assert=>fail( msg    = `Expected container not found!`
-                               detail = data_container_classname ).
+        cl_abap_unit_assert=>fail( msg    = `Expected container not found!`
+                                   detail = <expected_data_container>->get_classname( ) ).
       ENDIF.
     ENDLOOP.
   ENDMETHOD.
@@ -1566,13 +1257,10 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Verify callback functions
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_callback DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_callback DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut          TYPE REF TO /usi/if_bal_logger_state,
-          log_dao      TYPE REF TO lcl_dao_spy,
+          dao_spy      TYPE REF TO lcl_dao_spy,
           private_data TYPE REF TO lcl_private_data.
 
     METHODS setup.
@@ -1583,43 +1271,24 @@ ENDCLASS.
 
 CLASS lcl_unit_test_callback IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          relevant_data_container  TYPE /usi/bal_data_cont_classname,
-          token                    TYPE REF TO /usi/if_bal_token.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
+    dao_spy = NEW #( ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao = NEW #( ).
-    dc_coll_dao = NEW #( ).
-
-    relevant_data_container = /usi/cl_bal_dc_html=>/usi/if_bal_data_container~get_classname( ).
-    INSERT relevant_data_container INTO TABLE relevant_data_containers.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
                                          i_log_level                = /usi/cl_bal_enum_log_level=>everything
                                          i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao
-                                         i_data_cont_coll_dao       = dc_coll_dao
-                                         i_token                    = token
-                                         i_relevant_data_containers = relevant_data_containers ).
+                                         i_log_dao                  = dao_spy
+                                         i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                                         i_token                    = bl_factory->get_token( )
+                                         i_relevant_data_containers = VALUE #(
+                                             ( /usi/cl_bal_dc_html=>/usi/if_bal_data_container~get_classname( ) ) ) ).
 
-    private_data = NEW #( i_cut = cut ).
+    private_data = NEW #( cut ).
   ENDMETHOD.
 
   METHOD test_message_callback.
-    DATA: data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          data_container            TYPE REF TO /usi/if_bal_data_container,
-          logged_message            TYPE bal_s_msg,
-          return_code               TYPE sysubrc,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
-    data_container_collection = lcl_data_container_factory=>get_data_container_collection( ).
-    data_container            = lcl_data_container_factory=>get_html_container( `Test` ).
-    data_container_collection->insert( data_container ).
+    DATA(data_container_collection) = lcl_data_container_factory=>get_data_container_collection( ).
+    data_container_collection->insert( lcl_data_container_factory=>get_html_container( `Test` ) ).
 
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1628,37 +1297,34 @@ CLASS lcl_unit_test_callback IMPLEMENTATION.
                             i_free_text     = `Just a test...`
                             i_details       = data_container_collection ).
 
-        logged_message = private_data->get_message( 1 ).
-        cl_aunit_assert=>assert_not_initial( act = logged_message-params-callback-userexitf
-                                             msg = `Callback function is not set!` ).
+        DATA(logged_message) = dao_spy->get_message( 1 ).
+        cl_abap_unit_assert=>assert_not_initial( act = logged_message-params-callback-userexitf
+                                                 msg = `Callback function is not set!` ).
 
         CALL FUNCTION 'FUNCTION_EXISTS'
           EXPORTING  funcname           = logged_message-params-callback-userexitf
           EXCEPTIONS function_not_exist = 1
                      OTHERS             = 2.
-        return_code = sy-subrc.
-        cl_aunit_assert=>assert_equals( exp = 0
-                                        act = return_code
-                                        msg = `Callback function does not exist!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        DATA(return_code) = sy-subrc.
+        cl_abap_unit_assert=>assert_subrc( exp = 0
+                                           act = return_code
+                                           msg = `Callback function does not exist!` ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD test_no_callback_without_data.
-    DATA: logged_message       TYPE bal_s_msg,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = `Just a test...` ).
 
-        logged_message = private_data->get_message( 1 ).
-        cl_aunit_assert=>assert_initial( act = logged_message-params-callback-userexitf
-                                         msg = `Callback function is set!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+        DATA(logged_message) = dao_spy->get_message( 1 ).
+        cl_abap_unit_assert=>assert_initial( act = logged_message-params-callback-userexitf
+                                             msg = `Callback function is set!` ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
@@ -1668,10 +1334,7 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Auto-Save
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_auto_save DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_auto_save DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     TYPES: BEGIN OF ty_test_objects,
              cut     TYPE REF TO /usi/if_bal_logger_state,
@@ -1691,47 +1354,34 @@ ENDCLASS.
 
 CLASS lcl_unit_test_auto_save IMPLEMENTATION.
   METHOD prepare_test.
-    DATA: cust_eval_factory        TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory        TYPE REF TO /usi/if_bal_logger_bl_factory,
-          dc_coll_dao              TYPE REF TO lcl_data_cont_coll_dao_spy,
-          relevant_data_containers TYPE /usi/bal_data_cont_classnames,
-          token                    TYPE REF TO /usi/if_bal_token.
-
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
     r_result-log_dao = NEW #( ).
-    dc_coll_dao = NEW #( ).
 
-    r_result-cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                                  i_auto_save_pckg_size      = i_auto_save_pckg_size
-                                                  i_log_dao                  = r_result-log_dao
-                                                  i_data_cont_coll_dao       = dc_coll_dao
-                                                  i_token                    = token
-                                                  i_relevant_data_containers = relevant_data_containers ).
+    r_result-cut     = NEW /usi/cl_bal_lstate_active(
+                               i_factory                  = bl_factory
+                               i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                               i_auto_save_pckg_size      = i_auto_save_pckg_size
+                               i_log_dao                  = r_result-log_dao
+                               i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                               i_token                    = bl_factory->get_token( )
+                               i_relevant_data_containers = VALUE #( ) ).
   ENDMETHOD.
 
   METHOD test_auto_save_exception.
-    DATA: test_objects         TYPE ty_test_objects,
-          given_exception      TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    test_objects = prepare_test( 1 ).
-
+    DATA(test_objects) = prepare_test( 1 ).
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
     TRY.
-        given_exception = lcl_exception_factory=>get_exception( i_text = 'Inner exception' ).
-        given_exception = lcl_exception_factory=>get_exception( i_text     = 'Outer exception'
-                                                                i_previous = given_exception ).
+        DATA(given_exception) = lcl_exception_factory=>get_exception(
+                                    i_text     = 'Outer exception'
+                                    i_previous = lcl_exception_factory=>get_exception( i_text = 'Inner exception' ) ).
 
         test_objects-cut->add_exception( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                                          i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                                          i_message_type  = /usi/cl_bal_enum_message_type=>information
                                          i_exception     = given_exception
                                          i_log_previous  = abap_true ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -1741,11 +1391,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_auto_save_free_text.
-    DATA: test_objects         TYPE ty_test_objects,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    test_objects = prepare_test( 1 ).
-
+    DATA(test_objects) = prepare_test( 1 ).
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
     TRY.
@@ -1753,7 +1399,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
                                          i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                                          i_message_type  = /usi/cl_bal_enum_message_type=>information
                                          i_free_text     = 'Should be saved immediately...' ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -1761,11 +1407,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_auto_save_message.
-    DATA: test_objects         TYPE ty_test_objects,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    test_objects = prepare_test( 1 ).
-
+    DATA(test_objects) = prepare_test( 1 ).
     test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
 
     TRY.
@@ -1775,7 +1417,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
                                        i_message_class      = '38'
                                        i_message_number     = '000'
                                        i_message_variable_1 = 'Should be saved immediately...' ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -1783,10 +1425,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_no_early_auto_save.
-    DATA: test_objects         TYPE ty_test_objects,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    test_objects = prepare_test( 2 ).
+    DATA(test_objects) = prepare_test( 2 ).
 
     TRY.
         test_objects-cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
@@ -1794,7 +1433,7 @@ CLASS lcl_unit_test_auto_save IMPLEMENTATION.
                                          i_message_type  = /usi/cl_bal_enum_message_type=>information
                                          i_free_text     = 'Should not save (1st Message; Package Size = 2)' ).
         test_objects-log_dao->method_calls->assert_method_was_not_called( test_objects-log_dao->method_names-save ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
 
@@ -1814,14 +1453,10 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Auto-Save
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_multiple_saves DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_multiple_saves DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
           dc_coll_dao_spy TYPE REF TO lcl_data_cont_coll_dao_spy,
-          log_dao_spy     TYPE REF TO lcl_dao_spy,
           token           TYPE REF TO /usi/if_bal_token.
 
     METHODS setup.
@@ -1836,27 +1471,19 @@ ENDCLASS.
 
 CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
-          data_container_classnames TYPE /usi/bal_data_cont_classnames,
-          data_container_classname  TYPE /usi/bal_data_cont_classname,
-          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory.
-
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao_spy = NEW #( ).
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
+    token           = bl_factory->get_token( ).
     dc_coll_dao_spy = NEW #( ).
 
-    data_container_classname = /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ).
-    INSERT data_container_classname INTO TABLE data_container_classnames.
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
-                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
-                                         i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao_spy
-                                         i_data_cont_coll_dao       = dc_coll_dao_spy
-                                         i_token                    = token
-                                         i_relevant_data_containers = data_container_classnames ).
+    cut = NEW /usi/cl_bal_lstate_active(
+                  i_factory                  = bl_factory
+                  i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                  i_auto_save_pckg_size      = 0
+                  i_log_dao                  = NEW lcl_dao_spy( )
+                  i_data_cont_coll_dao       = dc_coll_dao_spy
+                  i_token                    = token
+                  i_relevant_data_containers = VALUE #(
+                      ( /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~get_classname( ) ) ) ).
   ENDMETHOD.
 
   METHOD test_message_number_is_kept.
@@ -1869,38 +1496,34 @@ CLASS lcl_unit_test_multiple_saves IMPLEMENTATION.
       append_and_save_message( ).
       actual_message_number = get_last_message_number( ).
 
-      cl_aunit_assert=>assert_equals( exp = expected_message_number
-                                      act = actual_message_number
-                                      msg = 'Unexpected message number!' ).
+      cl_abap_unit_assert=>assert_equals( exp = expected_message_number
+                                          act = actual_message_number
+                                          msg = 'Unexpected message number!' ).
     ENDDO.
   ENDMETHOD.
 
   METHOD append_and_save_message.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     TRY.
         cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
                             i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
                             i_message_type  = /usi/cl_bal_enum_message_type=>error
                             i_free_text     = `Just a test` ).
         cut->save( token ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
     ENDTRY.
   ENDMETHOD.
 
   METHOD get_last_message_number.
-    DATA: method_calls   TYPE /usi/cl_bal_aunit_method_calls=>ty_method_calls,
-          message_number TYPE /usi/bal_message_number.
+    DATA message_number TYPE /usi/bal_message_number.
 
-    FIELD-SYMBOLS <method_call> TYPE /usi/cl_bal_aunit_method_calls=>ty_method_call.
+    DATA(method_calls) = dc_coll_dao_spy->method_calls->get_method_calls(
+                             dc_coll_dao_spy->method_names-insert_into_buffer ).
+    cl_abap_unit_assert=>assert_not_initial( act = method_calls
+                                             msg = 'Method was not called!' ).
 
-    method_calls = dc_coll_dao_spy->method_calls->get_method_calls( dc_coll_dao_spy->method_names-insert_into_buffer ).
-    cl_aunit_assert=>assert_not_initial( act = method_calls
-                                         msg = 'Method was not called!' ).
-
-    LOOP AT method_calls ASSIGNING <method_call>.
-      <method_call>-method_call->get_parameter(
+    LOOP AT method_calls REFERENCE INTO DATA(method_call).
+      method_call->method_call->get_parameter(
         EXPORTING i_parameter_name  = dc_coll_dao_spy->parameter_names-message_number
         IMPORTING e_parameter_value = message_number ).
 
@@ -1915,82 +1538,121 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 " Unit test: Test consistency checks
 " ---------------------------------------------------------------------
-CLASS lcl_unit_test_consistency DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
-
+CLASS lcl_unit_test_consistency DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     CONSTANTS: BEGIN OF some_random_message,
                  msgid TYPE symsgid VALUE '/USI/BAL',
                  msgno TYPE symsgno VALUE '005',
                END   OF some_random_message.
 
-    DATA: cut             TYPE REF TO /usi/if_bal_logger_state,
-          dc_coll_dao_spy TYPE REF TO lcl_data_cont_coll_dao_spy,
-          log_dao_spy     TYPE REF TO lcl_dao_spy,
-          token           TYPE REF TO /usi/if_bal_token.
+    DATA cut TYPE REF TO /usi/if_bal_logger_state.
 
     METHODS setup.
 
-    METHODS test_message_wo_msgid_ignored  FOR TESTING.
-    METHODS test_message_wo_msgno_accepted FOR TESTING.
+    METHODS test_throws_on_initial_msgid FOR TESTING.
+    METHODS test_accepts_initial_msgno   FOR TESTING.
 ENDCLASS.
 
 
 CLASS lcl_unit_test_consistency IMPLEMENTATION.
   METHOD setup.
-    DATA: cust_eval_factory         TYPE REF TO /usi/if_bal_cust_eval_factory,
-          data_container_classnames TYPE /usi/bal_data_cont_classnames,
-          logger_bl_factory         TYPE REF TO /usi/if_bal_logger_bl_factory.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
 
-    cust_eval_factory = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-    logger_bl_factory = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-    token             = logger_bl_factory->get_token( ).
-    log_dao_spy = NEW #( ).
-    dc_coll_dao_spy = NEW #( ).
-
-    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = logger_bl_factory
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
                                          i_log_level                = /usi/cl_bal_enum_log_level=>everything
                                          i_auto_save_pckg_size      = 0
-                                         i_log_dao                  = log_dao_spy
-                                         i_data_cont_coll_dao       = dc_coll_dao_spy
-                                         i_token                    = token
-                                         i_relevant_data_containers = data_container_classnames ).
+                                         i_log_dao                  = NEW lcl_dao_spy( )
+                                         i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                                         i_token                    = bl_factory->get_token( )
+                                         i_relevant_data_containers = VALUE #( ) ).
   ENDMETHOD.
 
-  METHOD test_message_wo_msgid_ignored.
-    CONSTANTS illegal_message_id TYPE symsgid VALUE space.
+  METHOD test_throws_on_initial_msgid.
+    CONSTANTS initial_message_id TYPE symsgid VALUE space.
 
     TRY.
         cut->add_message( i_problem_class  = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level   = /usi/cl_bal_enum_detail_level=>detail_level_1
                           i_message_type   = /usi/cl_bal_enum_message_type=>information
-                          i_message_class  = illegal_message_id
+                          i_message_class  = initial_message_id
                           i_message_number = some_random_message-msgno ).
 
-        cl_aunit_assert=>fail( msg = 'Empty message-ID should throw an exception' ).
+        cl_abap_unit_assert=>fail( msg = 'Empty message-ID should throw an exception' ).
       CATCH /usi/cx_bal_root.
         " This is the expected behavior
         RETURN.
     ENDTRY.
   ENDMETHOD.
 
-  METHOD test_message_wo_msgno_accepted.
-    CONSTANTS message_number_zero TYPE symsgno VALUE 0.
-
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
+  METHOD test_accepts_initial_msgno.
+    CONSTANTS initial_message_number TYPE symsgno VALUE 0.
 
     TRY.
         cut->add_message( i_problem_class  = /usi/cl_bal_enum_problem_class=>very_important
                           i_detail_level   = /usi/cl_bal_enum_detail_level=>detail_level_1
                           i_message_type   = /usi/cl_bal_enum_message_type=>information
                           i_message_class  = some_random_message-msgid
-                          i_message_number = message_number_zero ).
+                          i_message_number = initial_message_number ).
 
         " This is the expected behavior
         RETURN.
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
         /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+  ENDMETHOD.
+ENDCLASS.
+
+
+" ---------------------------------------------------------------------
+" Unit test: Test logger->display( )
+" ---------------------------------------------------------------------
+CLASS lcl_unit_test_display DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
+  PRIVATE SECTION.
+    DATA: cut   TYPE REF TO /usi/if_bal_logger_state,
+          token TYPE REF TO /usi/if_bal_token.
+
+    METHODS setup.
+
+    METHODS test_throws_if_partly_saved FOR TESTING.
+ENDCLASS.
+
+
+CLASS lcl_unit_test_display IMPLEMENTATION.
+  METHOD setup.
+    DATA(bl_factory) = /usi/cl_bal_logger_bl_factory=>get_instance( /usi/cl_bal_cust_eval_factory=>get_instance( ) ).
+    token = bl_factory->get_token( ).
+
+    cut = NEW /usi/cl_bal_lstate_active( i_factory                  = bl_factory
+                                         i_log_level                = /usi/cl_bal_enum_log_level=>everything
+                                         i_auto_save_pckg_size      = 0
+                                         i_log_dao                  = NEW lcl_dao_spy( )
+                                         i_data_cont_coll_dao       = NEW lcl_data_cont_coll_dao_spy( )
+                                         i_token                    = token
+                                         i_relevant_data_containers = VALUE #( ) ).
+  ENDMETHOD.
+
+  METHOD test_throws_if_partly_saved.
+    TRY.
+        cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                            i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                            i_message_type  = /usi/cl_bal_enum_message_type=>information
+                            i_free_text     = `Saved message` ).
+        cut->save( token ).
+
+        cut->add_free_text( i_problem_class = /usi/cl_bal_enum_problem_class=>very_important
+                            i_detail_level  = /usi/cl_bal_enum_detail_level=>detail_level_1
+                            i_message_type  = /usi/cl_bal_enum_message_type=>information
+                            i_free_text     = `Unsaved message` ).
+      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
+        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
+    ENDTRY.
+
+    TRY.
+        cut->display( ).
+        cl_abap_unit_assert=>fail( msg = `Logger accepts call to display( ) for partially saved log!` ).
+      CATCH /usi/cx_bal_root.
+        " Expected behavior
+        RETURN.
     ENDTRY.
   ENDMETHOD.
 ENDCLASS.

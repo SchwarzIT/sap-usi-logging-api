@@ -87,6 +87,15 @@ INTERFACE /usi/if_bal_logger_state PUBLIC.
     RAISING
       /usi/cx_bal_root.
 
+  "! <h1>Display the log</h1>
+  "!
+  "! <p>Works for 'active' logger instances. 'Active' means, that the logger has already been claimed by method
+  "! claim_ownership( ) but not yet invalidated by method free( ).</p>
+  "!
+  "! @raising /usi/cx_bal_root | Error
+  METHODS display
+    RAISING /usi/cx_bal_root.
+
   "! <h1>Destructor</h1>
   "!
   "! <p>The log writer is currently a singleton held by the factory. Once created it can only be destroyed by its
