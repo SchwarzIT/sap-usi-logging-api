@@ -9,7 +9,7 @@ CLASS /usi/cl_bal_dc_retcode_and_msg DEFINITION LOCAL FRIENDS lcl_unit_tests_ser
 CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
-    METHODS test_deserialize_valid_xml FOR TESTING.
+    METHODS test_deserialize_valid_xml FOR TESTING RAISING /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -25,13 +25,10 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_deserialize_valid_xml.
-    DATA: cut TYPE REF TO /usi/cl_bal_dc_retcode_and_msg,
-          BEGIN OF input,
+    DATA: BEGIN OF input,
             message     TYPE symsg,
             return_code TYPE sysubrc,
-          END   OF input,
-          serialized_data_container TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+          END   OF input.
 
     input = VALUE #( return_code = 4
                      message     = VALUE #( msgty = 'E'
@@ -39,21 +36,14 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
                                             msgno = '000'
                                             msgv1 = 'Just a test' ) ).
 
-    cut = NEW #( i_message     = input-message
-                 i_return_code = input-return_code ).
-    TRY.
-        serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-    CLEAR cut.
+    " Serialize / Deserialize
+    DATA(serialized_data_container) = NEW /usi/cl_bal_dc_retcode_and_msg(
+        i_message     = input-message
+        i_return_code = input-return_code )->/usi/if_bal_data_container~serialize( ).
+    DATA(cut) = CAST /usi/cl_bal_dc_retcode_and_msg( /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize(
+                                                         serialized_data_container ) ).
 
-    TRY.
-        cut ?= /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
+    " Compare
     cl_abap_unit_assert=>assert_equals( exp = input-message
                                         act = cut->message ).
     cl_abap_unit_assert=>assert_equals( exp = input-return_code

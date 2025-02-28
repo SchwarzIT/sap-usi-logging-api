@@ -9,7 +9,7 @@ CLASS /usi/cl_bal_data_cont_coll_dao DEFINITION LOCAL FRIENDS lcl_unit_tests_db_
 CLASS lcl_unit_tests_db_conversion DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_conversion       FOR TESTING.
-    METHODS test_empty_xml_string FOR TESTING.
+    METHODS test_empty_xml_string FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_xml_test_string
       RETURNING VALUE(r_result) TYPE /usi/bal_xml_string.
@@ -48,21 +48,14 @@ CLASS lcl_unit_tests_db_conversion IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_empty_xml_string.
-    DATA: cut                  TYPE REF TO /usi/cl_bal_data_cont_coll_dao,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA(cut) = NEW /usi/cl_bal_data_cont_coll_dao( ).
 
-    cut = NEW #( ).
+    cut->/usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer( i_log_number                = '1'
+                                                                       i_message_number            = 1
+                                                                       i_serialized_data_cont_coll = `` ).
 
-    TRY.
-        cut->/usi/if_bal_data_cont_coll_dao~insert_collection_into_buffer( i_log_number                = '1'
-                                                                           i_message_number            = 1
-                                                                           i_serialized_data_cont_coll = `` ).
-
-        cl_abap_unit_assert=>assert_initial( act = cut->db_records
-                                             msg = `CUT should not create entries for initial input!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cl_abap_unit_assert=>assert_initial( act = cut->db_records
+                                         msg = `CUT should not create entries for initial input!` ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -72,20 +65,17 @@ ENDCLASS.
 " ---------------------------------------------------------------------
 CLASS lcl_unit_test_duplicate_msg DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    METHODS test_duplicate_message FOR TESTING.
+    METHODS test_duplicate_message FOR TESTING RAISING /usi/cx_bal_root.
 ENDCLASS.
 
 
 CLASS lcl_unit_test_duplicate_msg IMPLEMENTATION.
   METHOD test_duplicate_message.
     DATA(cut) = CAST /usi/if_bal_data_cont_coll_dao( NEW /usi/cl_bal_data_cont_coll_dao( ) ).
-    TRY.
-        cut->insert_collection_into_buffer( i_log_number                = '1'
-                                            i_message_number            = 1
-                                            i_serialized_data_cont_coll = `<test>` ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+
+    cut->insert_collection_into_buffer( i_log_number                = '1'
+                                        i_message_number            = 1
+                                        i_serialized_data_cont_coll = `<test>` ).
 
     TRY.
         cut->insert_collection_into_buffer( i_log_number                = '1'

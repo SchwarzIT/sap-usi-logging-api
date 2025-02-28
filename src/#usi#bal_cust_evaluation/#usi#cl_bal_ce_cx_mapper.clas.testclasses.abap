@@ -51,11 +51,7 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
     METHODS test_match_class            FOR TESTING.
     METHODS test_match_new_interface    FOR TESTING.
     METHODS test_match_superclass       FOR TESTING.
-    METHODS test_validate_fallback      FOR TESTING.
-
-    METHODS reset_cut
-      IMPORTING
-        i_quit TYPE aunit_flowctrl DEFAULT if_aunit_constants=>method.
+    METHODS test_validate_fallback      FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS assert_expected_result
       IMPORTING
@@ -68,18 +64,7 @@ ENDCLASS.
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     test_double_cust_dao = NEW #( ).
-    reset_cut( if_aunit_constants=>class ).
-  ENDMETHOD.
-
-  METHOD reset_cut.
-    DATA exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        cut = NEW /usi/cl_bal_ce_cx_mapper( i_customizing_dao = test_double_cust_dao ).
-      CATCH /usi/cx_bal_root INTO exception.
-        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = exception
-                                                                    i_quit      = i_quit ).
-    ENDTRY.
+    cut = NEW /usi/cl_bal_ce_cx_mapper( i_customizing_dao = test_double_cust_dao ).
   ENDMETHOD.
 
   METHOD test_ignore_invalid_mappers.
@@ -107,99 +92,51 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_match_class.
-    DATA: test_exception      TYPE REF TO /usi/cx_bal_root,
-          customizing_records TYPE /usi/if_bal_cd_cx_mapper=>ty_records,
-          customizing_record  TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
-
     TRY.
         RAISE EXCEPTION TYPE /usi/cx_bal_not_found.
-      CATCH /usi/cx_bal_root INTO test_exception.
+      CATCH /usi/cx_bal_root INTO DATA(test_exception).
     ENDTRY.
-
-    CLEAR customizing_records.
-    customizing_record-exception_class = '/USI/CX_BAL_NOT_FOUND'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
-    INSERT customizing_record INTO TABLE customizing_records.
-
-    assert_expected_result( i_customizing     = customizing_records
+    assert_expected_result( i_customizing     = VALUE #( ( exception_class = '/USI/CX_BAL_NOT_FOUND'
+                                                           mapper_class    = '/USI/CL_BAL_EM_BASE' ) )
                             i_exception       = test_exception
                             i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD test_match_new_interface.
-    DATA: test_exception      TYPE REF TO /usi/cx_bal_root,
-          customizing_records TYPE /usi/if_bal_cd_cx_mapper=>ty_records,
-          customizing_record  TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
-
     TRY.
         RAISE EXCEPTION TYPE /usi/cx_bal_not_found.
-      CATCH /usi/cx_bal_root INTO test_exception.
+      CATCH /usi/cx_bal_root INTO DATA(test_exception).
     ENDTRY.
-
-    CLEAR customizing_records.
-    customizing_record-exception_class = 'IF_T100_MESSAGE'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
-    INSERT customizing_record INTO TABLE customizing_records.
-
-    assert_expected_result( i_customizing     = customizing_records
+    assert_expected_result( i_customizing     = VALUE #( ( exception_class = 'IF_T100_MESSAGE'
+                                                           mapper_class    = '/USI/CL_BAL_EM_BASE' ) )
                             i_exception       = test_exception
                             i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD test_match_superclass.
-    DATA: test_exception      TYPE REF TO /usi/cx_bal_root,
-          customizing_records TYPE /usi/if_bal_cd_cx_mapper=>ty_records,
-          customizing_record  TYPE /usi/if_bal_cd_cx_mapper=>ty_record.
-
     TRY.
         RAISE EXCEPTION TYPE /usi/cx_bal_not_found.
-      CATCH /usi/cx_bal_root INTO test_exception.
+      CATCH /usi/cx_bal_root INTO DATA(test_exception).
     ENDTRY.
-
-    CLEAR customizing_records.
-    customizing_record-exception_class = '/USI/CX_BAL_ROOT'.
-    customizing_record-mapper_class    = '/USI/CL_BAL_EM_BASE'.
-    INSERT customizing_record INTO TABLE customizing_records.
-
-    assert_expected_result( i_customizing     = customizing_records
+    assert_expected_result( i_customizing     = VALUE #( ( exception_class = '/USI/CX_BAL_ROOT'
+                                                           mapper_class    = '/USI/CL_BAL_EM_BASE' ) )
                             i_exception       = test_exception
                             i_expected_result = '/USI/CL_BAL_EM_BASE' ).
   ENDMETHOD.
 
   METHOD assert_expected_result.
-    DATA: mapper_class_name    TYPE /usi/bal_exception_mapper,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     test_double_cust_dao->set_mock_data( i_customizing ).
-    reset_cut( ).
-
-    TRY.
-        mapper_class_name = cut->get_exception_mapper_classname( i_exception ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
 
     cl_abap_unit_assert=>assert_equals( exp = i_expected_result
-                                        act = mapper_class_name ).
+                                        act = cut->get_exception_mapper_classname( i_exception ) ).
   ENDMETHOD.
 
   METHOD test_validate_fallback.
     CONSTANTS mapper_interface_name TYPE seoclsname VALUE '/USI/IF_BAL_EXCEPTION_MAPPER'.
 
-    DATA: fallback             TYPE /usi/bal_exception_mapper,
-          object_description   TYPE REF TO /usi/cl_bal_object_descr,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    fallback = cut->get_fallback_mapper_classname( ).
-
-    TRY.
-        object_description = NEW #( i_object_type_name = fallback ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    IF    object_description->is_implementing( mapper_interface_name ) <> abap_true
-       OR object_description->is_instantiatable( ) <> abap_true.
+    DATA(object_description) = NEW /usi/cl_bal_object_descr( cut->get_fallback_mapper_classname( ) ).
+    IF    object_description->is_implementing( mapper_interface_name ) = abap_false
+       OR object_description->is_instantiatable( ) = abap_false.
       cl_abap_unit_assert=>fail( 'Invalid fallback for mapper class!' ).
     ENDIF.
   ENDMETHOD.

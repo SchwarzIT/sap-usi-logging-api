@@ -22,28 +22,21 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
   METHOD /usi/if_bal_ce_data_containers~get_relevant_plugin_classnames.
     CONSTANTS data_container_interface TYPE seoclsname VALUE '/USI/IF_BAL_DATA_CONTAINER'.
 
-    DATA: log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
-          sub_object_range_helper TYPE REF TO /usi/cl_bal_sub_object_range,
-          customizing_records     TYPE /usi/if_bal_cd_data_containers=>ty_records,
-          required_log_level      TYPE REF TO /usi/cl_bal_enum_log_level,
-          object_description      TYPE REF TO /usi/cl_bal_object_descr.
-
-    FIELD-SYMBOLS <customizing_record> TYPE /usi/if_bal_cd_data_containers=>ty_record.
+    DATA: required_log_level TYPE REF TO /usi/cl_bal_enum_log_level,
+          object_description TYPE REF TO /usi/cl_bal_object_descr.
 
     " Read database
-    log_object_range_helper = NEW #( ).
-    log_object_range_helper->insert_line( i_log_object ).
-    log_object_range_helper->insert_line( space ).
-
-    sub_object_range_helper = NEW #( ).
-    sub_object_range_helper->insert_line( i_sub_object ).
-    sub_object_range_helper->insert_line( space ).
-
     TRY.
-        customizing_records = customizing_dao->get_records( i_log_object_range = log_object_range_helper->range
-                                                            i_sub_object_range = sub_object_range_helper->range ).
+        DATA(customizing_records) = customizing_dao->get_records( i_log_object_range = VALUE #( sign   = 'I'
+                                                                                                option = 'EQ'
+                                                                                                ( low = i_log_object )
+                                                                                                ( low = space ) )
+                                                                  i_sub_object_range = VALUE #( sign   = 'I'
+                                                                                                option = 'EQ'
+                                                                                                ( low = i_sub_object )
+                                                                                                ( low = space ) ) ).
       CATCH /usi/cx_bal_root.
-        CLEAR r_result.
+        CLEAR customizing_records.
     ENDTRY.
 
     " Delete rules of lower priority (Priority: log_object > sub_object)
@@ -57,7 +50,7 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
            COMPARING classname.
 
     " Process rules of highest priority
-    LOOP AT customizing_records ASSIGNING <customizing_record>.
+    LOOP AT customizing_records ASSIGNING FIELD-SYMBOL(<customizing_record>).
       TRY.
           required_log_level = /usi/cl_bal_enum_log_level=>get_by_value( <customizing_record>-min_log_level ).
 
@@ -66,7 +59,7 @@ CLASS /usi/cl_bal_ce_data_containers IMPLEMENTATION.
           CONTINUE.
       ENDTRY.
 
-      IF    required_log_level->is_higher_than( i_log_level ) = abap_true
+      IF    required_log_level->is_higher_than( i_log_level )               = abap_true
          OR object_description->is_instantiatable( ) = abap_false
          OR object_description->is_implementing( data_container_interface ) = abap_false.
         CONTINUE.

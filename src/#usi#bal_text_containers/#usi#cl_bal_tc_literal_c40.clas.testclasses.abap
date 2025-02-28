@@ -3,9 +3,7 @@
 *--------------------------------------------------------------------*
 * Unit test: Classname
 *--------------------------------------------------------------------*
-CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_classname DEFINITION FINAL CREATE PUBLIC FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
   PRIVATE SECTION.
     METHODS assert_returns_right_classname FOR TESTING.
 ENDCLASS.

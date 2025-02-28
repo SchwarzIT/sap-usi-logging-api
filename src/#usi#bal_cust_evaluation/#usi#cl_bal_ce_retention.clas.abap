@@ -27,24 +27,16 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
   METHOD /usi/if_bal_ce_retention~get_parameters.
-    DATA: customizing_entries     TYPE /usi/if_bal_cd_retention=>ty_records,
-          log_object_range_helper TYPE REF TO /usi/cl_bal_log_object_range,
-          sub_object_range_helper TYPE REF TO /usi/cl_bal_sub_object_range.
-
-    FIELD-SYMBOLS <customizing_entry> TYPE /usi/if_bal_cd_retention=>ty_record.
-
-    log_object_range_helper = NEW #( ).
-    log_object_range_helper->insert_line( i_log_object ).
-    log_object_range_helper->insert_line( space ).
-
-    sub_object_range_helper = NEW #( ).
-    sub_object_range_helper->insert_line( i_sub_object ).
-    sub_object_range_helper->insert_line( space ).
-
     TRY.
-        customizing_entries = customizing_dao->get_records( i_log_level        = i_log_level->value
-                                                            i_log_object_range = log_object_range_helper->range
-                                                            i_sub_object_range = sub_object_range_helper->range ).
+        DATA(customizing_entries) = customizing_dao->get_records( i_log_level        = i_log_level->value
+                                                                  i_log_object_range = VALUE #( sign   = 'I'
+                                                                                                option = 'EQ'
+                                                                                                ( low = i_log_object )
+                                                                                                ( low = space ) )
+                                                                  i_sub_object_range = VALUE #( sign   = 'I'
+                                                                                                option = 'EQ'
+                                                                                                ( low = i_sub_object )
+                                                                                                ( low = space ) ) ).
       CATCH /usi/cx_bal_root.
         CLEAR customizing_entries.
     ENDTRY.
@@ -53,9 +45,7 @@ CLASS /usi/cl_bal_ce_retention IMPLEMENTATION.
       SORT customizing_entries BY log_object DESCENDING
                                   sub_object DESCENDING.
 
-      ASSIGN customizing_entries[ 1 ] TO <customizing_entry>.
-
-      r_result = <customizing_entry>-retention_parameters.
+      r_result = customizing_entries[ 1 ]-retention_parameters.
     ELSE.
       r_result = get_fallback( ).
     ENDIF.

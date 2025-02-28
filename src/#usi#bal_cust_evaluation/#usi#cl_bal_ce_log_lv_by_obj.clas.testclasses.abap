@@ -61,14 +61,13 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
     METHODS setup.
     METHODS test_fallback_auto_save FOR TESTING.
     METHODS test_fallback_log_level FOR TESTING.
-    METHODS test_prio_log_object    FOR TESTING.
-    METHODS test_prio_sub_object    FOR TESTING.
+    METHODS test_prio_log_object    FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_prio_sub_object    FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_non_fallback_log_levels
-      IMPORTING
-        i_amount        TYPE int1
-      RETURNING
-        VALUE(r_result) TYPE ty_non_default_log_levels.
+      IMPORTING i_amount        TYPE int1
+      RETURNING VALUE(r_result) TYPE ty_non_default_log_levels
+      RAISING   /usi/cx_bal_root.
 
     DATA: cut                  TYPE REF TO /usi/cl_bal_ce_log_lv_by_obj,
           test_double_cust_dao TYPE REF TO lcl_test_double_cust_dao.
@@ -78,12 +77,7 @@ ENDCLASS.
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     test_double_cust_dao = NEW #( ).
-    TRY.
-        cut = NEW #( i_customizing_dao = test_double_cust_dao ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( i_exception = unexpected_exception
-                                                                   i_quit      = if_aunit_constants=>class ).
-    ENDTRY.
+    cut = NEW #( i_customizing_dao = test_double_cust_dao ).
   ENDMETHOD.
 
   METHOD test_fallback_auto_save.
@@ -148,16 +142,11 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     DATA(log_level_value) = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE lines( r_result ) < i_amount.
-      TRY.
-          DATA(log_level) = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level <> fallback_log_level.
-            INSERT log_level INTO TABLE r_result.
-          ENDIF.
-          log_level_value = log_level_value + 1.
-        CATCH /usi/cx_bal_root.
-          cl_abap_unit_assert=>abort( msg  = 'Too many values requested'
-                                      quit = if_aunit_constants=>method ).
-      ENDTRY.
+      DATA(log_level) = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
+      IF log_level <> fallback_log_level.
+        INSERT log_level INTO TABLE r_result.
+      ENDIF.
+      log_level_value = log_level_value + 1.
     ENDWHILE.
   ENDMETHOD.
 ENDCLASS.

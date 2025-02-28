@@ -474,35 +474,19 @@ CLASS lcl_unit_test_state_transition IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_state_is_test_double.
-    TRY.
-        CAST lcl_log_writer_state_double( get_current_state( ) ).
-      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    CAST lcl_log_writer_state_double( get_current_state( ) ).
   ENDMETHOD.
 
   METHOD assert_state_is_not_claimed.
-    TRY.
-        CAST /usi/cl_bal_lstate_not_claimed( get_current_state( ) ).
-      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    CAST /usi/cl_bal_lstate_not_claimed( get_current_state( ) ).
   ENDMETHOD.
 
   METHOD assert_state_is_active.
-    TRY.
-        CAST /usi/cl_bal_lstate_active( get_current_state( ) ).
-      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    CAST /usi/cl_bal_lstate_active( get_current_state( ) ).
   ENDMETHOD.
 
   METHOD assert_state_is_invalidated.
-    TRY.
-        CAST /usi/cl_bal_lstate_invalidated( get_current_state( ) ).
-      CATCH cx_sy_move_cast_error INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    CAST /usi/cl_bal_lstate_invalidated( get_current_state( ) ).
   ENDMETHOD.
 
   METHOD get_current_state.

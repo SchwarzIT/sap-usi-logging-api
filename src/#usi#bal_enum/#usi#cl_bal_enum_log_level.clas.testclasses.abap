@@ -34,14 +34,15 @@ ENDCLASS.
 CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_raise_on_invalid_value    FOR TESTING.
-    METHODS test_get_by_value              FOR TESTING.
+    METHODS test_get_by_value              FOR TESTING RAISING /usi/cx_bal_root.
     METHODS test_static_instances          FOR TESTING.
     METHODS test_is_higher                 FOR TESTING.
-    METHODS test_is_problem_class_relevant FOR TESTING.
+    METHODS test_is_problem_class_relevant FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS assert_get_by_value_returns
       IMPORTING i_value    TYPE /usi/bal_log_level
-                i_expected TYPE REF TO /usi/cl_bal_enum_log_level.
+                i_expected TYPE REF TO /usi/cl_bal_enum_log_level
+      RAISING   /usi/cx_bal_root.
 
     METHODS assert_value
       IMPORTING i_instance TYPE REF TO /usi/cl_bal_enum_log_level
@@ -53,7 +54,8 @@ CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DU
     METHODS assert_prob_class_relevant_for
       IMPORTING i_problem_class TYPE REF TO /usi/cl_bal_enum_problem_class
                 i_relevant_from TYPE /usi/bal_log_level
-                i_relevant_to   TYPE /usi/bal_log_level.
+                i_relevant_to   TYPE /usi/bal_log_level
+      RAISING   /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -91,18 +93,9 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_get_by_value_returns.
-    DATA: actual_result        TYPE REF TO /usi/cl_bal_enum_log_level,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        actual_result = /usi/cl_bal_enum_log_level=>get_by_value( i_value ).
-
-        cl_abap_unit_assert=>assert_equals( exp = i_expected
-                                            act = actual_result
-                                            msg = `GET_BY_VALUE( ) returns wrong instance!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = /usi/cl_bal_enum_log_level=>get_by_value( i_value )
+                                        msg = `GET_BY_VALUE( ) returns wrong instance!` ).
   ENDMETHOD.
 
   METHOD test_static_instances.
@@ -180,19 +173,14 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_prob_class_relevant_for.
-    DATA: actual_result        TYPE abap_bool,
-          cut                  TYPE REF TO /usi/cl_bal_enum_log_level,
-          expected_result      TYPE abap_bool,
-          log_level            TYPE /usi/bal_log_level,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
+    DATA: actual_result   TYPE abap_bool,
+          cut             TYPE REF TO /usi/cl_bal_enum_log_level,
+          expected_result TYPE abap_bool,
+          log_level       TYPE /usi/bal_log_level.
 
     log_level = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE log_level <= /usi/cl_bal_enum_log_level=>everything->value.
-      TRY.
-          cut = /usi/cl_bal_enum_log_level=>get_by_value( log_level ).
-        CATCH /usi/cx_bal_root INTO unexpected_exception.
-          /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-      ENDTRY.
+      cut = /usi/cl_bal_enum_log_level=>get_by_value( log_level ).
 
       expected_result = boolc( log_level BETWEEN i_relevant_from AND i_relevant_to ).
       actual_result = cut->is_problem_class_relevant( i_problem_class ).

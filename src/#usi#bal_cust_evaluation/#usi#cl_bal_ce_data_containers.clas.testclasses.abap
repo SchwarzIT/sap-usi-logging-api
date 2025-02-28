@@ -73,23 +73,12 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
         i_request         TYPE ty_request
         i_expected_result TYPE /usi/bal_data_cont_classnames.
 
-    METHODS reset_cut.
 ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
     test_double_cust_dao = NEW #( ).
-    reset_cut( ).
-  ENDMETHOD.
-
-  METHOD reset_cut.
-    DATA exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        cut = NEW /usi/cl_bal_ce_data_containers( i_customizing_dao = test_double_cust_dao ).
-      CATCH /usi/cx_bal_root INTO exception.
-        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( exception ).
-    ENDTRY.
+    cut = NEW /usi/cl_bal_ce_data_containers( test_double_cust_dao ).
   ENDMETHOD.
 
   METHOD test_return_empty_on_no_cust.
