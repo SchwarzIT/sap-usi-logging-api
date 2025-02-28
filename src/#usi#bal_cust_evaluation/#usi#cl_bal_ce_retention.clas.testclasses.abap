@@ -89,7 +89,7 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
     METHODS test_generic_sub_object       FOR TESTING.
     METHODS test_perfect_match            FOR TESTING.
 
-    METHODS get_non_fallback_retention_par
+    METHODS get_non_fallback_result
       IMPORTING
         i_offset_days   TYPE int2
       RETURNING
@@ -118,7 +118,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD test_no_match_for_log_object.
     test_double_cust_dao->insert_mock_data_line( VALUE #( log_object       = 'CUST_LOG_OBJECT'
                                                           log_level        = /usi/cl_bal_enum_log_level=>additional_info
-                                                          retention_params = get_non_fallback_retention_par( 10 ) ) ).
+                                                          retention_params = get_non_fallback_result( 10 ) ) ).
 
     assert_cut_returns_expected( i_log_object      = 'NOT_IN_CUST'
                                  i_expected_result = cut->get_fallback( ) ).
@@ -127,7 +127,7 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD test_no_match_for_sub_object.
     test_double_cust_dao->insert_mock_data_line( VALUE #( sub_object       = 'CUST_SUB_OBJECT'
                                                           log_level        = /usi/cl_bal_enum_log_level=>additional_info
-                                                          retention_params = get_non_fallback_retention_par( 20 ) ) ).
+                                                          retention_params = get_non_fallback_result( 20 ) ) ).
 
     assert_cut_returns_expected( i_log_object      = space
                                  i_sub_object      = 'NOT_IN_CUST'
@@ -135,22 +135,21 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_full_generic_matches_all.
-    DATA(expected_result) = get_non_fallback_retention_par( 4 ).
+    DATA(expected_result) = get_non_fallback_result( 4 ).
 
-    test_double_cust_dao->insert_mock_data_lines(
-        i_new_lines = VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
-                               ( log_object       = space
-                                 sub_object       = space
-                                 retention_params = expected_result )
-                               ( log_object       = space
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 3 ) )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 2 )  )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 1 ) ) ) ).
+    test_double_cust_dao->insert_mock_data_lines( VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
+                                                           ( log_object       = space
+                                                             sub_object       = space
+                                                             retention_params = expected_result )
+                                                           ( log_object       = space
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 3 ) )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 2 )  )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 1 ) ) ) ).
 
     assert_cut_returns_expected( i_log_object      = 'NOT_IN_CUST'
                                  i_sub_object      = 'NOT_IN_CUST'
@@ -158,22 +157,21 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_generic_log_object.
-    DATA(expected_result) = get_non_fallback_retention_par( 3 ).
+    DATA(expected_result) = get_non_fallback_result( 3 ).
 
-    test_double_cust_dao->insert_mock_data_lines(
-        i_new_lines = VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
-                               ( log_object       = space
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 4 ) )
-                               ( log_object       = space
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = expected_result )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 2 )  )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 1 ) ) ) ).
+    test_double_cust_dao->insert_mock_data_lines( VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
+                                                           ( log_object       = space
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 4 ) )
+                                                           ( log_object       = space
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = expected_result )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 2 )  )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 1 ) ) ) ).
 
     assert_cut_returns_expected( i_log_object      = 'NOT_IN_CUST'
                                  i_sub_object      = 'CUST_SUB_OBJECT'
@@ -181,22 +179,21 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_generic_sub_object.
-    DATA(expected_result) = get_non_fallback_retention_par( 2 ).
+    DATA(expected_result) = get_non_fallback_result( 2 ).
 
-    test_double_cust_dao->insert_mock_data_lines(
-        i_new_lines = VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
-                               ( log_object       = space
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 4 ) )
-                               ( log_object       = space
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 3 ) )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = space
-                                 retention_params = expected_result  )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 1 ) ) ) ).
+    test_double_cust_dao->insert_mock_data_lines( VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
+                                                           ( log_object       = space
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 4 ) )
+                                                           ( log_object       = space
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 3 ) )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = space
+                                                             retention_params = expected_result  )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 1 ) ) ) ).
 
     assert_cut_returns_expected( i_log_object      = 'CUST_LOG_OBJECT'
                                  i_sub_object      = 'NOT_IN_CUST'
@@ -204,29 +201,28 @@ CLASS lcl_unit_tests IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_perfect_match.
-    DATA(expected_result) = get_non_fallback_retention_par( 1 ).
+    DATA(expected_result) = get_non_fallback_result( 1 ).
 
-    test_double_cust_dao->insert_mock_data_lines(
-        i_new_lines = VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
-                               ( log_object       = space
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 4 ) )
-                               ( log_object       = space
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = get_non_fallback_retention_par( 3 ) )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = space
-                                 retention_params = get_non_fallback_retention_par( 2 )  )
-                               ( log_object       = 'CUST_LOG_OBJECT'
-                                 sub_object       = 'CUST_SUB_OBJECT'
-                                 retention_params = expected_result ) ) ).
+    test_double_cust_dao->insert_mock_data_lines( VALUE #( log_level = /usi/cl_bal_enum_log_level=>additional_info
+                                                           ( log_object       = space
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 4 ) )
+                                                           ( log_object       = space
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = get_non_fallback_result( 3 ) )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = space
+                                                             retention_params = get_non_fallback_result( 2 )  )
+                                                           ( log_object       = 'CUST_LOG_OBJECT'
+                                                             sub_object       = 'CUST_SUB_OBJECT'
+                                                             retention_params = expected_result ) ) ).
 
     assert_cut_returns_expected( i_log_object      = 'CUST_LOG_OBJECT'
                                  i_sub_object      = 'CUST_SUB_OBJECT'
                                  i_expected_result = expected_result ).
   ENDMETHOD.
 
-  METHOD get_non_fallback_retention_par.
+  METHOD get_non_fallback_result.
     r_result = cut->get_fallback( ).
 
     TRY.
