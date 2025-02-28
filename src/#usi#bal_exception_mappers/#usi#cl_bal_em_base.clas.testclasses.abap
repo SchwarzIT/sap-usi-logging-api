@@ -23,9 +23,9 @@ ENDCLASS.
 CLASS lcl_unit_test DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_refuse_unbound_exception  FOR TESTING.
-    METHODS test_data_container            FOR TESTING.
-    METHODS test_data_container_collection FOR TESTING.
-    METHODS test_does_not_dump_on_previous FOR TESTING.
+    METHODS test_data_container            FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_data_container_collection FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_does_not_dump_on_previous FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_data_container
       RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_data_container.
@@ -58,17 +58,12 @@ CLASS lcl_unit_test IMPLEMENTATION.
     DATA: cut                       TYPE REF TO lcl_cut_subclass,
           data_container            TYPE REF TO /usi/if_bal_data_container,
           data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          exception                 TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+          exception                 TYPE REF TO /usi/cx_bal_root.
 
     data_container = get_data_container( ).
     exception = get_exception( i_details = data_container ).
 
-    TRY.
-        cut = NEW #( i_exception = exception ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cut = NEW #( i_exception = exception ).
     data_container_collection = NEW /usi/cl_bal_dc_collection( ).
     cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
 
@@ -80,19 +75,14 @@ CLASS lcl_unit_test IMPLEMENTATION.
     DATA: cut                       TYPE REF TO lcl_cut_subclass,
           data_container            TYPE REF TO /usi/if_bal_data_container,
           data_container_collection TYPE REF TO /usi/if_bal_data_container_col,
-          exception                 TYPE REF TO /usi/cx_bal_root,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+          exception                 TYPE REF TO /usi/cx_bal_root.
 
     data_container_collection = NEW /usi/cl_bal_dc_collection( ).
     data_container = get_data_container( ).
     data_container_collection->insert( data_container ).
     exception = get_exception( i_details = data_container_collection ).
 
-    TRY.
-        cut = NEW #( i_exception = exception ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cut = NEW #( i_exception = exception ).
     CLEAR data_container_collection.
     data_container_collection = NEW /usi/cl_bal_dc_collection( ).
     cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
@@ -102,22 +92,10 @@ CLASS lcl_unit_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_does_not_dump_on_previous.
-    DATA: data_container_collection TYPE REF TO /usi/cl_bal_dc_collection,
-          cut                       TYPE REF TO lcl_cut_subclass,
-          exception                 TYPE REF TO cx_root,
-          previous                  TYPE REF TO cx_root.
+    DATA(exception) = get_exception( i_previous = get_exception( ) ).
 
-    previous  = get_exception( ).
-    exception = get_exception( i_previous = previous ).
-
-    TRY.
-        cut = NEW #( i_exception = exception ).
-      CATCH /usi/cx_bal_root.
-        cl_abap_unit_assert=>fail( 'Unexpected exception!' ).
-    ENDTRY.
-
-    data_container_collection = NEW #( ).
-    cut->/usi/if_bal_exception_mapper~get_data_containers( data_container_collection ).
+    DATA(cut) = NEW lcl_cut_subclass( exception ).
+    cut->/usi/if_bal_exception_mapper~get_data_containers( NEW /usi/cl_bal_dc_collection( ) ).
   ENDMETHOD.
 
   METHOD get_data_container.

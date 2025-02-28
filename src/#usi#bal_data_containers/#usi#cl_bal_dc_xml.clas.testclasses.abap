@@ -10,7 +10,7 @@ CLASS /usi/cl_bal_dc_xml DEFINITION LOCAL FRIENDS lcl_unit_tests_serialization.
 CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
-    METHODS test_deserialize_valid_xml FOR TESTING.
+    METHODS test_deserialize_valid_xml FOR TESTING RAISING /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -26,43 +26,21 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_deserialize_valid_xml.
-    DATA: cut                       TYPE REF TO /usi/cl_bal_dc_xml,
-          document                  TYPE string,
-          title                     TYPE REF TO /usi/if_bal_text_container_c40,
-          serialized_data_container TYPE /usi/bal_xml_string,
-          serialized_title_in       TYPE /usi/bal_xml_string,
-          serialized_title_out      TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+    DATA(document) = `<html><head/><body><p>test document</p></body></html>`.
+    DATA(title) = CAST /usi/if_bal_text_container_c40( NEW /usi/cl_bal_tc_literal_c40( 'Test document title' ) ).
 
-    " serialize
-    document = `<html><head/><body><p>test document</p></body></html>`.
-
-    title = NEW /usi/cl_bal_tc_literal_c40( i_text = 'Test document title' ).
-
-    cut = NEW #( i_xml_document   = document
-                 i_document_title = title ).
-    TRY.
-        serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-    CLEAR cut.
-
-    " deserialize
-    TRY.
-        cut ?= /usi/cl_bal_dc_xml=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    " serialize / deserialize
+    DATA(serialized_data_container) = NEW /usi/cl_bal_dc_xml(
+                                              i_xml_document   = document
+                                              i_document_title = title )->/usi/if_bal_data_container~serialize( ).
+    DATA(cut) = CAST /usi/cl_bal_dc_xml( /usi/cl_bal_dc_xml=>/usi/if_bal_data_container~deserialize(
+                                             serialized_data_container ) ).
 
     " compare
     cl_abap_unit_assert=>assert_equals( exp = document
                                         act = cut->xml_document ).
-
-    serialized_title_in  = title->serialize( ).
-    serialized_title_out = cut->document_title->serialize( ).
-    cl_abap_unit_assert=>assert_equals( exp = serialized_title_in
-                                        act = serialized_title_out ).
+    cl_abap_unit_assert=>assert_equals( exp = title->serialize( )
+                                        act = cut->document_title->serialize( ) ).
   ENDMETHOD.
 ENDCLASS.
 

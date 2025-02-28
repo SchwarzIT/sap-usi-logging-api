@@ -5,7 +5,7 @@ CLASS lcl_unit_test DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SH
 
     METHODS setup.
 
-    METHODS test_returns_token           FOR TESTING.
+    METHODS test_returns_token           FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS test_throws_on_add_exception FOR TESTING.
     METHODS test_throws_on_add_free_text FOR TESTING.
@@ -85,12 +85,8 @@ CLASS lcl_unit_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_returns_token.
-    TRY.
-        cl_abap_unit_assert=>assert_bound( act = cut->claim_ownership( )
-                                           msg = `GET_TOKEN( ) returns null!` ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cl_abap_unit_assert=>assert_bound( act = cut->claim_ownership( )
+                                       msg = `GET_TOKEN( ) returns null!` ).
   ENDMETHOD.
 
   METHOD test_throws_on_save.

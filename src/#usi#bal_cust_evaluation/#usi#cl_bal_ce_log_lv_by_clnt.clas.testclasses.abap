@@ -1,8 +1,8 @@
 *"* use this source file for your ABAP unit test classes
 
-*--------------------------------------------------------------------*
-* Test-Double for DAO (To inject customizing)
-*--------------------------------------------------------------------*
+" ---------------------------------------------------------------------
+" Test-Double for DAO (To inject customizing)
+" ---------------------------------------------------------------------
 CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_cd_log_lv_by_clnt.
@@ -11,8 +11,8 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
 
     METHODS insert_mock_data_line
       IMPORTING
-        i_log_object TYPE balobj_d  OPTIONAL
-        i_sub_object TYPE balsubobj OPTIONAL
+        i_log_object TYPE balobj_d                       OPTIONAL
+        i_sub_object TYPE balsubobj                      OPTIONAL
         i_log_level  TYPE REF TO /usi/cl_bal_enum_log_level
         i_auto_save  TYPE /usi/bal_auto_save_immediately DEFAULT abap_false.
 
@@ -21,20 +21,20 @@ CLASS lcl_test_double_cust_dao DEFINITION FINAL FOR TESTING.
 
 ENDCLASS.
 
+
 CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   METHOD /usi/if_bal_cd_log_lv_by_clnt~get_records.
     DATA mock_data_line_dref TYPE REF TO /usi/if_bal_cd_log_lv_by_clnt~ty_record.
 
     LOOP AT mock_data REFERENCE INTO mock_data_line_dref
-                      WHERE log_object  IN i_log_object_range
-                        AND sub_object  IN i_sub_object_range.
+         WHERE     log_object IN i_log_object_range
+               AND sub_object IN i_sub_object_range.
       INSERT mock_data_line_dref->* INTO TABLE r_result.
     ENDLOOP.
 
     IF r_result IS INITIAL.
       RAISE EXCEPTION TYPE /usi/cx_bal_not_found
-        EXPORTING
-          textid = /usi/cx_bal_not_found=>no_db_entries_found.
+        EXPORTING textid = /usi/cx_bal_not_found=>no_db_entries_found.
     ENDIF.
   ENDMETHOD.
 
@@ -53,45 +53,36 @@ CLASS lcl_test_double_cust_dao IMPLEMENTATION.
   ENDMETHOD.
 ENDCLASS.
 
-*--------------------------------------------------------------------*
-* Unit test
-*--------------------------------------------------------------------*
-CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+
+" ---------------------------------------------------------------------
+" Unit test
+" ---------------------------------------------------------------------
+CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
   PRIVATE SECTION.
-    TYPES ty_log_level_enums TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level
-                                       WITH EMPTY KEY.
+    TYPES ty_log_level_enums TYPE STANDARD TABLE OF REF TO /usi/cl_bal_enum_log_level WITH EMPTY KEY.
 
     METHODS setup.
     METHODS test_fallback_auto_save       FOR TESTING.
     METHODS test_fallback_log_level       FOR TESTING.
 
-    METHODS test_log_object_beats_sub_obj FOR TESTING.
-    METHODS test_log_object_beats_generic FOR TESTING.
-    METHODS test_sub_object_beats_generic FOR TESTING.
+    METHODS test_log_object_beats_sub_obj FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_log_object_beats_generic FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_sub_object_beats_generic FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_non_fallback_log_levels
-      IMPORTING
-        i_amount        TYPE int1
-      RETURNING
-        VALUE(r_result) TYPE ty_log_level_enums.
+      IMPORTING i_amount        TYPE int1
+      RETURNING VALUE(r_result) TYPE ty_log_level_enums
+      RAISING   /usi/cx_bal_root.
 
     DATA: cut                  TYPE REF TO /usi/cl_bal_ce_log_lv_by_clnt,
           test_double_cust_dao TYPE REF TO lcl_test_double_cust_dao.
 ENDCLASS.
 
+
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     test_double_cust_dao = NEW #( ).
-    TRY.
-        cut = NEW #( i_customizing_dao = test_double_cust_dao ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( i_exception = unexpected_exception
-                                                                   i_quit      = if_aunit_constants=>class ).
-    ENDTRY.
+    cut = NEW #( i_customizing_dao = test_double_cust_dao ).
   ENDMETHOD.
 
   METHOD test_fallback_auto_save.
@@ -188,16 +179,11 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
     log_level_value = /usi/cl_bal_enum_log_level=>nothing->value.
     WHILE lines( r_result ) < i_amount.
-      TRY.
-          log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
-          IF log_level <> fallback_log_level.
-            INSERT log_level INTO TABLE r_result.
-          ENDIF.
-          log_level_value = log_level_value + 1.
-        CATCH /usi/cx_bal_root.
-          cl_abap_unit_assert=>abort( msg  = 'Too many values requested'
-                                      quit = if_aunit_constants=>method ).
-      ENDTRY.
+      log_level = /usi/cl_bal_enum_log_level=>get_by_value( log_level_value ).
+      IF log_level <> fallback_log_level.
+        INSERT log_level INTO TABLE r_result.
+      ENDIF.
+      log_level_value = log_level_value + 1.
     ENDWHILE.
   ENDMETHOD.
 ENDCLASS.

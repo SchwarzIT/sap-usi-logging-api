@@ -63,28 +63,23 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_public_attrib_read_only.
-    DATA class_description TYPE REF TO cl_abap_classdescr.
-
-    FIELD-SYMBOLS <attribute> TYPE abap_attrdescr.
-
-    class_description = get_rtti_description( ).
-
-    ASSIGN class_description->attributes[ visibility   = cl_abap_classdescr=>public
-                                          is_read_only = abap_false ] TO <attribute>.
-    IF sy-subrc = 0.
-      cl_abap_unit_assert=>fail( msg    = `A public attribute is not READ-ONLY!`
-                                 detail = <attribute>-name ).
-    ENDIF.
+    DATA(class_description) = get_rtti_description( ).
+    TRY.
+        DATA(writable_public_attribute) = class_description->attributes[ visibility   = cl_abap_classdescr=>public
+                                                                         is_read_only = abap_false ].
+        cl_abap_unit_assert=>fail( msg    = `A public attribute is not READ-ONLY!`
+                                   detail = writable_public_attribute-name ).
+      CATCH cx_sy_itab_line_not_found.
+        " Expected / Desired
+        RETURN.
+    ENDTRY.
   ENDMETHOD.
 
   METHOD assert_publ_static_orefs_bound.
-    DATA class_description TYPE REF TO cl_abap_classdescr.
     FIELD-SYMBOLS: <attribute> TYPE abap_attrdescr,
                    <instance>  TYPE any.
 
-    class_description = get_rtti_description( ).
-
-    LOOP AT class_description->attributes
+    LOOP AT get_rtti_description( )->attributes
          ASSIGNING <attribute>
          WHERE     visibility = cl_abap_classdescr=>public
                AND is_class   = abap_true
@@ -105,18 +100,14 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_instance.
-    DATA: callstack        TYPE abap_callstack,
-          include_resolver TYPE REF TO if_oo_clif_incl_naming.
-
-    FIELD-SYMBOLS <callstack_line> TYPE abap_callstack_line.
+    DATA callstack TYPE abap_callstack.
 
     CALL FUNCTION 'SYSTEM_CALLSTACK'
       EXPORTING max_level = 2
       IMPORTING callstack = callstack.
-    ASSIGN callstack[ 2 ] TO <callstack_line>.
 
-    cl_oo_include_naming=>get_instance_by_include( EXPORTING  progname       = <callstack_line>-mainprogram
-                                                   RECEIVING  cifref         = include_resolver
+    cl_oo_include_naming=>get_instance_by_include( EXPORTING  progname       = callstack[ 2 ]-mainprogram
+                                                   RECEIVING  cifref         = DATA(include_resolver)
                                                    EXCEPTIONS no_objecttype  = 1
                                                               internal_error = 2
                                                               OTHERS         = 3 ).
@@ -124,15 +115,12 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
       cl_abap_unit_assert=>fail( `Caller is not a class!` ).
     ENDIF.
 
-    r_result = NEW #( i_classname = include_resolver->cifkey-clsname ).
+    r_result = NEW #( include_resolver->cifkey-clsname ).
   ENDMETHOD.
 
   METHOD get_rtti_description.
-    DATA: type_description     TYPE REF TO cl_abap_typedescr,
-          unexpected_exception TYPE REF TO cx_sy_move_cast_error.
-
     cl_abap_classdescr=>describe_by_name( EXPORTING  p_name         = classname
-                                          RECEIVING  p_descr_ref    = type_description
+                                          RECEIVING  p_descr_ref    = DATA(type_description)
                                           EXCEPTIONS type_not_found = 1
                                                      OTHERS         = 2 ).
     IF sy-subrc <> 0.
@@ -141,10 +129,6 @@ CLASS /usi/cl_bal_aunit_cut_descr_cl IMPLEMENTATION.
     cl_abap_unit_assert=>assert_bound( act = type_description
                                        msg = `Could not get class description!` ).
 
-    TRY.
-        r_result ?= type_description.
-      CATCH cx_sy_move_cast_error INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    r_result ?= type_description.
   ENDMETHOD.
 ENDCLASS.

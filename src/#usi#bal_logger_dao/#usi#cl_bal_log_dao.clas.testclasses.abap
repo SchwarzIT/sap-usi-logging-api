@@ -1,7 +1,5 @@
 *"* use this source file for your ABAP unit test classes
-CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC.
-  "#AU Risk_Level Harmless
-  "#AU Duration   Short
+CLASS lcl_unit_test_public_attribs DEFINITION FINAL FOR TESTING CREATE PUBLIC DURATION SHORT RISK LEVEL HARMLESS.
   PRIVATE SECTION.
     METHODS assert_public_is_read_only FOR TESTING.
 ENDCLASS.

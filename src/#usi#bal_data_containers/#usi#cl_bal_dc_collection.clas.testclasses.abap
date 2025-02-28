@@ -301,23 +301,26 @@ CLASS lcl_unit_test_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLE
            ty_flattened_data_containers TYPE SORTED TABLE OF ty_flattened_data_container
                                         WITH UNIQUE KEY data_container_classname serialized_data_container.
 
-    METHODS test_serialize_deserialize     FOR TESTING.
+    METHODS test_serialize_deserialize     FOR TESTING RAISING /usi/cx_bal_root.
     METHODS test_deserialize_total_garbage FOR TESTING.
-    METHODS test_deserialize_unknown_class FOR TESTING.
-    METHODS test_deserialize_bad_cont_data FOR TESTING.
-    METHODS test_empty_collection          FOR TESTING.
+    METHODS test_deserialize_unknown_class FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_deserialize_bad_cont_data FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_empty_collection          FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS serialize_and_deserialize_coll
       IMPORTING i_data_container_collection TYPE REF TO /usi/if_bal_data_container_col
-      RETURNING VALUE(r_result)             TYPE REF TO /usi/if_bal_data_container_col.
+      RETURNING VALUE(r_result)             TYPE REF TO /usi/if_bal_data_container_col
+      RAISING /usi/cx_bal_root.
 
     METHODS flatten_data_container
       IMPORTING i_data_container TYPE REF TO /usi/if_bal_data_container
-      RETURNING VALUE(r_result)  TYPE ty_flattened_data_container.
+      RETURNING VALUE(r_result)  TYPE ty_flattened_data_container
+      RAISING /usi/cx_bal_root.
 
     METHODS flatten_data_cont_coll
       IMPORTING i_data_container_collection TYPE REF TO /usi/if_bal_data_container_col
-      RETURNING VALUE(r_result)             TYPE ty_flattened_data_containers.
+      RETURNING VALUE(r_result)             TYPE ty_flattened_data_containers
+      RAISING /usi/cx_bal_root.
 
     METHODS get_bad_data_container
       IMPORTING i_return_invalid_classname TYPE abap_bool DEFAULT abap_false
@@ -419,21 +422,13 @@ CLASS lcl_unit_test_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD flatten_data_container.
-    r_result-data_container_classname = i_data_container->get_classname( ).
-    TRY.
-        r_result-serialized_data_container = i_data_container->serialize( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    r_result = VALUE #( data_container_classname  = i_data_container->get_classname( )
+                        serialized_data_container = i_data_container->serialize( ) ).
   ENDMETHOD.
 
   METHOD serialize_and_deserialize_coll.
     DATA(serialized_data_cont_coll) = i_data_container_collection->serialize( ).
-    TRY.
-        r_result = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( serialized_data_cont_coll ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    r_result = /usi/cl_bal_dc_collection=>/usi/if_bal_data_container_col~deserialize( serialized_data_cont_coll ).
   ENDMETHOD.
 ENDCLASS.
 
@@ -467,7 +462,7 @@ CLASS lcl_unit_test_bad_data_cont DEFINITION FINAL FOR TESTING RISK LEVEL HARMLE
 
     METHODS setup.
     METHODS test_insert_bad_data_container FOR TESTING.
-    METHODS test_serialize_bad_data_cont   FOR TESTING.
+    METHODS test_serialize_bad_data_cont   FOR TESTING RAISING /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -487,19 +482,14 @@ CLASS lcl_unit_test_bad_data_cont IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_serialize_bad_data_cont.
-    DATA unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
     DATA(bad_data_container) = NEW lcl_defect_container( `data` ).
     cut->insert( bad_data_container ).
     cl_abap_unit_assert=>assert_true( act = cut->has_data_containers( )
                                       msg = `Container should have been added` ).
 
     bad_data_container->set_throw_on_serialize( abap_true ).
-    TRY.
-        cut = cut->deserialize( cut->serialize( ) ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cut = cut->deserialize( cut->serialize( ) ).
+
     cl_abap_unit_assert=>assert_false( act = cut->has_data_containers( )
                                        msg = `Container should have been dropped due to serialization errors` ).
   ENDMETHOD.

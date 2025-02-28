@@ -9,7 +9,7 @@ CLASS /usi/cl_bal_dc_src_pos_caller DEFINITION LOCAL FRIENDS lcl_unit_tests_seri
 CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
-    METHODS test_deserialize_valid_xml FOR TESTING.
+    METHODS test_deserialize_valid_xml FOR TESTING RAISING /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -25,30 +25,17 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_deserialize_valid_xml.
-    DATA: cut                       TYPE REF TO /usi/cl_bal_dc_src_pos_caller,
-          input                     TYPE /usi/bal_source_code_position,
-          serialized_data_container TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
+    DATA(input) = VALUE /usi/bal_source_code_position( program_name = 'FOO'
+                                                       include_name = 'BAR'
+                                                       source_line  = 42 ).
 
-    " serialize
-    input = VALUE #( program_name = 'FOO'
-                     include_name = 'BAR'
-                     source_line  = 42 ).
-    cut = NEW #( i_source_code_position = input ).
+    " serialize / deserialize
+    DATA(serialized_data_container) =
+        NEW /usi/cl_bal_dc_src_pos_caller( input )->/usi/if_bal_data_container~serialize( ).
 
-    TRY.
-        serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-    CLEAR cut.
-
-    " deserialize
-    TRY.
-        cut ?= /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    DATA(cut) = CAST /usi/cl_bal_dc_src_pos_caller(
+                         /usi/cl_bal_dc_src_pos_caller=>/usi/if_bal_data_container~deserialize(
+                             serialized_data_container ) ).
 
     " compare
     cl_abap_unit_assert=>assert_equals( exp = input

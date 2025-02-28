@@ -14,71 +14,30 @@ ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
   METHOD setup.
-    TRY.
-        cut = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>abort_on_unexpected_exception( i_exception = unexpected_exception
-                                                                    i_quit      = if_aunit_constants=>class ).
-    ENDTRY.
+    cut = /usi/cl_bal_cust_eval_factory=>get_instance( ).
   ENDMETHOD.
 
   METHOD test_get_data_containers.
-    TRY.
-        DATA(actual_result) = cut->get_data_containers( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_data_containers( ) ).
   ENDMETHOD.
 
   METHOD test_get_exception_mapper.
-    TRY.
-        DATA(actual_result) = cut->get_exception_mapper( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_exception_mapper( ) ).
   ENDMETHOD.
 
   METHOD test_get_log_level_by_client.
-    TRY.
-        DATA(actual_result) = cut->get_log_level_by_client( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_log_level_by_client( ) ).
   ENDMETHOD.
 
   METHOD test_get_log_level_by_log_obj.
-    TRY.
-        DATA(actual_result) = cut->get_log_level_by_log_object( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_log_level_by_log_object( ) ).
   ENDMETHOD.
 
   METHOD test_get_log_level_by_user.
-    TRY.
-        DATA(actual_result) = cut->get_log_level_by_user( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_log_level_by_user( ) ).
   ENDMETHOD.
 
   METHOD test_get_retention_parameters.
-    TRY.
-        DATA(actual_result) = cut->get_retention_parameters( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
-
-    cl_abap_unit_assert=>assert_bound( actual_result ).
+    cl_abap_unit_assert=>assert_bound( cut->get_retention_parameters( ) ).
   ENDMETHOD.
 ENDCLASS.

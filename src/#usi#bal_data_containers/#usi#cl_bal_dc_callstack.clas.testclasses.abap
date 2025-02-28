@@ -9,7 +9,7 @@ CLASS /usi/cl_bal_dc_callstack DEFINITION LOCAL FRIENDS lcl_unit_tests_serializa
 CLASS lcl_unit_tests_serialization DEFINITION FINAL CREATE PUBLIC FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_deserialize_bad_xml   FOR TESTING.
-    METHODS test_deserialize_valid_xml FOR TESTING.
+    METHODS test_deserialize_valid_xml FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_callstack
       RETURNING
@@ -28,22 +28,14 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test_deserialize_valid_xml.
-    " serialize
     DATA(input) = get_callstack( ).
-    TRY.
-        DATA(serialized_data_container) =
-            NEW /usi/cl_bal_dc_callstack( input )->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO DATA(unexpected_exception).
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+
+    " serialize
+    DATA(serialized_data_container) = NEW /usi/cl_bal_dc_callstack( input )->/usi/if_bal_data_container~serialize( ).
 
     " deserialize
-    TRY.
-        DATA(cut) = CAST /usi/cl_bal_dc_callstack( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~deserialize(
-                                                       serialized_data_container ) ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    DATA(cut) = CAST /usi/cl_bal_dc_callstack( /usi/cl_bal_dc_callstack=>/usi/if_bal_data_container~deserialize(
+                                                   serialized_data_container ) ).
 
     " compare
     cl_abap_unit_assert=>assert_equals( exp = input

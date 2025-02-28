@@ -58,11 +58,11 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARML
 
     METHODS test_rejects_invalid_xml       FOR TESTING.
 
-    METHODS test_external_fieldcat         FOR TESTING.
-    METHODS test_title                     FOR TESTING.
-    METHODS test_table_of_ddic_struc       FOR TESTING.
-    METHODS test_table_of_non_ddic_struc   FOR TESTING.
-    METHODS test_table_of_ddic_elem        FOR TESTING.
+    METHODS test_external_fieldcat         FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_title                     FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_table_of_ddic_struc       FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_table_of_non_ddic_struc   FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_table_of_ddic_elem        FOR TESTING RAISING /usi/cx_bal_root.
 
     "! For ITABs with non-ddic-line-types the internal fieldcatalog will become part of the serialized data.
     "! During deserialization the internal fieldcatalog will be used to rebuild the line structure.
@@ -70,13 +70,13 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARML
     "!
     "! This method tests a non-ddic-line-type containing fields having data types that could become problematic,
     "! if the fieldcatatlog was incomplete.
-    METHODS test_rebuild_from_fieldcatalog FOR TESTING.
+    METHODS test_rebuild_from_fieldcatalog FOR TESTING RAISING /usi/cx_bal_root.
 
-    METHODS test_table_of_ref_to_dtel      FOR TESTING.
-    METHODS test_table_of_ref_to_structure FOR TESTING.
-    METHODS test_nested_structures         FOR TESTING.
-    METHODS test_fatal_fieldname_collision FOR TESTING.
-    METHODS test_first_fieldname_collision FOR TESTING.
+    METHODS test_table_of_ref_to_dtel      FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_table_of_ref_to_structure FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_nested_structures         FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_fatal_fieldname_collision FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_first_fieldname_collision FOR TESTING RAISING /usi/cx_bal_root.
 
     "! <h1>Test included structures</h1>
     "!
@@ -90,11 +90,12 @@ CLASS lcl_unit_tests_serialization DEFINITION FINAL FOR TESTING RISK LEVEL HARML
     "! anymore.</p>
     "!
     "! <p>This test uses a problematic input line type to test this special case.</p>
-    METHODS test_included_structures       FOR TESTING.
+    METHODS test_included_structures       FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS get_deserialized_cut
       IMPORTING i_input_to_serialize TYPE ty_input
-      RETURNING VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab.
+      RETURNING VALUE(r_result)      TYPE REF TO /usi/cl_bal_dc_itab
+      RAISING   /usi/cx_bal_root.
 ENDCLASS.
 
 
@@ -241,25 +242,16 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_deserialized_cut.
-    DATA: cut                       TYPE REF TO /usi/cl_bal_dc_itab,
-          serialized_data_container TYPE /usi/bal_xml_string,
-          unexpected_exception      TYPE REF TO /usi/cx_bal_root.
-
     FIELD-SYMBOLS <table> TYPE ANY TABLE.
 
     ASSIGN i_input_to_serialize-table->* TO <table>.
-    cut = NEW #( i_internal_table = <table>
-                 i_title          = i_input_to_serialize-title
-                 i_fieldcatalog   = i_input_to_serialize-fieldcatalog ).
+    DATA(serialized_data_container) =
+        NEW /usi/cl_bal_dc_itab(
+                i_internal_table = <table>
+                i_title          = i_input_to_serialize-title
+                i_fieldcatalog   = i_input_to_serialize-fieldcatalog )->/usi/if_bal_data_container~serialize( ).
 
-    TRY.
-        serialized_data_container = cut->/usi/if_bal_data_container~serialize( ).
-        CLEAR cut.
-
-        r_result ?= /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    r_result ?= /usi/cl_bal_dc_itab=>/usi/if_bal_data_container~deserialize( serialized_data_container ).
   ENDMETHOD.
 
   METHOD test_table_of_ref_to_dtel.
@@ -552,8 +544,8 @@ ENDCLASS.
 CLASS lcl_unit_test_table_line_types DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
     METHODS test_accepts_ddic_structure  FOR TESTING.
-    METHODS test_accepts_non_ddic_struct FOR TESTING.
-    METHODS test_accepts_elementary      FOR TESTING.
+    METHODS test_accepts_non_ddic_struct FOR TESTING RAISING /usi/cx_bal_root.
+    METHODS test_accepts_elementary      FOR TESTING RAISING /usi/cx_bal_root.
     METHODS test_rejects_table_of_tables FOR TESTING.
     METHODS test_rejects_table_of_orefs  FOR TESTING.
 ENDCLASS.
@@ -561,14 +553,7 @@ ENDCLASS.
 
 CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
   METHOD test_accepts_ddic_structure.
-    DATA: input                TYPE abap_callstack,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        NEW /usi/cl_bal_dc_itab( i_internal_table = input ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    NEW /usi/cl_bal_dc_itab( i_internal_table = VALUE abap_callstack( ) ).
   ENDMETHOD.
 
   METHOD test_accepts_non_ddic_struct.
@@ -577,31 +562,13 @@ CLASS lcl_unit_test_table_line_types IMPLEMENTATION.
            END   OF ty_non_ddic_table_line,
            ty_non_ddic_table TYPE STANDARD TABLE OF ty_non_ddic_table_line WITH EMPTY KEY.
 
-    DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
-          input                TYPE ty_non_ddic_table,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        cut = NEW #( i_internal_table = input ).
-
-        cut->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    DATA(cut) = NEW /usi/cl_bal_dc_itab( i_internal_table = VALUE ty_non_ddic_table( ) ).
+    cut->/usi/if_bal_data_container~serialize( ).
   ENDMETHOD.
 
   METHOD test_accepts_elementary.
-    DATA: cut                  TYPE REF TO /usi/cl_bal_dc_itab,
-          input                TYPE string_table,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        cut = NEW #( i_internal_table = input ).
-
-        cut->/usi/if_bal_data_container~serialize( ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    DATA(cut) = NEW /usi/cl_bal_dc_itab( i_internal_table = VALUE string_table( ) ).
+    cut->/usi/if_bal_data_container~serialize( ).
   ENDMETHOD.
 
   METHOD test_rejects_table_of_tables.

@@ -81,13 +81,13 @@ ENDCLASS.
 *--------------------------------------------------------------------*
 CLASS lcl_unit_test_behavior DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
   PRIVATE SECTION.
-    METHODS test_raise_on_invalid_value     FOR TESTING.
-    METHODS test_get_by_value               FOR TESTING.
+    METHODS test_raise_on_invalid_value FOR TESTING.
+    METHODS test_get_by_value           FOR TESTING RAISING /usi/cx_bal_root.
 
     METHODS assert_get_by_value_returns
-      IMPORTING
-        i_value    TYPE symsgty
-        i_expected TYPE REF TO /usi/cl_bal_enum_message_type.
+      IMPORTING i_value    TYPE symsgty
+                i_expected TYPE REF TO /usi/cl_bal_enum_message_type
+      RAISING   /usi/cx_bal_root.
 ENDCLASS.
 
 CLASS lcl_unit_test_behavior IMPLEMENTATION.
@@ -123,17 +123,8 @@ CLASS lcl_unit_test_behavior IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert_get_by_value_returns.
-    DATA: actual_result        TYPE REF TO /usi/cl_bal_enum_message_type,
-          unexpected_exception TYPE REF TO /usi/cx_bal_root.
-
-    TRY.
-        actual_result = /usi/cl_bal_enum_message_type=>get_by_value( i_value ).
-
-        cl_abap_unit_assert=>assert_equals( exp = i_expected
-                                            act = actual_result
-                                            msg = `GET_BY_VALUE( ) returns wrong instance!` ).
-      CATCH /usi/cx_bal_root INTO unexpected_exception.
-        /usi/cl_bal_aunit_exception=>fail_on_unexpected_exception( unexpected_exception ).
-    ENDTRY.
+    cl_abap_unit_assert=>assert_equals( exp = i_expected
+                                        act = /usi/cl_bal_enum_message_type=>get_by_value( i_value )
+                                        msg = `GET_BY_VALUE( ) returns wrong instance!` ).
   ENDMETHOD.
 ENDCLASS.
