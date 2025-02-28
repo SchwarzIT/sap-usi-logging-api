@@ -40,8 +40,9 @@ CLASS lcl_unit_tests_serialization IMPLEMENTATION.
     DATA(serialized_data_container) = NEW /usi/cl_bal_dc_retcode_and_msg(
         i_message     = input-message
         i_return_code = input-return_code )->/usi/if_bal_data_container~serialize( ).
-    DATA(cut) = CAST /usi/cl_bal_dc_retcode_and_msg( /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize(
-                                                         serialized_data_container ) ).
+    DATA(cut) = CAST /usi/cl_bal_dc_retcode_and_msg(
+                        /usi/cl_bal_dc_retcode_and_msg=>/usi/if_bal_data_container~deserialize(
+                            serialized_data_container ) ).
 
     " Compare
     cl_abap_unit_assert=>assert_equals( exp = input-message

@@ -25,17 +25,13 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_cust_eval_factory IMPLEMENTATION.
   METHOD /usi/if_bal_cust_eval_factory~get_data_containers.
-    DATA dao TYPE REF TO /usi/if_bal_cd_data_containers.
-
-    dao = dao_factory->get_data_containers( ).
-    r_result = NEW /usi/cl_bal_ce_data_containers( i_customizing_dao = dao ).
+    DATA(dao) = dao_factory->get_data_containers( ).
+    r_result = NEW /usi/cl_bal_ce_data_containers( dao ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_eval_factory~get_exception_mapper.
-    DATA dao TYPE REF TO /usi/if_bal_cd_cx_mapper.
-
     IF exception_mapper IS NOT BOUND.
-      dao = dao_factory->get_exception_mapper( ).
+      DATA(dao) = dao_factory->get_exception_mapper( ).
       exception_mapper = NEW /usi/cl_bal_ce_cx_mapper( i_customizing_dao = dao ).
     ENDIF.
 
@@ -43,30 +39,22 @@ CLASS /usi/cl_bal_cust_eval_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_eval_factory~get_log_level_by_client.
-    DATA dao TYPE REF TO /usi/if_bal_cd_log_lv_by_clnt.
-
-    dao = dao_factory->get_log_level_by_client( ).
+    DATA(dao) = dao_factory->get_log_level_by_client( ).
     r_result = NEW /usi/cl_bal_ce_log_lv_by_clnt( i_customizing_dao = dao ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_eval_factory~get_log_level_by_log_object.
-    DATA dao TYPE REF TO /usi/if_bal_cd_log_lv_by_obj.
-
-    dao = dao_factory->get_log_level_by_log_object( ).
+    DATA(dao) = dao_factory->get_log_level_by_log_object( ).
     r_result = NEW /usi/cl_bal_ce_log_lv_by_obj( i_customizing_dao = dao ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_eval_factory~get_log_level_by_user.
-    DATA dao TYPE REF TO /usi/if_bal_cd_log_lv_by_user.
-
-    dao = dao_factory->get_log_level_by_user( ).
+    DATA(dao) = dao_factory->get_log_level_by_user( ).
     r_result = NEW /usi/cl_bal_ce_log_lv_by_user( i_customizing_dao = dao ).
   ENDMETHOD.
 
   METHOD /usi/if_bal_cust_eval_factory~get_retention_parameters.
-    DATA dao TYPE REF TO /usi/if_bal_cd_retention.
-
-    dao = dao_factory->get_retention_parameters( ).
+    DATA(dao) = dao_factory->get_retention_parameters( ).
     r_result = NEW /usi/cl_bal_ce_retention( i_customizing_dao = dao ).
   ENDMETHOD.
 
@@ -75,10 +63,8 @@ CLASS /usi/cl_bal_cust_eval_factory IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_instance.
-    DATA dao_factory TYPE REF TO /usi/if_bal_cust_dao_factory.
-
     IF instance IS NOT BOUND.
-      dao_factory = NEW /usi/cl_bal_cust_dao_factory( ).
+      DATA(dao_factory) = NEW /usi/cl_bal_cust_dao_factory( ).
       instance = NEW /usi/cl_bal_cust_eval_factory( i_dao_factory = dao_factory ).
     ENDIF.
 
