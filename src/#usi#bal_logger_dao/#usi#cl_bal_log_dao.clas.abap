@@ -110,6 +110,11 @@ CLASS /usi/cl_bal_log_dao IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD constructor.
+    IF i_log_object IS INITIAL.
+      RAISE EXCEPTION TYPE /usi/cx_bal_invalid_input
+        EXPORTING textid = /usi/cx_bal_invalid_input=>initial_log_object.
+    ENDIF.
+
     /usi/if_bal_log_dao~log_header = get_log_header( i_log_object           = i_log_object
                                                      i_sub_object           = i_sub_object
                                                      i_external_id          = i_external_id

@@ -176,6 +176,12 @@
      <MSGNR>051</MSGNR>
      <TEXT>Unsupported duplicate fieldname &amp;1: Valid fieldname cannot be generated!</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>060</MSGNR>
+     <TEXT>An empty value for parameter I_LOG_OBJECT is not feasible!</TEXT>
+    </T100>
    </T100>
    <I18N_LANGS>
     <LANGU>D</LANGU>
@@ -322,6 +328,16 @@
      <SPRSL>D</SPRSL>
      <MSGNR>050</MSGNR>
      <TEXT>Nicht unterstützte Struktur - Extraktion von Feldwerten nicht möglich!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>051</MSGNR>
+     <TEXT>Doppelter Feldname &amp;1: Gültiger Feldname kann nicht generiert werden!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>060</MSGNR>
+     <TEXT>Ein leerer Wert für Parameter I_LOG_OBJECT ist nicht zulässig!</TEXT>
     </item>
    </T100_TEXTS>
   </asx:values>

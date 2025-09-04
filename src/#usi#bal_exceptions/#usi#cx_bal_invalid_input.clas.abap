@@ -86,6 +86,15 @@ public section.
       attr3 type scx_attrname value '',
       attr4 type scx_attrname value '',
     end of UNSUPPORTED_DUPLICATE_FIELD .
+  constants:
+    begin of INITIAL_LOG_OBJECT,
+      msgid type symsgid value '/USI/BAL',
+      msgno type symsgno value '060',
+      attr1 type scx_attrname value '',
+      attr2 type scx_attrname value '',
+      attr3 type scx_attrname value '',
+      attr4 type scx_attrname value '',
+    end of INITIAL_LOG_OBJECT .
 
   "! <h1>Constructor</h1>
   "!
