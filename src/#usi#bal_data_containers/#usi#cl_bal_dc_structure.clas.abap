@@ -217,7 +217,22 @@ CLASS /usi/cl_bal_dc_structure IMPLEMENTATION.
     alv_grid->set_table_for_first_display(
       EXPORTING is_layout            = VALUE #( cwidth_opt = abap_true
                                                 zebra      = abap_true )
-                it_toolbar_excluding = VALUE #( ( cl_gui_alv_grid=>mc_fc_excl_all ) )
+                it_toolbar_excluding = VALUE #( ( cl_gui_alv_grid=>mc_fc_call_abc )
+                                                ( cl_gui_alv_grid=>mc_fc_col_invisible )
+                                                ( cl_gui_alv_grid=>mc_fc_current_variant )
+                                                ( cl_gui_alv_grid=>mc_fc_detail )
+                                                ( cl_gui_alv_grid=>mc_fc_fix_columns )
+                                                ( cl_gui_alv_grid=>mc_fc_graph )
+                                                ( cl_gui_alv_grid=>mc_fc_html )
+                                                ( cl_gui_alv_grid=>mc_fc_info )
+                                                ( cl_gui_alv_grid=>mc_fc_loc_copy )
+                                                ( cl_gui_alv_grid=>mc_fc_print )
+                                                ( cl_gui_alv_grid=>mc_fc_send )
+                                                ( cl_gui_alv_grid=>mc_fc_to_office )
+                                                ( cl_gui_alv_grid=>mc_fc_unfix_columns )
+                                                ( cl_gui_alv_grid=>mc_fc_word_processor )
+                                                ( cl_gui_alv_grid=>mc_mb_sum )
+                                                ( cl_gui_alv_grid=>mc_mb_view ) )
       CHANGING  it_outtab            = alv_output->*
                 it_fieldcatalog      = fieldcat ).
   ENDMETHOD.
