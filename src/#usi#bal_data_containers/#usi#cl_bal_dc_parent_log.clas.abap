@@ -1,34 +1,26 @@
-class /USI/CL_BAL_DC_PARENT_LOG definition
-  public
-  final
-  create public .
+CLASS /usi/cl_bal_dc_parent_log DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES /usi/if_exception_details.
+    INTERFACES /usi/if_bal_message_details.
+    INTERFACES /usi/if_bal_data_container.
+    INTERFACES /usi/if_bal_data_container_nav.
 
-public section.
-
-  interfaces /USI/IF_EXCEPTION_DETAILS .
-  interfaces /USI/IF_BAL_MESSAGE_DETAILS .
-  interfaces /USI/IF_BAL_DATA_CONTAINER .
-  interfaces /USI/IF_BAL_DATA_CONTAINER_NAV .
-
-  aliases GET_CLASSNAME
-    for /USI/IF_BAL_DATA_CONTAINER~GET_CLASSNAME .
+    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
 
     "! Constructor
     "!
     "! @parameter i_log_handle | Log handle of parent log
-  methods CONSTRUCTOR
-    importing
-      !I_LOG_HANDLE type BALLOGHNDL .
+    METHODS constructor
+      IMPORTING
+        i_log_handle TYPE balloghndl.
+
   PRIVATE SECTION.
-    DATA log_handle type balloghndl.
+    DATA log_handle TYPE balloghndl.
 
 ENDCLASS.
 
 
-
-CLASS /USI/CL_BAL_DC_PARENT_LOG IMPLEMENTATION.
-
-
+CLASS /usi/cl_bal_dc_parent_log IMPLEMENTATION.
   METHOD /usi/if_bal_data_container_nav~navigate.
     DATA log_handles TYPE bal_t_logh.
 
@@ -37,9 +29,9 @@ CLASS /USI/CL_BAL_DC_PARENT_LOG IMPLEMENTATION.
     CALL FUNCTION 'BAL_DB_LOAD'
       EXPORTING  i_t_log_handle                 = log_handles
                  i_handle_from_specified_client = abap_true
-      EXCEPTIONS no_logs_specified              = 1                " No logs specified
-                 log_not_found                  = 2                " Log not found
-                 log_already_loaded             = 3                " Log is already loaded
+      EXCEPTIONS no_logs_specified              = 1
+                 log_not_found                  = 2
+                 log_already_loaded             = 3
                  OTHERS                         = 4.
     IF sy-subrc <> 0.
       MESSAGE ID sy-msgid TYPE 'S' NUMBER sy-msgno
@@ -64,9 +56,8 @@ CLASS /USI/CL_BAL_DC_PARENT_LOG IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~deserialize.
-    DATA log_handle type balloghndl.
+    DATA log_handle TYPE balloghndl.
 
     NEW /usi/cl_bal_serializer( )->deserialize_field( EXPORTING i_serialized_data = i_serialized_data_container
                                                                 i_name            = 'LOG_HANDLE'
@@ -75,27 +66,22 @@ CLASS /USI/CL_BAL_DC_PARENT_LOG IMPLEMENTATION.
     r_result = NEW /usi/cl_bal_dc_parent_log( log_handle ).
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~get_classname.
     r_result = '/USI/CL_BAL_DC_PARENT_LOG'.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~get_description.
     r_result = TEXT-des.
   ENDMETHOD.
 
-
   METHOD /usi/if_bal_data_container~is_multiple_use_allowed.
     r_result = abap_false.
   ENDMETHOD.
-
 
   METHOD /usi/if_bal_data_container~serialize.
     r_result = NEW /usi/cl_bal_serializer( )->serialize_field_as_json( i_data = log_handle
                                                                        i_name = 'LOG_HANDLE' ).
   ENDMETHOD.
-
 
   METHOD constructor.
     log_handle = i_log_handle.
