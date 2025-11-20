@@ -30,7 +30,7 @@ Logging error situations instead of debugging them can:
 The component is:
 * based on SAPs application log (Transaction SLG1)
 * easy to use
-* well documentend
+* well documented
 * controlled by customizing (Log levels will control the detail level of the logs)
 * completely object-oriented
 
