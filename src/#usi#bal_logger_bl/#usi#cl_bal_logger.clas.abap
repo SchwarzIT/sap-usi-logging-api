@@ -77,7 +77,9 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
     " only work, if both loggers have been claimed.
     /usi/if_bal_logger~claim_ownership( ).
 
-    IF 1 = 0. MESSAGE i070(/usi/bal) WITH space space space space. ENDIF.
+    IF 1 = 0.
+      MESSAGE i070(/usi/bal) WITH space space space space.
+    ENDIF.
     /usi/if_bal_logger~add_message(
         i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
         i_message_type       = /usi/cl_bal_enum_message_type=>information
@@ -99,7 +101,9 @@ CLASS /usi/cl_bal_logger IMPLEMENTATION.
 
     SET HANDLER on_child_logger_invalidation FOR i_child_logger.
 
-    IF 1 = 0. MESSAGE i071(/usi/bal) WITH space space space space. ENDIF.
+    IF 1 = 0.
+      MESSAGE i071(/usi/bal) WITH space space space space.
+    ENDIF.
     /usi/if_bal_logger~add_message(
         i_problem_class      = /usi/cl_bal_enum_problem_class=>very_important
         i_message_type       = /usi/cl_bal_enum_message_type=>information

@@ -303,7 +303,8 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
                                                 ELSE i_child_settings-auto_save_pckg_size ).
 
     r_result-log_level                = COND #( WHEN i_parent_settings-log_level IS BOUND
-                                                 AND i_parent_settings-log_level->is_higher_than( i_child_settings-log_level )
+                                                 AND i_parent_settings-log_level->is_higher_than(
+                                                        i_child_settings-log_level )
                                                 THEN i_parent_settings-log_level
                                                 ELSE i_child_settings-log_level ).
 
