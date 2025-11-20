@@ -18,12 +18,11 @@ CLASS lcl_data_container_selector DEFINITION FINAL CREATE PUBLIC.
 
     TYPES: BEGIN OF ty_sorted_data_container,
              type           TYPE ty_data_container_type,
-             classname      TYPE /usi/bal_data_cont_classname,
              description    TYPE /usi/bal_data_cont_description,
              data_container TYPE REF TO /usi/if_bal_data_container,
            END   OF ty_sorted_data_container,
            ty_sorted_data_containers TYPE SORTED TABLE OF ty_sorted_data_container
-                                            WITH NON-UNIQUE KEY type classname description.
+                                            WITH NON-UNIQUE KEY type description.
 
     TYPES: BEGIN OF ty_node_container,
              node_key       TYPE tv_nodekey,

@@ -182,6 +182,18 @@
      <MSGNR>060</MSGNR>
      <TEXT>An empty value for parameter I_LOG_OBJECT is not feasible!</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>070</MSGNR>
+     <TEXT>Parent Log: &apos;&amp;1&apos; &apos;&amp;2&apos; &apos;&amp;3&amp;4&apos;</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>/USI/BAL</ARBGB>
+     <MSGNR>071</MSGNR>
+     <TEXT>Child Log: &apos;&amp;1&apos; &apos;&amp;2&apos; &apos;&amp;3&amp;4&apos;</TEXT>
+    </T100>
    </T100>
    <I18N_LANGS>
     <LANGU>D</LANGU>
@@ -338,6 +350,16 @@
      <SPRSL>D</SPRSL>
      <MSGNR>060</MSGNR>
      <TEXT>Ein leerer Wert für Parameter I_LOG_OBJECT ist nicht zulässig!</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>070</MSGNR>
+     <TEXT>Übergeordnetes Log: &apos;&amp;1&apos; &apos;&amp;2&apos; &apos;&amp;3&amp;4&apos;</TEXT>
+    </item>
+    <item>
+     <SPRSL>D</SPRSL>
+     <MSGNR>071</MSGNR>
+     <TEXT>Untergeordnetes Log: &apos;&amp;1&apos; &apos;&amp;2&apos; &apos;&amp;3&amp;4&apos;</TEXT>
     </item>
    </T100_TEXTS>
   </asx:values>

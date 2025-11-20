@@ -7,18 +7,16 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD sort_data_containers.
-    DATA: data_containers       TYPE /usi/bal_data_containers,
-          sorted_data_container TYPE ty_sorted_data_container.
+    DATA data_containers TYPE /usi/bal_data_containers.
 
     FIELD-SYMBOLS <data_container> TYPE REF TO /usi/if_bal_data_container.
 
     data_containers = i_data_container_collection->get_data_containers( ).
     LOOP AT data_containers ASSIGNING <data_container>.
-      sorted_data_container-type           = get_data_container_type( <data_container> ).
-      sorted_data_container-classname      = <data_container>->get_classname( ).
-      sorted_data_container-description    = <data_container>->get_description( ).
-      sorted_data_container-data_container = <data_container>.
-      INSERT sorted_data_container INTO TABLE r_result.
+      INSERT VALUE #( type           = get_data_container_type( <data_container> )
+                      description    = <data_container>->get_description( )
+                      data_container = <data_container> )
+             INTO TABLE r_result.
     ENDLOOP.
   ENDMETHOD.
 
@@ -189,17 +187,12 @@ CLASS lcl_data_container_selector IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD get_data_container_type.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA: navigator TYPE REF TO /usi/if_bal_data_container_nav,
-          " TODO: variable is assigned but never used (ABAP cleaner)
-          renderer  TYPE REF TO /usi/if_bal_data_container_rnd.
-
     TRY.
-        navigator ?= i_data_container.
+        CAST /usi/if_bal_data_container_nav( i_data_container ).
         r_result = data_container_types-navigator.
       CATCH cx_sy_move_cast_error.
         TRY.
-            renderer ?= i_data_container.
+            CAST /usi/if_bal_data_container_rnd( i_data_container ).
             r_result = data_container_types-renderer.
           CATCH cx_sy_move_cast_error.
             r_result = data_container_types-unknown.
