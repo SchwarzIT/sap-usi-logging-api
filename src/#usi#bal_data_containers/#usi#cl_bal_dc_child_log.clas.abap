@@ -1,28 +1,33 @@
-CLASS /usi/cl_bal_dc_child_log DEFINITION PUBLIC FINAL CREATE PUBLIC.
-  PUBLIC SECTION.
-    INTERFACES /usi/if_bal_message_details.
-    INTERFACES /usi/if_exception_details.
-    INTERFACES /usi/if_bal_data_container.
-    INTERFACES /usi/if_bal_data_container_nav.
+class /USI/CL_BAL_DC_CHILD_LOG definition
+  public
+  final
+  create public .
 
-    ALIASES get_classname FOR /usi/if_bal_data_container~get_classname.
+public section.
+
+  interfaces /USI/IF_EXCEPTION_DETAILS .
+  interfaces /USI/IF_BAL_MESSAGE_DETAILS .
+  interfaces /USI/IF_BAL_DATA_CONTAINER .
+  interfaces /USI/IF_BAL_DATA_CONTAINER_NAV .
+
+  aliases GET_CLASSNAME
+    for /USI/IF_BAL_DATA_CONTAINER~GET_CLASSNAME .
 
     "! Constructor
     "!
     "! @parameter i_log_handle | Log handle of child log
-    METHODS constructor
-      IMPORTING i_log_handle type balloghndl.
-
+  methods CONSTRUCTOR
+    importing
+      !I_LOG_HANDLE type BALLOGHNDL .
   PRIVATE SECTION.
     DATA log_handle type balloghndl.
 
 ENDCLASS.
 
 
-CLASS /usi/cl_bal_dc_child_log IMPLEMENTATION.
-  METHOD constructor.
-    log_handle = i_log_handle.
-  ENDMETHOD.
+
+CLASS /USI/CL_BAL_DC_CHILD_LOG IMPLEMENTATION.
+
 
   METHOD /usi/if_bal_data_container_nav~navigate.
     DATA log_handles TYPE bal_t_logh.
@@ -59,6 +64,7 @@ CLASS /usi/cl_bal_dc_child_log IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
+
   METHOD /usi/if_bal_data_container~deserialize.
     DATA log_handle type balloghndl.
 
@@ -69,20 +75,29 @@ CLASS /usi/cl_bal_dc_child_log IMPLEMENTATION.
     r_result = NEW /usi/cl_bal_dc_child_log( log_handle ).
   ENDMETHOD.
 
+
   METHOD /usi/if_bal_data_container~get_classname.
     r_result = '/USI/CL_BAL_DC_CHILD_LOG'.
   ENDMETHOD.
+
 
   METHOD /usi/if_bal_data_container~get_description.
     r_result = TEXT-des.
   ENDMETHOD.
 
+
   METHOD /usi/if_bal_data_container~is_multiple_use_allowed.
     r_result = abap_false.
   ENDMETHOD.
 
+
   METHOD /usi/if_bal_data_container~serialize.
     r_result = NEW /usi/cl_bal_serializer( )->serialize_field_as_json( i_data = log_handle
                                                                        i_name = 'LOG_HANDLE' ).
+  ENDMETHOD.
+
+
+  METHOD constructor.
+    log_handle = i_log_handle.
   ENDMETHOD.
 ENDCLASS.

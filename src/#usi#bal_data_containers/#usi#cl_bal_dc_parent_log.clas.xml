@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>/USI/CL_BAL_DC_PARENT_LOG</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Source code position of Logging-API-Call</DESCRIPT>
+    <DESCRIPT>Link to parent log</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
