@@ -1,12 +1,8 @@
 <!-- Links used on this page (Declaration) -->
 [WIKI]:           ../../wiki
 [INSTALLATION]:   ../../wiki/Installation-Guide
+[DEPENDENCIES]:   ../../wiki/Dependencies
 [CONTRIBUTING]:   ./docs/CONTRIBUTING.md
-[V1.0.0]:         ../../releases/tag/v1.0.0
-[V1.1.0]:         ../../releases/tag/v1.1.0
-[V1.2.0]:         ../../releases/tag/v1.2.0
-[V1.3.0]:         ../../releases/tag/v1.3.0
-[V1.4.0]:         ../../releases/tag/v1.4.0
 
 <!-- Images used on this page (Declaration) -->
 [SLG1]: ../media/Screenshot_SLG1_Showcase_Data_Containers.png "Showcase Data Containers"
@@ -39,6 +35,8 @@ The component enhances the capabilities of the SAP standard by so-called data co
 ![alt text][SLG1]
 
 ## Installation Guide
+
+
 Please refer to the [installation guide][INSTALLATION] in our wiki.
 
 ## How to contribute
