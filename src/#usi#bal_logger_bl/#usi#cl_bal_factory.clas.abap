@@ -27,8 +27,10 @@ CLASS /usi/cl_bal_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
            END   OF ty_logger_settings.
 
     TYPES: BEGIN OF ty_logger,
-             logger   TYPE REF TO /usi/cl_bal_logger,
-             settings TYPE ty_logger_settings,
+             logger     TYPE REF TO /usi/cl_bal_logger,
+             log_object TYPE balobj_d,
+             sub_object TYPE balsubobj,
+             settings   TYPE ty_logger_settings,
            END   OF ty_logger,
            ty_loggers TYPE STANDARD TABLE OF ty_logger WITH EMPTY KEY.
 
@@ -63,6 +65,12 @@ CLASS /usi/cl_bal_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
       RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_logger
       RAISING   /usi/cx_bal_root.
 
+    METHODS is_new_logger_needed
+      IMPORTING i_log_object    TYPE balobj_d
+                i_sub_object    TYPE balsubobj
+                i_parent        TYPE ty_logger
+      RETURNING VALUE(r_result) TYPE abap_bool.
+
     METHODS get_logger_settings_by_log_obj
       IMPORTING i_log_object    TYPE balobj_d
                 i_sub_object    TYPE balsubobj
@@ -92,14 +100,10 @@ ENDCLASS.
 
 CLASS /usi/cl_bal_factory IMPLEMENTATION.
   METHOD get_instance.
-    DATA: cust_eval_factory  TYPE REF TO /usi/if_bal_cust_eval_factory,
-          logger_bl_factory  TYPE REF TO /usi/if_bal_logger_bl_factory,
-          logger_dao_factory TYPE REF TO /usi/if_bal_logger_dao_factory.
-
     IF singleton IS NOT BOUND.
-      cust_eval_factory  = /usi/cl_bal_cust_eval_factory=>get_instance( ).
-      logger_bl_factory  = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
-      logger_dao_factory = /usi/cl_bal_logger_dao_factory=>get_instance( ).
+      DATA(cust_eval_factory)  = /usi/cl_bal_cust_eval_factory=>get_instance( ).
+      DATA(logger_bl_factory)  = /usi/cl_bal_logger_bl_factory=>get_instance( cust_eval_factory ).
+      DATA(logger_dao_factory) = /usi/cl_bal_logger_dao_factory=>get_instance( ).
 
       singleton = NEW /usi/cl_bal_factory( i_cust_eval_factory  = cust_eval_factory
                                            i_logger_bl_factory  = logger_bl_factory
@@ -163,6 +167,13 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
       DATA(parent) = VALUE #( loggers[ lines( loggers ) ] ).
     ENDIF.
 
+    IF NOT is_new_logger_needed( i_log_object = i_log_object
+                                 i_sub_object = i_sub_object
+                                 i_parent     = parent ).
+      r_result = parent-logger.
+      RETURN.
+    ENDIF.
+
     DATA(settings) = get_effective_logger_settings(
                          i_parent_settings = parent-settings
                          i_child_settings  = get_logger_settings_by_log_obj( i_log_object = i_log_object
@@ -184,8 +195,28 @@ CLASS /usi/cl_bal_factory IMPLEMENTATION.
 
     SET HANDLER on_log_writer_invalidation FOR r_result.
 
-    APPEND VALUE #( logger   = CAST #( r_result )
-                    settings = settings ) TO loggers.
+    APPEND VALUE #( logger     = CAST #( r_result )
+                    log_object = i_log_object
+                    sub_object = i_sub_object
+                    settings   = settings ) TO loggers.
+  ENDMETHOD.
+
+  METHOD is_new_logger_needed.
+    IF i_parent-logger IS NOT BOUND.
+      r_result = abap_true.
+      RETURN.
+    ENDIF.
+
+    DATA(sub_log_behavior) = cust_eval_factory->get_sub_log_behavior( )->get_sub_log_behavior(
+                                 i_log_object = i_log_object
+                                 i_sub_object = i_sub_object ).
+
+    r_result = xsdbool(    sub_log_behavior = /usi/cl_bal_enum_sub_log_behav=>create_new_logger
+                        OR (         sub_log_behavior = /usi/cl_bal_enum_sub_log_behav=>reuse_if_sub_object_matches
+                             AND NOT (     i_parent-log_object = i_log_object
+                                       AND i_parent-sub_object = i_sub_object ) )
+                        OR (         sub_log_behavior     = /usi/cl_bal_enum_sub_log_behav=>reuse_if_log_object_matches
+                             AND     i_parent-log_object <> i_log_object ) ).
   ENDMETHOD.
 
   METHOD get_logger_settings_by_log_obj.

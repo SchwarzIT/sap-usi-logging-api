@@ -37,6 +37,12 @@ DATA:  BEGIN OF STATUS_/USI/BAL_LV_USER              .   "state vector
 DATA:  END OF STATUS_/USI/BAL_LV_USER              .
 CONTROLS: TCTRL_/USI/BAL_LV_USER
             TYPE TABLEVIEW USING SCREEN '0002'.
+*...processing: /USI/BAL_SL_BEHA................................*
+DATA:  BEGIN OF STATUS_/USI/BAL_SL_BEHA              .   "state vector
+         INCLUDE STRUCTURE VIMSTATUS.
+DATA:  END OF STATUS_/USI/BAL_SL_BEHA              .
+CONTROLS: TCTRL_/USI/BAL_SL_BEHA
+            TYPE TABLEVIEW USING SCREEN '0007'.
 *.........table declarations:.................................*
 TABLES: */USI/BAL_CX_MAP               .
 TABLES: */USI/BAL_LV_CLNT              .
@@ -44,12 +50,14 @@ TABLES: */USI/BAL_LV_DATA              .
 TABLES: */USI/BAL_LV_LOBJ              .
 TABLES: */USI/BAL_LV_RTIM              .
 TABLES: */USI/BAL_LV_USER              .
+TABLES: */USI/BAL_SL_BEHA              .
 TABLES: /USI/BAL_CX_MAP                .
 TABLES: /USI/BAL_LV_CLNT               .
 TABLES: /USI/BAL_LV_DATA               .
 TABLES: /USI/BAL_LV_LOBJ               .
 TABLES: /USI/BAL_LV_RTIM               .
 TABLES: /USI/BAL_LV_USER               .
+TABLES: /USI/BAL_SL_BEHA               .
 
 * general table data declarations..............
   INCLUDE LSVIMTDT                                .

@@ -29,4 +29,8 @@ CLASS /usi/cl_bal_cust_dao_factory IMPLEMENTATION.
   METHOD /usi/if_bal_cust_dao_factory~get_retention_parameters.
     r_result = NEW /usi/cl_bal_cd_retention( ).
   ENDMETHOD.
+
+  METHOD /usi/if_bal_cust_dao_factory~get_sub_log_behavior.
+    r_result = NEW /usi/cl_bal_cd_sub_log_behav( ).
+  ENDMETHOD.
 ENDCLASS.

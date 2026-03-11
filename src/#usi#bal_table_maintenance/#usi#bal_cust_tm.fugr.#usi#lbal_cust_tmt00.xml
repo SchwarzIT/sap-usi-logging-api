@@ -6,6 +6,7 @@
     <NAME>/USI/LBAL_CUST_TMT00</NAME>
     <SUBC>I</SUBC>
     <RLOAD>E</RLOAD>
+    <UCCHECK>X</UCCHECK>
    </PROGDIR>
   </asx:values>
  </asx:abap>

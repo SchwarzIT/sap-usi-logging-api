@@ -5,11 +5,13 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
 
     METHODS setup.
 
-    METHODS test_exception_mapper_dao     FOR TESTING.
-    METHODS test_regular_log_level_dao    FOR TESTING.
-    METHODS test_increased_log_level_dao  FOR TESTING.
-    METHODS test_message_context_data_dao FOR TESTING.
-    METHODS test_retention_parameter_dao  FOR TESTING.
+    METHODS test_get_data_containers      FOR TESTING.
+    METHODS test_get_exception_mapper     FOR TESTING.
+    METHODS test_get_log_level_by_client  FOR TESTING.
+    METHODS test_get_log_level_by_log_obj FOR TESTING.
+    METHODS test_get_log_level_by_user    FOR TESTING.
+    METHODS test_get_retention_parameters FOR TESTING.
+    METHODS test_get_sub_log_behavior     FOR TESTING.
 
 ENDCLASS.
 
@@ -19,28 +21,38 @@ CLASS lcl_unit_tests IMPLEMENTATION.
     cut = NEW #( ).
   ENDMETHOD.
 
-  METHOD test_exception_mapper_dao.
-    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_exception_mapper( ).
-    cl_abap_unit_assert=>assert_bound( actual_result ).
-  ENDMETHOD.
-
-  METHOD test_regular_log_level_dao.
-    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_log_object( ).
-    cl_abap_unit_assert=>assert_bound( actual_result ).
-  ENDMETHOD.
-
-  METHOD test_increased_log_level_dao.
-    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_user( ).
-    cl_abap_unit_assert=>assert_bound( actual_result ).
-  ENDMETHOD.
-
-  METHOD test_message_context_data_dao.
+  METHOD test_get_data_containers.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_data_containers( ).
     cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 
-  METHOD test_retention_parameter_dao.
+  METHOD test_get_exception_mapper.
+    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_exception_mapper( ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
+  ENDMETHOD.
+
+  METHOD test_get_log_level_by_client.
+    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_client( ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
+  ENDMETHOD.
+
+  METHOD test_get_log_level_by_log_obj.
+    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_log_object( ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
+  ENDMETHOD.
+
+  METHOD test_get_log_level_by_user.
+    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_log_level_by_user( ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
+  ENDMETHOD.
+
+  METHOD test_get_retention_parameters.
     DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_retention_parameters( ).
+    cl_abap_unit_assert=>assert_bound( actual_result ).
+  ENDMETHOD.
+
+  METHOD test_get_sub_log_behavior.
+    DATA(actual_result) = cut->/usi/if_bal_cust_dao_factory~get_sub_log_behavior( ).
     cl_abap_unit_assert=>assert_bound( actual_result ).
   ENDMETHOD.
 ENDCLASS.

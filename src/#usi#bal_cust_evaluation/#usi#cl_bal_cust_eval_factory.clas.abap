@@ -1,4 +1,4 @@
-CLASS /usi/cl_bal_cust_eval_factory DEFINITION PUBLIC FINAL CREATE PRIVATE.
+CLASS /usi/cl_bal_cust_eval_factory DEFINITION PUBLIC FINAL CREATE PUBLIC.
   PUBLIC SECTION.
     INTERFACES /usi/if_bal_cust_eval_factory.
 
@@ -58,6 +58,11 @@ CLASS /usi/cl_bal_cust_eval_factory IMPLEMENTATION.
     r_result = NEW /usi/cl_bal_ce_retention( i_customizing_dao = dao ).
   ENDMETHOD.
 
+  METHOD /usi/if_bal_cust_eval_factory~get_sub_log_behavior.
+    DATA(dao) = dao_factory->get_sub_log_behavior( ).
+    r_result = NEW /usi/cl_bal_ce_sub_log_behav( dao ).
+  ENDMETHOD.
+
   METHOD constructor.
     dao_factory = i_dao_factory.
   ENDMETHOD.
@@ -65,7 +70,7 @@ CLASS /usi/cl_bal_cust_eval_factory IMPLEMENTATION.
   METHOD get_instance.
     IF instance IS NOT BOUND.
       DATA(dao_factory) = NEW /usi/cl_bal_cust_dao_factory( ).
-      instance = NEW /usi/cl_bal_cust_eval_factory( i_dao_factory = dao_factory ).
+      instance = NEW /usi/cl_bal_cust_eval_factory( dao_factory ).
     ENDIF.
 
     r_result = instance.
