@@ -364,10 +364,7 @@
       "exclude": [],
       "severity": "Error"
     },
-    "many_parentheses": {
-      "exclude": [],
-      "severity": "Error"
-    },
+    "many_parentheses": false,
     "max_one_method_parameter_per_line": {
       "exclude": [],
       "severity": "Error"
