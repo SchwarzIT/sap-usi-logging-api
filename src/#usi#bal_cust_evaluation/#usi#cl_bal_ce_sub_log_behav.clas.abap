@@ -1,0 +1,74 @@
+CLASS /usi/cl_bal_ce_sub_log_behav DEFINITION PUBLIC FINAL CREATE PUBLIC.
+  PUBLIC SECTION.
+    INTERFACES /usi/if_bal_ce_sub_log_behav.
+
+    "! <h1>Constructor</h1>
+    "!
+    "! @parameter i_customizing_dao | DAO-Object
+    METHODS constructor
+      IMPORTING i_customizing_dao TYPE REF TO /usi/if_bal_cd_sub_log_behav.
+
+    "! <h1>Returns the fallback log-level if no customizing is maintained</h1>
+    "!
+    "! @parameter r_result | Fallback Sub-Log Behavior
+    METHODS get_fallback_behavior
+      RETURNING VALUE(r_result) TYPE REF TO /usi/cl_bal_enum_sub_log_behav.
+
+  PROTECTED SECTION.
+
+  PRIVATE SECTION.
+    DATA customizing_dao TYPE REF TO /usi/if_bal_cd_sub_log_behav.
+
+    METHODS get_customizing_record
+      IMPORTING i_log_object    TYPE balobj_d
+                i_sub_object    TYPE balsubobj
+      RETURNING VALUE(r_result) TYPE /usi/if_bal_cd_sub_log_behav=>ty_record
+      RAISING   /usi/cx_bal_root.
+
+ENDCLASS.
+
+
+
+CLASS /usi/cl_bal_ce_sub_log_behav IMPLEMENTATION.
+  METHOD constructor.
+    customizing_dao = i_customizing_dao.
+  ENDMETHOD.
+
+  METHOD /usi/if_bal_ce_sub_log_behav~get_sub_log_behavior.
+    DATA customizing_record TYPE /usi/if_bal_cd_sub_log_behav=>ty_record.
+
+    TRY.
+        customizing_record = get_customizing_record( i_log_object = i_log_object
+                                                     i_sub_object = i_sub_object ).
+      CATCH /usi/cx_bal_root.
+        r_result = get_fallback_behavior( ).
+        RETURN.
+    ENDTRY.
+
+    TRY.
+        r_result = /usi/cl_bal_enum_sub_log_behav=>get_by_value( customizing_record-behavior ).
+      CATCH /usi/cx_bal_root.
+        r_result = get_fallback_behavior( ).
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD get_customizing_record.
+    DATA(customizing_entries) = customizing_dao->get_records( i_log_object_range = VALUE #( sign   = 'I'
+                                                                                            option = 'EQ'
+                                                                                            ( low = i_log_object )
+                                                                                            ( low = space ) )
+                                                              i_sub_object_range = VALUE #( sign   = 'I'
+                                                                                            option = 'EQ'
+                                                                                            ( low = i_sub_object )
+                                                                                            ( low = space ) ) ).
+
+    SORT customizing_entries BY log_object DESCENDING
+                                sub_object DESCENDING.
+
+    READ TABLE customizing_entries INTO r_result INDEX 1.
+  ENDMETHOD.
+
+  METHOD get_fallback_behavior.
+    r_result = /usi/cl_bal_enum_sub_log_behav=>create_new_logger.
+  ENDMETHOD.
+ENDCLASS.

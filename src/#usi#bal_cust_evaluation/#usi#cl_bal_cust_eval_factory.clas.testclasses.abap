@@ -4,12 +4,14 @@ CLASS lcl_unit_tests DEFINITION FINAL FOR TESTING RISK LEVEL HARMLESS DURATION S
     DATA cut TYPE REF TO /usi/if_bal_cust_eval_factory.
 
     METHODS setup.
-    METHODS test_get_data_containers        FOR TESTING.
-    METHODS test_get_exception_mapper       FOR TESTING.
-    METHODS test_get_log_level_by_client    FOR TESTING.
-    METHODS test_get_log_level_by_log_obj   FOR TESTING.
-    METHODS test_get_log_level_by_user      FOR TESTING.
-    METHODS test_get_retention_parameters   FOR TESTING.
+
+    METHODS test_get_data_containers      FOR TESTING.
+    METHODS test_get_exception_mapper     FOR TESTING.
+    METHODS test_get_log_level_by_client  FOR TESTING.
+    METHODS test_get_log_level_by_log_obj FOR TESTING.
+    METHODS test_get_log_level_by_user    FOR TESTING.
+    METHODS test_get_retention_parameters FOR TESTING.
+    METHODS test_get_sub_log_behavior     FOR TESTING.
 ENDCLASS.
 
 CLASS lcl_unit_tests IMPLEMENTATION.
@@ -39,5 +41,9 @@ CLASS lcl_unit_tests IMPLEMENTATION.
 
   METHOD test_get_retention_parameters.
     cl_abap_unit_assert=>assert_bound( cut->get_retention_parameters( ) ).
+  ENDMETHOD.
+
+  METHOD test_get_sub_log_behavior.
+    cl_abap_unit_assert=>assert_bound( cut->get_sub_log_behavior( ) ).
   ENDMETHOD.
 ENDCLASS.

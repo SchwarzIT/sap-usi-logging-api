@@ -7,8 +7,7 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_data_containers
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_data_containers.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_data_containers.
 
   "! Get Customizing-Evaluator-Object for Exception-Mappers.
   "!
@@ -17,8 +16,7 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_exception_mapper
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_cx_mapper.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_cx_mapper.
 
   "! Get Customizing-Evaluator-Object for Product-Specific (regular) Log-Level.
   "!
@@ -27,8 +25,7 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_log_level_by_log_object
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_obj.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_obj.
 
   "! Get Customizing-Evaluator-Object for Increased Log-Level by Client
   "!
@@ -37,8 +34,7 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_log_level_by_client
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_clnt.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_clnt.
 
   "! Get Customizing-Evaluator-Object for Increased Log-Level by User
   "!
@@ -47,8 +43,7 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_log_level_by_user
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_user.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_log_lv_by_user.
 
   "! Get Customizing-Evaluator-Object for Retention-Time per Log-Level
   "!
@@ -57,7 +52,15 @@ INTERFACE /usi/if_bal_cust_eval_factory PUBLIC.
   "!
   "! @parameter r_result | Customizing-Evaluator-Object
   METHODS get_retention_parameters
-    RETURNING
-      VALUE(r_result) TYPE REF TO /usi/if_bal_ce_retention.
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_retention.
+
+  "! Get Customizing-Evaluator-Object for Sub-Log Behavior.
+  "!
+  "! The DAO-Objects might deliver multiple database records.
+  "! The customizing-evaluator will find the most relevant one.
+  "!
+  "! @parameter r_result | Customizing-Evaluator-Object
+  METHODS get_sub_log_behavior
+    RETURNING VALUE(r_result) TYPE REF TO /usi/if_bal_ce_sub_log_behav.
 
 ENDINTERFACE.
